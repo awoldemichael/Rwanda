@@ -187,6 +187,19 @@ matsort plot 1 "down"
 matrix plot = plot'
 coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,]))
 
+* Captilize value label list so that it seemlessly merges into ArcGIS shapefile
+local varname district
+local sLabelName: value label `varname'
+di "`sLabelName'"
+
+levelsof `varname', local(xValues)
+foreach x of local xValues {
+    local sLabel: label (`varname') `x', strict
+    local sLabelNew =proper("`sLabel'")
+    noi di "`x': `sLabel' ==> `sLabelNew'"
+    label define `sLabelName' `x' "`sLabelNew'", modify
+}
+*end
 
 saveold "$pathout/DHS_hhvar.dta", replace
 log close

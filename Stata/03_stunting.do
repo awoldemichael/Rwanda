@@ -17,6 +17,7 @@ use "$pathkids\RWKR70FL.dta", clear
 log using "02_stunting", replace
 
 * Flag children selected for anthropmetry measures
+g cweight = (v005/1000000)
 clonevar anthroTag = v042
 keep if anthroTag == 1
 clonevar DHSCLUST = v001
@@ -162,7 +163,7 @@ ds(stunting stunting2 stunted stunted2 ageChild
 	ageMonGroup starch vegGreen vitA 
 	othFruit organ meat eggs legumes milk
 	dietdiv bmitmp motherBMI motherEd 
-	motherEdYears DHSCLUST);
+	motherEdYears DHSCLUST cweight );
 #delimit cr
 keep `r(varlist)'
 
@@ -181,23 +182,40 @@ la def cmc 1378 "Oct. 2014" 1379 "Nov. 2014" 1380 "Dec. 2014" 1381 "Jan. 2015" /
 la val intdate cmc
 
 * Survey set the data to account for complex sampling design
-svyset psu [pw = hhweight], strata(strata)
+svyset psu [pw = cweight], strata(strata)
 
-
-
+twoway (kdensity stunting2), xline(-2, lwidth(thin) /*
+*/ lpattern(dash) lcolor("199 199 199")) by(district, rows(6))
 
 * Check stunting over standard covariates
+svy:mean stunting2, over(district)
+svy:mean stunted2, over(district)
+matrix smean = r(table)
+
+* Create locals for reference lines in coefplot
+local stuntmean = smean[1,1]
+local lb = smean[5, 1]
+local ub = smean[6, 1]
+
+matrix plot = r(table)'
+matsort plot 1 "down"
+matrix plot = plot'
+coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,])) xline(`stuntmean' `lb' `ub')
+
+* Create a table for export
+matrix district = e(_N)'
+matrix stunt = smean'
+matrix gis = district, stunt
+mat2txt, matrix(gis) saving("$pathxls/district_stunting.csv") replace
+matrix drop _all
+
+* running a few other statistics
 svy:mean stunted2, over(female)
 svy:mean stunted2, over(wealthGroup)
 svy:mean stunted2, over(motherBMI female)
 svy:mean stunted2, over(religion)
 svy:mean stunted2, over(diarrhea)
 
-mean stunted2 
-matrix smean = r(table)
-local stuntmean = smean[1,1]
-local lb = smean[5, 1]
-local ub = smean[6, 1]
 
 preserve
 collapse (mean) stunted2 (count) n = stunted2, by(lvdzone)
@@ -205,9 +223,13 @@ ren lvdzone LZNAMEE
 export delimited "$pathxls/Stunting_livelihoodzones.csv", replace
 restore
 
-
-
+* Consider stunting over the livelihood zones.
 mean stunted2, over(lvdzone)
+cap matrix drop plot smean
+matrix smean = r(table)
+local stuntmean = smean[1,1]
+local lb = smean[5, 1]
+local ub = smean[6, 1]
 matrix plot = r(table)'
 matsort plot 1 "down"
 matrix plot = plot'

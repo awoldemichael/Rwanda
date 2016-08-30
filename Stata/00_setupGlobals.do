@@ -33,7 +33,7 @@ foreach x of local required_ados {
 * Determine path for the study 
 *global projectpath "U:/"
 *global projectpath "C:/Users/t/Documents/"
-global projectpath "C:/Users/Tim/Documents/Github/RwandaLAM"
+global projectpath "C:/Users/Tim/Documents/Rwanda"
 cd "$projectpath"
 
 
@@ -48,6 +48,10 @@ global pathdo2 "C:/Users/Tim/Documents/GitHub/RwandaLAM/Stata"
 global pathlog  "`dir'/Stata/Log"
 global pathin "`dir'/Datain"
 global pathout "`dir'/Dataout"
+
+* Stata and R files
+global pathStata "C:/Users/Tim/Documents/Github/Rwanda/Stata"
+global pathR "C:/Users/Tim/Documents/Github/Rwanda/R"
 
 * DHS specific paths
 global pathkids "`dir'/Datain/RW_2014-15_DHS/rwkr70dt"
@@ -64,6 +68,7 @@ global pathgis "`dir'/GIS"
 global pathraw "`dir'/Rawdata"
 global pathexport "`dir'/Export"
 global pathR "`dir'/R"
+
 *global pathPython "`dir'/Python"
 global pathProgram "`dir'/Stata/Programs"
 global pathSensitive "`dir'/Sensitive_Data"
