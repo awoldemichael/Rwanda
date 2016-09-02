@@ -223,6 +223,14 @@ ren lvdzone LZNAMEE
 export delimited "$pathxls/Stunting_livelihoodzones.csv", replace
 restore
 
+preserve
+keep if eligChild == 1
+keep v001 v002 stunted2 stunting2 latnum longnum urban_rura lznum lznamef lvdzone alt_gps dhsclust ageChild religion
+export delimited "$pathxls\RWA_2014_DHS_stunting.csv", replace
+restore
+
+
+
 * Consider stunting over the livelihood zones.
 mean stunted2, over(lvdzone)
 cap matrix drop plot smean
