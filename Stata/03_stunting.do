@@ -13,7 +13,7 @@
 clear
 capture log close
 
-use "$pathkids\RWKR70FL.dta", clear
+loo
 log using "02_stunting", replace
 
 * Flag children selected for anthropmetry measures
@@ -73,6 +73,11 @@ clonevar dob 		= b3
 clonevar ageFirstBirth = v212
 clonevar bfDuration	= m4
 clonevar bfMonths	= m5
+clonevar breastfeeding = v404
+
+*Place of delivery
+g byte birthAtHome = inlist(m15, 11, 12)
+
 
 recode s579 (0 8 = 0 "no")(1 = 1 "yes"), gen(childSick)
 clonevar deliveryPlace = m15
@@ -97,6 +102,10 @@ g bmitmp = (v445/100)
 egen motherBMI = cut(bmitmp), at(0, 18.5, 25.0, 50) label
 la def bmi 0 "undernourished" 1 "normal" 2 "overweight"
 la val motherBMI bmi
+
+clonevar motherBWeight = v440 
+replace motherBWeight = (motherBWeight / 100)
+
 
 * Mother's education
 clonevar motherEd = v106
@@ -162,7 +171,8 @@ ds(stunting stunting2 stunted stunted2 ageChild
 	birthWgtSource v001 v002 eligChild
 	ageMonGroup starch vegGreen vitA 
 	othFruit organ meat eggs legumes milk
-	dietdiv bmitmp motherBMI motherEd 
+	dietdiv bmitmp motherBMI motherBWeight 
+	motherEd breastfeeding birthAtHome
 	motherEdYears DHSCLUST cweight );
 #delimit cr
 keep `r(varlist)'
@@ -229,8 +239,6 @@ keep v001 v002 stunted2 stunting2 latnum longnum urban_rura lznum lznamef lvdzon
 export delimited "$pathxls\RWA_2014_DHS_stunting.csv", replace
 restore
 
-
-
 * Consider stunting over the livelihood zones.
 mean stunted2, over(lvdzone)
 cap matrix drop plot smean
@@ -260,12 +268,13 @@ bys female: g smoothStunt = (l2.stunted2 + l1.stunted2 + stunted2 + f1.stunted2 
 tssmooth ma stuntedMA = (stunted2/stuntN), window(2 1 2)
 xtline(stuntedMA smoothStunt)
 restore
+bob
 
 * Appears to be a weak negative relationship w/ altitude
-twoway(scatter stunting alt_clust)(lpolyci stunting alt_clust)
+twoway(scatter stunting2 altitude)(lpolyci stunting2 altitude)
 
 * How does stunting look by cluster?
-twoway(scatter stunting cluster_id)(scatter clust_stunting cluster_id) 
+twoway(scatter stunting dhsclust)(scatter clust_stunting dhsclust) 
 
 * How does stunting against age cohorts
 twoway(lpolyci stunting age)(scatter age_stunting age), by(female)
@@ -279,4 +288,18 @@ twoway(scatter stunting alt_clust)(lpolyci stunting alt_clust), by(province rura
 
 export delimited "$pathout/stuntingAnalysis.csv", replace
 saveold "$pathout/stuntingAnalysis.dta", replace
+
+* Stunting regression analysis using various models; 
+* First, try replicated the model Nada created in R
+global hhchar "female ib(1).religion ageChild c.ageChild#c.ageChild birthOrder birthWgt ageFirstBirth motherBWeight ib(1).motherBMI agehead birthAtHome hhsize"
+global assets "roomPC mobile landless bankAcount"
+global health "diarrhea bednet toiletShare"
+global livestock "cowtrad horse goat sheep chicken pig rabbit cowmilk cowbull"
+global geog "altitude ib(37).district rural"
+global geog2 "altitude ib(6).lvdzone rural"
+global cluster "cluster(dhsclust)"
+
+
+reg stunting2 $hhchar, $cluster
+reg stunting2 $hhchar $assets $health, $cluster
 
