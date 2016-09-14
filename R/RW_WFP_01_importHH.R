@@ -1,6 +1,6 @@
 # Rwanda stunting analysis -----------------------------------------
 #
-# RW_WFP_00_setup.R: load packages and functions for analysis.
+# RW_WFP_01_importHH.R: import household-level data
 #
 # Script to pull stunting data and associated household- or
 # child-level data for Rwanda from the CFSVA dataset
@@ -29,7 +29,60 @@ hh_raw = read_sav(paste0(baseDir, 'cfsva-2015-master-DB- annex.sav'))
 
 # pull relevant vars ------------------------------------------------------
 
-hh = hh_raw()
+hh = hh_raw %>% 
+  mutate(
+    # -- household ids / info --
+    hhid = KEY,
+    int_date = S0_B_DATE,
+    month,
+    hh_wt = weight,
+    hh_wt_norm = normalized_weight,
+    
+    # -- geography --
+    Urban,
+    S0_C_Prov, # province
+    S0_D_Dist, # district
+    S0_E_Sect, # sector
+    livezone, # livelihood zone
+    
+    # -- demographics
+    hh_size = S1_01, # hh size
+    S1_01_3, # female headed
+    pct_under7 = S1_01_7_HC88_S, # percent < 7
+    # S1_01_11_C, # polygamous
+    
+    # -- education --
+    S1_01_7, # literate head of household
+    S1_01_8, # education of head
+    pct_illiterate = S1_01_7_HC0_S, # percent can't read or write (excl. under 7)
+    pct_literate = S1_01_7_HC1_S, # percent of house that can read + write (incl. under 7)
+    pct_lowEd = S1_01_8_S2, # percent of house with no education or primary (excl. under 7)
+    pct_highEd = S1_01_8_S3, # secondary, tertiary, vocational
+    
+    # -- assets --
+    wealth_idx = WI_cat_lyr, # wealth index
+    
+    # -- food security -- 
+    cari_idx = FS_final_lyr # CARI food security index
+  ) 
+
+
+# Clean & recode vars -----------------------------------------------------
+# hh$int_month = plyr::mapvalues(hh$livezone_lyr, from = livelihood_zones$codes, to = livelihood_zones$lz)
+int_month
+admin1-3
+hh division m/f
+
+hh = hh %>% 
+  mutate(
+    
+    urban = case_when(hh$Urban == 1 ~ 1,
+                      hh$Urban == 2 ~ 0,
+                      TRUE ~ NA_integer_),
+    fem_head = case_when(hh$S1_01_3 == 1 ~ 0, # male
+                      hh$S1_01_3 == 2 ~ 1,
+                      TRUE ~ NA_integer_)
+  )
 
 # determine what should be base -------------------------------------------
 hh_raw %>% group_by(livezone) %>% summarise(num = n()) %>% arrange(desc(num))
