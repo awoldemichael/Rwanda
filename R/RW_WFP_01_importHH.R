@@ -58,9 +58,56 @@ hh = hh_raw %>%
     pct_literate = S1_01_7_HC1_S, # percent of house that can read + write (incl. under 7)
     pct_lowEd = S1_01_8_S2, # percent of house with no education or primary (excl. under 7)
     pct_highEd = S1_01_8_S3, # secondary, tertiary, vocational
+    missed_school = S1_01_13, # child missed > 1 week since Jan 2015 (~ 3-4 months)
+    missed_school_sick = S1_01_14_1, # child missed > 1 week of school b/c of illness
+    school_village = v_S3_02, # school in village
+    # School attendance has very low numbers: ~ 418 for M above 7 (out of 3070)
+    # School enrollment much better: 2776 / 3070 for M above 7
     
-    # -- assets --
+    # -- wealth status --
     wealth_idx = WI_cat_lyr, # wealth index
+    S12_01, # external assistance classification (old)
+    S12_02, # external assistance classification (new)
+    v_S2_02, # urban slums
+    v_S2_03_1, # VUP: Vision 2020 Umurenge Program-- Integrated Local Development Program to Accelerate Poverty Eradication, Rural Growth, and Social Protection
+    
+    # -- economics --
+    mkt_village = v_S4_01, # market in village
+    mkt_accessible = v_S4_02_4, # can access market yearround w/o walking
+    market_less_60min, # market w/i 60 min.
+    road_distance,
+    num_jobs = S3_01, # number of livelihood activities
+    sh_agricultural_production,
+    livelihood_group_2, # categorization of how earn living
+    
+    # -- assets (infrastructure) --
+    S2_04, # whether house in umudugudu (new recommended settlement)
+    S2_05, # own or rent house
+    bedrooms = S206,
+    crowding, # # people/room
+    impr_roof = improved_roof2, # improved roof. Note: only 42/7500 WITHOUT good roof.
+    impr_floor = improved_floor,
+    impr_wall = improved_wall,
+    share_toilet = S2_07_3,
+    impr_light = improved_light,
+    S2_09, # source of cooking fuel
+    
+    # -- farming assets --
+    own_livestock,
+    own_cattle,
+    manage_livestock,
+    TLU,
+    
+    # -- WASH -- 
+    impr_toilet = improved_toilet, # !! Note: does not include whether share toilet
+    impr_water = improved_water, # !! Note: does not filter by < 30 min.
+    time_water_source,
+    S2_12, # treat water before drinking
+    water_source_treatment, # how treat water before drinking
+    
+    # -- health facility --
+    hlth_fac_village = v_S3_03, # health facility in village
+    health_less_60min, # health facility less than 60 min. from house or in village
     
     # -- food security -- 
     cari_idx = FS_final_lyr # CARI food security index
@@ -72,7 +119,11 @@ hh = hh_raw %>%
 int_month
 admin1-3
 hh division m/f
-
+umudugudu 
+  
+asset idx
+impr_toilet
+  
 hh = hh %>% 
   mutate(
     
