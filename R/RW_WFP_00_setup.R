@@ -3,7 +3,7 @@
 # RW_WFP_00_setup.R: load packages and functions for analysis.
 #
 # Script to pull stunting data and associated household- or
-# child-level data for Rwanda from the 
+# child-level data for Rwanda from the CFSVA dataset
 # 
 # Data are from the 2015 Comprehensive Food Security and Vulnerability Analysis
 # by the World Food Programme
