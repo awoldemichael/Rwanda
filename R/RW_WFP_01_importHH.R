@@ -33,7 +33,8 @@ hh = hh_raw %>%
   mutate(
     # -- household ids / info --
     hhid = KEY,
-    int_date = S0_B_DATE,
+    # Survey conducted in April/May, in midst of minor lean season http://www.fews.net/file/113529
+    int_date = S0_B_DATE, # interview date
     month,
     hh_wt = weight,
     hh_wt_norm = normalized_weight,
@@ -49,7 +50,7 @@ hh = hh_raw %>%
     hh_size = S1_01, # hh size
     S1_01_3, # female headed
     pct_under7 = S1_01_7_HC88_S, # percent < 7
-    # S1_01_11_C, # polygamous
+    # S1_01_11_C, # polygamous -- too few hh
     
     # -- education --
     S1_01_7, # literate head of household
@@ -66,6 +67,10 @@ hh = hh_raw %>%
     
     # -- wealth status --
     wealth_idx = WI_cat_lyr, # wealth index
+    monthly_expend = P_CAP_EXP, # monthly per capita expenditures
+    food_expend = FIE,
+    sh_food_expend = S_FIE,
+    
     S12_01, # external assistance classification (old)
     S12_02, # external assistance classification (new)
     v_S2_02, # urban slums
@@ -77,13 +82,17 @@ hh = hh_raw %>%
     market_less_60min, # market w/i 60 min.
     road_distance,
     num_jobs = S3_01, # number of livelihood activities
-    sh_agricultural_production,
+    # Keeping shares of livelihoods > 5% on average
+    # View(t(hh_raw  %>% select(contains('sh_')) %>% summarise_each(funs(mean(., na.rm = TRUE)))))
+    sh_agricultural_production, 
+    sh_labour_ag_work, 
+    sh_unskilled_labour,
     livelihood_group_2, # categorization of how earn living
     
     # -- assets (infrastructure) --
     S2_04, # whether house in umudugudu (new recommended settlement)
     S2_05, # own or rent house
-    bedrooms = S206,
+    bedrooms = S2_06,
     crowding, # # people/room
     impr_roof = improved_roof2, # improved roof. Note: only 42/7500 WITHOUT good roof.
     impr_floor = improved_floor,
@@ -91,12 +100,25 @@ hh = hh_raw %>%
     share_toilet = S2_07_3,
     impr_light = improved_light,
     S2_09, # source of cooking fuel
+    mostly_selling,
+    mostly_consuming,
     
     # -- farming assets --
     own_livestock,
     own_cattle,
     manage_livestock,
     TLU,
+    own_land = S4_01,
+    S4_01_2, # land size. Note classified, and in ha
+    hh_garden = S4_01_8, # own garden
+    growing_beans, # whether hh grows crop
+    growing_maize,
+    growing_s_potato,
+    growing_cassava,       
+    growing_i_potato,
+    growing_sorghum,
+    growing_banana_cooking,
+    growing_banana_wine,
     
     # -- WASH -- 
     impr_toilet = improved_toilet, # !! Note: does not include whether share toilet
@@ -110,7 +132,33 @@ hh = hh_raw %>%
     health_less_60min, # health facility less than 60 min. from house or in village
     
     # -- food security -- 
-    cari_idx = FS_final_lyr # CARI food security index
+    cari_idx = FS_final_lyr, # CARI food security index
+    stock_durationA, # household stock in growing season A -- 2015.  B and C are from 2014 and get into too many NAs (> 6000)
+    # Ignoring infrequent food sources (< 5%)
+    # hh_raw  %>% select(contains('shr_')) %>% summarise_each(funs(mean(., na.rm = TRUE)))
+    sh_food_purchased = shr_pur, # share of purchased food
+    sh_food_grown = shr_own, # share of own food grown.  
+    child_meal_freq = S9_02_cat, # Note: categorical (0, 1, 2, 3+)
+    S9_04, # staple
+    num_starch = Starch, # number of days consumed
+    num_pulses = Pulses,
+    num_meat = Meat,
+    num_veg = Vegetables,
+    num_oil = Oil,
+    num_fruit = Fruit,
+    num_milk = Milk,
+    num_sugar = Sugar,
+    VitA_groups, # classified
+    protein_groups, # classified
+    HIron_groups, # classified
+    FCS, 
+    FCG, # classified food consumption score
+    DDS, # dietary diversity score. Range = 0 - 7 
+    GDDS, # classified diet. diversity
+    HDDS_24h, # 24 h dietary diversity recall.  Range = 0 - 12 
+    
+    # Stunting
+    hh_stunted = Stunted_YN
   ) 
 
 
@@ -120,7 +168,7 @@ int_month
 admin1-3
 hh division m/f
 umudugudu 
-  
+  !! check food expend == per capita
 asset idx
 impr_toilet
   
