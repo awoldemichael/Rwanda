@@ -27,3 +27,5 @@ women_raw = read_sav(paste0(baseDir, 'cfsva-2015-mother-DB- annex.sav'))
 
 
 # pull relevant vars ------------------------------------------------------
+women = women_raw %>% 
+  select(KEY, PARENT_KEY)
