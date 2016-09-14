@@ -18,8 +18,14 @@
 # -------------------------------------------------------------------------
 
 
+# Setup local directory ---------------------------------------------------
+
 baseDir = '~/Documents/USAID/Rwanda/rawdata/RW_2015_CFSVA/'
 
+
+# Define colors, vars -----------------------------------------------------
+stunting_colour = 'YlOrRd'
+stunting_range = c(0, 1)
 
 # load appropriate packages -----------------------------------------------
 library(dplyr)
