@@ -42,6 +42,8 @@ stunted_array = data.frame(pct = as.vector(raw_stunted_raster))
 
 ggplot(stunted_array, aes(x = pct)) + 
   geom_histogram(binwidth = 0.01, 
-                 aes(fill=..x..)) +
+                 aes(y = ..density..,
+                   fill = ..x..)) +
+  geom_density() +
   scale_fill_gradientn(colours = brewer.pal(9, fill_colour), 
                        values = fill_limits)
