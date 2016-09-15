@@ -10,3 +10,5 @@ with Tim Essam (tessam@usaid.gov) and Nada Petrovic (npetrovic@usaid.gov)
 
 Copyright 2016 by Laura Hughes via MIT License
 
+For the CFSVA and Nutrition Survey 2012, data collection was conducted during the lean season
+(March-April) that followed a relatively good harvest. 
