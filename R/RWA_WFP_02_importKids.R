@@ -28,6 +28,57 @@ children_raw = read_sav(paste0(baseDir, 'cfsva-2015-child-DB- annex.sav'))
 # ch2012 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2012_CFSVA/cfsvans-2012- children-v01.sav')
 # ch2009 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2009_CFSVA/Section 13 enfants.sav')
 
+
+# select variables --------------------------------------------------------
+# Majority of household explanatory variables will be pulled from the household-level data.
+ch = children_raw %>% 
+  select(
+    # -- IDs --
+    child_id = CHN_KEY,
+    parent_id = PARENT_KEY,
+    S0_G_Vill,
+    weight,
+    normalized_weight_CHILD,
+    
+    # -- demographics --
+    S14_02_2, # primary caregiver
+    age_months = S14_02_7, # age
+    S14_02_8, # sex
+    
+    # -- nutrition --
+    S14_03, # ever breastfed
+    S14_03_2, # hours after birth breastfed
+    S14_03_4, # given food/drink other than breastmilk in first 6 mo.
+    S14_03_5, # still breastfed
+    
+    # -- supplements --
+    # most kids (3963) got vit A drops
+    
+    # -- birth weight --
+    birthweight_cat,
+    birthwt = S14_03_6, # birth weight in kg
+    
+    # -- health --
+    S14_05_2, # ill in the past 2 weeks 
+    
+    # -- stunting calcs --
+    Wasted_global, Stunted_global, Underweight_global,
+    Wasted, Stunted, Underweight,
+    WHO_Flag # whether child has height/weight measured
+    
+    )
+
+
+# clean vars --------------------------------------------------------------
+
+ch = ch %>% 
+  mutate(
+  ill_fortnight = na_if(S14_05_2, 88)  
+  )
+
+# old stuff ---------------------------------------------------------------
+
+
 stuntingDist12 = ch2012 %>% filter(!is.na(G_Stunted)) %>% group_by(fews_code) %>% summarise(avg = mean(G_Stunted), 
                                                                                             std = sd(G_Stunted),
                                                                                             num = n(),
@@ -40,7 +91,7 @@ stuntingDist12 = ch2012 %>% filter(!is.na(G_Stunted)) %>% group_by(fews_code) %>
 # clean children’s data ---------------------------------------------------
 # stunting is based on 2006 WHO children's growth standards
 # stunting was calculated by WFP in SPSS.
-metadata = lapply(children_raw, function(x) attr(x, 'label'))
+# metadata = lapply(children_raw, function(x) attr(x, 'label'))
 
 dists = data.frame(codes = attr(children_raw$S0_D_Dist_lyr, 'labels')) %>% 
   mutate(dist = row.names(dists))
