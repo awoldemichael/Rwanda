@@ -177,10 +177,10 @@ hh = hh %>%
     
     urban = case_when(hh$Urban == 1 ~ 1,
                       hh$Urban == 2 ~ 0,
-                      TRUE ~ NA_integer_),
+                      TRUE ~ NA_real_),
     fem_head = case_when(hh$S1_01_3 == 1 ~ 0, # male
                       hh$S1_01_3 == 2 ~ 1,
-                      TRUE ~ NA_integer_)
+                      TRUE ~ NA_real_)
   )
 
 # determine what should be base -------------------------------------------
