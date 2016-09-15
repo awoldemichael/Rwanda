@@ -29,6 +29,11 @@ children_raw = read_sav(paste0(baseDir, 'cfsva-2015-child-DB- annex.sav'))
 # ch2009 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2009_CFSVA/Section 13 enfants.sav')
 
 
+# Notes on data -----------------------------------------------------------
+
+# stunting is based on 2006 WHO children's growth standards
+# stunting was calculated by WFP in SPSS.
+
 # select variables --------------------------------------------------------
 # Majority of household explanatory variables will be pulled from the household-level data.
 ch = children_raw %>% 
@@ -36,7 +41,7 @@ ch = children_raw %>%
     # -- IDs --
     child_id = CHN_KEY,
     parent_id = PARENT_KEY,
-    S0_G_Vill,
+    village = S0_G_Vill, # village (746 villages)
     weight,
     normalized_weight_CHILD,
     
@@ -44,12 +49,21 @@ ch = children_raw %>%
     S14_02_2, # primary caregiver
     age_months = S14_02_7, # age
     S14_02_8, # sex
+    mother_age = S13_02_2,
+    S13_02_3, # mother read/write
+    # S13_02_4, # mother's education
+    mother_education = education_groups, # classified mother's education
+    # stunted/underweight mother is very rare (69 or 161)
+    BMI, # mother's BMI
+    underweight_women, # mother is underweight
+    stunted_women, # mother is stunted
     
     # -- nutrition --
     S14_03, # ever breastfed
     S14_03_2, # hours after birth breastfed
     S14_03_4, # given food/drink other than breastmilk in first 6 mo.
     S14_03_5, # still breastfed
+    # Children food consumption only for those who are currently breastfed (consumption, minimal acceptable diet, in feeding programs)
     
     # -- supplements --
     # most kids (3963) got vit A drops
@@ -59,26 +73,47 @@ ch = children_raw %>%
     birthwt = S14_03_6, # birth weight in kg
     
     # -- health --
-    S14_05_2, # ill in the past 2 weeks 
+    S14_05, # ill in the past 2 weeks 
+    S14_05_2, # fever
+    S14_05_3, # cough
+    S14_05_4, # diarrhea
+    S14_05_6, # given deworming tablets in past 6 mo.
+    
+    # -- WASH --
+    # S14_06_3 & S14_06_4 on child handwashing before eating has too low coverage (3186 NAs)
+    wash_beforecook = AS13_05,
+    wash_kidtoilet = BS13_05,
+    wash_beforeeat = CS13_05,
+    wash_ifdirty = DS13_05,
+    wash_aftertoilet = ES13_05,
+    
     
     # -- stunting calcs --
-    Wasted_global, Stunted_global, Underweight_global,
-    Wasted, Stunted, Underweight,
-    WHO_Flag # whether child has height/weight measured
+    Wasted_global, Stunted_global, Underweight_global, # binaries (yes or no)
+    Wasted, Stunted, Underweight, # normal, moderate, severe
+    WHO_Flag, # whether child has height/weight measured
+    HAZNCHS, # stunting score based on NCHS standards
+    HAZWHO
     
-    )
+  )
 
 
 # clean vars --------------------------------------------------------------
 
 ch = ch %>% 
   mutate(
-  ill_fortnight = na_if(S14_05_2, 88)  
+    
+    # -- Replace NAs --
+    ill_fortnight = na_if(S14_05, 88),
+    fever = na_if(S14_05_2, 88),
+    cough = na_if(S14_05_3, 88),
+    diarrhea = na_if(S14_05_4, 88),
+    dewormed = na_if(S14_05_6, 88)
   )
 
 # old stuff ---------------------------------------------------------------
 
-
+# 2012 data
 stuntingDist12 = ch2012 %>% filter(!is.na(G_Stunted)) %>% group_by(fews_code) %>% summarise(avg = mean(G_Stunted), 
                                                                                             std = sd(G_Stunted),
                                                                                             num = n(),
@@ -89,8 +124,7 @@ stuntingDist12 = ch2012 %>% filter(!is.na(G_Stunted)) %>% group_by(fews_code) %>
   mutate(dist = fews_code)
 
 # clean children’s data ---------------------------------------------------
-# stunting is based on 2006 WHO children's growth standards
-# stunting was calculated by WFP in SPSS.
+
 # metadata = lapply(children_raw, function(x) attr(x, 'label'))
 
 dists = data.frame(codes = attr(children_raw$S0_D_Dist_lyr, 'labels')) %>% 
