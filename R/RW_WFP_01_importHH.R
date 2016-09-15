@@ -156,6 +156,7 @@ hh = hh_raw %>%
     DDS, # dietary diversity score. Range = 0 - 7 
     GDDS, # classified diet. diversity
     HDDS_24h, # 24 h dietary diversity recall.  Range = 0 - 12 
+    CSI,
     
     # Stunting
     hh_stunted = Stunted_YN
