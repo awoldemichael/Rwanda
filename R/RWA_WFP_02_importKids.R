@@ -25,14 +25,17 @@
 
 children_raw = read_sav(paste0(baseDir, 'cfsva-2015-child-DB- annex.sav'))
 
-# ch2012 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2012_CFSVA/cfsvans-2012- children-v01.sav')
-# ch2009 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2009_CFSVA/Section 13 enfants.sav')
+ch2012 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2012_CFSVA/cfsvans-2012- children-v01.sav')
+
+# 2009 data are unprocessed.
+ch2009 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2009_CFSVA/Section 13 enfants.sav')
 
 
 # Notes on data -----------------------------------------------------------
 
 # stunting is based on 2006 WHO children's growth standards
 # stunting was calculated by WFP in SPSS.
+# Key stunting variables for 2015 data is Stunted_global (binary stunted) and HAZWHO (height-for-age z-score based on the WHO distribution)
 
 # select variables --------------------------------------------------------
 # Majority of household explanatory variables will be pulled from the household-level data.
@@ -44,6 +47,7 @@ ch = children_raw %>%
     village = S0_G_Vill, # village (746 villages)
     weight,
     normalized_weight_CHILD,
+    livezone_lyr,
     
     # -- demographics --
     S14_02_2, # primary caregiver
@@ -114,7 +118,16 @@ ch = ch %>%
 # old stuff ---------------------------------------------------------------
 
 # 2012 data
-stuntingDist12 = ch2012 %>% filter(!is.na(G_Stunted)) %>% group_by(fews_code) %>% summarise(avg = mean(G_Stunted), 
+stuntingDist12 = ch2012 %>% filter(!is.na(G_Stunted)) %>% group_by(dist) %>% summarise(avg = mean(G_Stunted), 
+                                                                                            std = sd(G_Stunted),
+                                                                                            num = n(),
+                                                                                            se = std / (sqrt(num)),
+                                                                                            lb = avg - ciFactor * se,
+                                                                                            ub = avg + ciFactor * se) %>% 
+  arrange(desc(avg))
+
+# 2009 data
+stuntingDist09 = ch2009 %>% filter(!is.na(G_Stunted)) %>% group_by(fews_code) %>% summarise(avg = mean(G_Stunted), 
                                                                                             std = sd(G_Stunted),
                                                                                             num = n(),
                                                                                             se = std / (sqrt(num)),
@@ -127,7 +140,8 @@ stuntingDist12 = ch2012 %>% filter(!is.na(G_Stunted)) %>% group_by(fews_code) %>
 
 # metadata = lapply(children_raw, function(x) attr(x, 'label'))
 
-dists = data.frame(codes = attr(children_raw$S0_D_Dist_lyr, 'labels')) %>% 
+dists = data.frame(codes = attr(children_raw$S0_D_Dist_lyr, 'labels')) 
+dists = dists %>% 
   mutate(dist = row.names(dists))
 
 
@@ -137,7 +151,8 @@ livelihood_zones = data.frame(codes = attr(children_raw$livezone_lyr, 'labels'))
 livelihood_zones = livelihood_zones %>% 
   mutate(lz = row.names(livelihood_zones))
 
-ch$livezone_lyr = plyr::mapvalues(ch$livezone_lyr, from = livelihood_zones$codes, to = livelihood_zones$lz)
+ch$dist = plyr::mapvalues(ch$livezone_lyr, from = livelihood_zones$codes, to = livelihood_zones$lz)
+ch2012$dist = plyr::mapvalues(ch2012$fews_code, from = livelihood_zones$codes, to = livelihood_zones$lz)
 
 # clean mother_raw --------------------------------------------------------
 
@@ -155,7 +170,8 @@ ch = children_raw %>% filter(! is.na(Stunted_global))
 
 ciFactor = 1.96
 
-stuntingDist = ch %>% group_by(dist = livezone_lyr) %>% summarise(avg = mean(Stunted_global), 
+stuntingDist = ch %>% filter(! is.na(Stunted_global)) %>% 
+  group_by(dist = livezone_lyr) %>% summarise(avg = mean(Stunted_global), 
                                                                   std = sd(Stunted_global),
                                                                   num = n(),
                                                                   se = std / (sqrt(num)),
@@ -173,11 +189,14 @@ ggplot(stuntingDist) +
   coord_flip() +
   ylim(c(0.15, 0.72))
 
-s = full_join(stuntingDist, stuntingDist12, by = 'dist')
-ggplot(s %>% filter(dist %in% c(12, 2)), aes(x = `avg.y`, xend = `avg.x`, y = 2012, yend = 2015,
+s = left_join(stuntingDist, stuntingDist12, by = c('dist' = 'dist'))
+ggplot(s %>% filter(dist %in% c()), aes(x = `avg.y`, xend = `avg.x`, y = 2012, yend = 2015,
                                              colour = as.character(dist))) +
   geom_segment() + coord_flip() + 
   geom_text(aes(label = as.character(dist), x = `avg.y`, y = 2015), nudge_x = 0.1, size = 5)
+
+ggplot(s, aes(x = 2012, xend = 2015, y = avg.y, yend = avg.x, colour = factor(dist))) +
+  geom_segment()
 
 # determine what should be base -------------------------------------------
 hh_raw %>% group_by(livezone) %>% summarise(num = n()) %>% arrange(desc(num))
