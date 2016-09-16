@@ -50,6 +50,7 @@ ch = children_raw %>%
     livezone_lyr,
     
     # -- demographics --
+    WI, # numeric wealth index
     S14_02_2, # primary caregiver
     age_months = S14_02_7, # age
     S14_02_8, # sex
