@@ -58,6 +58,8 @@ clonevar hhchildUnd5 = hv014
 * HH assets
 clonevar toilet = hv205
 clonevar toiletShare = hv225
+g byte handwashObs = inlist(hv230a, 1)
+la var handwashObs "Observed handwashing station"
 rename (hv206 hv207 hv208 hv209 hv210 hv211 hv212 hv243a)(electricity radio tv refrig bike moto car mobile)
 
 recode hv213 (11 12 = 1 "earth, sand, dung")(33 34 35 96 = 0 "ceramic or better"), gen(dirtfloor)

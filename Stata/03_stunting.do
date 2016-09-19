@@ -12,8 +12,7 @@
 
 clear
 capture log close
-
-loo
+use "$pathkids\RWKR70FL.dta", clear
 log using "02_stunting", replace
 
 * Flag children selected for anthropmetry measures
@@ -77,7 +76,7 @@ clonevar breastfeeding = v404
 
 *Place of delivery
 g byte birthAtHome = inlist(m15, 11, 12)
-
+recode h33 (0 8 = 0 "No")(1 2 3 = 1 "Yes"), gen(vitaminA)
 
 recode s579 (0 8 = 0 "no")(1 = 1 "yes"), gen(childSick)
 clonevar deliveryPlace = m15
@@ -106,6 +105,8 @@ la val motherBMI bmi
 clonevar motherBWeight = v440 
 replace motherBWeight = (motherBWeight / 100)
 
+clonevar wantedChild = v367
+recode h43 (0 8 = 0 "No")(1 = 1 "Yes"), gen(intParasites)
 
 * Mother's education
 clonevar motherEd = v106
@@ -173,7 +174,8 @@ ds(stunting stunting2 stunted stunted2 ageChild
 	othFruit organ meat eggs legumes milk
 	dietdiv bmitmp motherBMI motherBWeight 
 	motherEd breastfeeding birthAtHome
-	motherEdYears DHSCLUST cweight );
+	motherEdYears DHSCLUST cweight wantedChild
+	vitaminA intParasites;
 #delimit cr
 keep `r(varlist)'
 
@@ -195,7 +197,7 @@ la val intdate cmc
 svyset psu [pw = cweight], strata(strata)
 
 twoway (kdensity stunting2), xline(-2, lwidth(thin) /*
-*/ lpattern(dash) lcolor("199 199 199")) by(district, rows(6))
+*/ lpattern(dash) lcolor("199 199 199")) by(lvdzone)
 
 * Check stunting over standard covariates
 svy:mean stunting2, over(district)
