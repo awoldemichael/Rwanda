@@ -25,10 +25,7 @@
 
 children_raw = read_sav(paste0(baseDir, 'cfsva-2015-child-DB- annex.sav'))
 
-ch2012 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2012_CFSVA/cfsvans-2012- children-v01.sav')
 
-# 2009 data are unprocessed.
-ch2009 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2009_CFSVA/Section 13 enfants.sav')
 
 
 # Notes on data -----------------------------------------------------------
@@ -202,5 +199,11 @@ ggplot(s, aes(x = 2012, xend = 2015, y = avg.y, yend = avg.x, colour = factor(di
 # determine what should be base -------------------------------------------
 hh_raw %>% group_by(livezone) %>% summarise(num = n()) %>% arrange(desc(num))
 # livelihood zone #5 is most frequent therefore will be used as base.
-# zone 5 == Central Plateau Cassava and Coffee Zone 
+# zone 5 == Central Plateau Cassava and Coffee Zone
+
+# older datasets ----------------------------------------------------------
+ch2012 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2012_CFSVA/cfsvans-2012- children-v01.sav')
+
+# 2009 data are unprocessed.  Also doesn't include Kigali
+ch2009 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2009_CFSVA/Section 13 enfants.sav')
 
