@@ -19,8 +19,11 @@
 
 
 # Setup local directory ---------------------------------------------------
+# -- Mac --
+baseDir = '~/Documents/USAID/Rwanda/rawdata/'
 
-baseDir = '~/Documents/USAID/Rwanda/rawdata/RW_2015_CFSVA/'
+# -- Windows (within My Documents) --
+baseDir = '~/Rwanda/rawdata/'
 
 
 # Define colors, vars -----------------------------------------------------
