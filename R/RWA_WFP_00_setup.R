@@ -25,10 +25,14 @@ baseDir = '~/Documents/USAID/Rwanda/rawdata/'
 # -- Windows (within My Documents) --
 baseDir = '~/Rwanda/rawdata/'
 
+# Set aesthetics ----------------------------------------------------------
+font_light = 'Lato Light'
+font_normal = 'Lato'
 
-# Define colors, vars -----------------------------------------------------
 stunting_colour = 'YlOrRd'
 stunting_range = c(0, 1)
+
+
 
 # load appropriate packages -----------------------------------------------
 library(dplyr)
