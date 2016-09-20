@@ -1,6 +1,6 @@
 # Rwanda stunting analysis -----------------------------------------
 #
-# RW_WFP_01_importKids.R: import children's data
+# RW_WFP_02_importKids2012.R: import children's data from 2012 dataset
 #
 # Script to pull stunting data and associated household- or
 # child-level data for Rwanda from the CFSVA dataset
@@ -23,7 +23,13 @@
 # household-level data:  'cfsva-2015-master-DB- annex.sav'
 # women's data: 'cfsva-2015-mother-DB- annex.sav'
 
-children_raw = read_sav(paste0(baseDir, 'RW_2015_CFSVA/cfsva-2015-child-DB- annex.sav'))
+
+ch2012_raw = read_sav(paste0(baseDir, 'RW_2012_CFSVA/cfsvans-2012- children-v01.sav'))
+
+
+# 2009 data are unprocessed.  Also doesn't include Kigali / urban areas.
+# ch2009 = read_sav(paste0(baseDir, 'RW_2009_CFSVA/Section 13 enfants.sav'))
+
 
 
 
@@ -56,54 +62,12 @@ children_raw = read_sav(paste0(baseDir, 'RW_2015_CFSVA/cfsva-2015-child-DB- anne
 
 # Based on this info, it seems like the primary strata = 30 districts (S0_D_Dist) and the enumeration areas are the villages (S0_G_Vill)
 
-# Note: straight averages don't work:
-x = ch %>% mutate(st = Stunted_global * normalized_weight_CHILD)
-
-# Similar but not right
-x  %>% group_by(Urban) %>% summarise(tot = sum(Stunted_global), n = n()) %>% mutate(pct = tot/n)
-
 
 # Seems right on target w/ the strata being the 30 districts (first sampling division)
 # Comparing final numbers from the CFSVA to the ones I calculated
 # Point of difference: report says there are 4058 children measured, but the smaple only contains 3810.
 # Guessing (?) difference is that there were 4058 eligible, but only 3810 measured / valid. 
 # Raw children's file very clearly has 280 NAs, and numbers check out.
-cfsva = svydesign(id = ~S0_G_Vill, strata = ~S0_D_Dist, weights = ~weight, data = children_raw)
-
-svymean(~Stunted_global, design = cfsva, na.rm = TRUE)
-# mean   SE
-# Stunted_global 0.36708 0.01
-
-svyby(~Stunted_global, design = cfsva, by = ~Urban, svymean, na.rm = TRUE)
-# Urban Stunted_global         se
-# 1     1      0.2709561 0.02541909
-# 2     2      0.3961389 0.01039587
-
-svyby(~Stunted_global, design = cfsva, by = ~S0_C_Prov, svymean, na.rm = TRUE)
-# S0_C_Prov Stunted_global         se
-# 1         1      0.2477522 0.02854823
-# 2         2      0.3415020 0.01877670
-# 3         3      0.4588179 0.01703526
-# 4         4      0.3888858 0.03046762
-# 5         5      0.3506154 0.02088620
-
-svyby(~Stunted_global, design = cfsva, by = ~livezone, svymean, na.rm = TRUE)
-# livezone Stunted_global         se
-# 0         0      0.2301671 0.03235057
-# 1         1      0.3688482 0.02093194
-# 2         2      0.5335319 0.03735974
-# 3         3      0.4485097 0.04902240
-# 4         4      0.4869630 0.02606977
-# 5         5      0.2838102 0.01948119
-# 6         6      0.5135553 0.07400019
-# 7         7      0.3799819 0.03584594
-# 8         8      0.2901785 0.03686537
-# 9         9      0.3981396 0.03688260
-# 10       10      0.3147220 0.03375017
-# 11       11      0.3910140 0.04925721
-# 12       12      0.2366302 0.05193559
-
-svyby(~Stunted_global, design = cfsva, by = ~S0_D_Dist, svymean, na.rm = TRUE)
 
 
 # Notes on data -----------------------------------------------------------
@@ -114,87 +78,16 @@ svyby(~Stunted_global, design = cfsva, by = ~S0_D_Dist, svymean, na.rm = TRUE)
 
 # select variables --------------------------------------------------------
 # Majority of household explanatory variables will be pulled from the household-level data.
-ch = children_raw %>% 
-  select(
-    # -- IDs --
-    child_id = CHN_KEY, # Despite the name, this isn't a unique id! Is merely a link to the database on their end.
-    parent_id = PARENT_KEY,
-    village = S0_G_Vill, # village (746 villages)
-    weight,
-    normalized_weight_CHILD,
-    livezone_lyr,
-    
-    # -- demographics --
-    WI, # numeric wealth index
-    S14_02_2, # primary caregiver
-    age_months = S14_02_7, # age
-    S14_02_8, # sex
-    mother_age = S13_02_2,
-    S13_02_3, # mother read/write
-    # S13_02_4, # mother's education
-    mother_education = education_groups, # classified mother's education
-    # stunted/underweight mother is very rare (69 or 161)
-    BMI, # mother's BMI
-    underweight_women, # mother is underweight
-    stunted_women, # mother is stunted
-    
-    # -- nutrition --
-    S14_03, # ever breastfed
-    S14_03_2, # hours after birth breastfed
-    S14_03_4, # given food/drink other than breastmilk in first 6 mo.
-    S14_03_5, # still breastfed
-    # Children food consumption only for those who are currently breastfed (consumption, minimal acceptable diet, in feeding programs)
-    
-    # -- supplements --
-    # most kids (3963) got vit A drops
-    
-    # -- birth weight --
-    birthweight_cat,
-    birthwt = S14_03_6, # birth weight in kg
-    
-    # -- health --
-    S14_05, # ill in the past 2 weeks 
-    S14_05_2, # fever
-    S14_05_3, # cough
-    S14_05_4, # diarrhea
-    S14_05_6, # given deworming tablets in past 6 mo.
-    
-    # -- WASH --
-    # S14_06_3 & S14_06_4 on child handwashing before eating has too low coverage (3186 NAs)
-    wash_beforecook = AS13_05,
-    wash_kidtoilet = BS13_05,
-    wash_beforeeat = CS13_05,
-    wash_ifdirty = DS13_05,
-    wash_aftertoilet = ES13_05,
-    
-    
-    # -- stunting calcs --
-    Wasted_global, Stunted_global, Underweight_global, # binaries (yes or no)
-    Wasted, Stunted, Underweight, # normal, moderate, severe
-    WHO_Flag, # whether child has height/weight measured
-    HAZNCHS, # stunting score based on NCHS standards
-    HAZWHO
-    
+ch2012 = ch2012_raw %>% 
+ select(
   )
 
 
 # clean vars --------------------------------------------------------------
 
-ch = ch %>% 
-  mutate(
-    
-    # -- Replace NAs --
-    ill_fortnight = na_if(S14_05, 88),
-    fever = na_if(S14_05_2, 88),
-    cough = na_if(S14_05_3, 88),
-    diarrhea = na_if(S14_05_4, 88),
-    dewormed = na_if(S14_05_6, 88)
-  )
 
 
-
-
-# determine what should be base -------------------------------------------
-hh_raw %>% group_by(livezone) %>% summarise(num = n()) %>% arrange(desc(num))
-# livelihood zone #5 is most frequent therefore will be used as base.
-# zone 5 == Central Plateau Cassava and Coffee Zone
+# old stuff ---------------------------------------------------------------
+cfsva2012 = svydesign(id = ~v_code, strata = ~d_code, weights = ~FINAL_PopWeight, data = ch2012)
+svyby(~G_Stunted, design = cfsva2012, by = ~fews_code, svymean, na.rm = TRUE)
+svyby(~G_Stunted, design = cfsva2012, by = ~d_code, svymean, na.rm = TRUE)
