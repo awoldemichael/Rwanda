@@ -24,12 +24,12 @@
 # women's data: 'cfsva-2015-mother-DB- annex.sav'
 
 # -- household data --
-hh_raw = read_sav(paste0(baseDir, 'cfsva-2015-master-DB- annex.sav'))
-hh2012 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2012_CFSVA/cfsvans-2012- household-v01.sav')
+hh_raw = read_sav(paste0(baseDir, 'RW_2015_CFSVA/cfsva-2015-master-DB- annex.sav'))
+hh2012 = read_sav(paste0(baseDir, 'RW_2012_CFSVA/cfsvans-2012- household-v01.sav'))
 
 # -- mother / children data (to create unique id) --
-women_raw = read_sav(paste0(baseDir, 'cfsva-2015-mother-DB- annex.sav'))
-children_raw = read_sav(paste0(baseDir, 'cfsva-2015-child-DB- annex.sav'))
+women_raw = read_sav(paste0(baseDir, 'RW_2015_CFSVA/cfsva-2015-mother-DB- annex.sav'))
+children_raw = read_sav(paste0(baseDir, 'RW_2015_CFSVA/fsva-2015-child-DB- annex.sav'))
 
 # Create unique ID --------------------------------------------------------
 # SO... even though the 2012 data contains a household id, the 2015 data strips that out.
