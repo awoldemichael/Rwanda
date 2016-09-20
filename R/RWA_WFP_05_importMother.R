@@ -1,6 +1,6 @@
 # Rwanda stunting analysis -----------------------------------------
 #
-# RW_WFP_03_importMother.R: import data from the mother module
+# RW_WFP_05_importMother.R: import data from the mother module
 #
 # Script to pull stunting data and associated household- or
 # child-level data for Rwanda from the CFSVA dataset
@@ -23,7 +23,7 @@
 # household-level data:  'cfsva-2015-master-DB- annex.sav'
 # women's data: 'cfsva-2015-mother-DB- annex.sav'
 
-women_raw = read_sav(paste0(baseDir, 'cfsva-2015-mother-DB- annex.sav'))
+women_raw = read_sav(paste0(baseDir, 'RW_2015_CFSVA/cfsva-2015-mother-DB- annex.sav'))
 
 
 # pull relevant vars ------------------------------------------------------
