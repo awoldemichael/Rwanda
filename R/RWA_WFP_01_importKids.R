@@ -1,6 +1,6 @@
 # Rwanda stunting analysis -----------------------------------------
 #
-# RW_WFP_02_importKids.R: import children's data
+# RW_WFP_01_importKids.R: import children's data
 #
 # Script to pull stunting data and associated household- or
 # child-level data for Rwanda from the CFSVA dataset
@@ -23,9 +23,88 @@
 # household-level data:  'cfsva-2015-master-DB- annex.sav'
 # women's data: 'cfsva-2015-mother-DB- annex.sav'
 
-children_raw = read_sav(paste0(baseDir, 'cfsva-2015-child-DB- annex.sav'))
+children_raw = read_sav(paste0(baseDir, 'RW_2015_CFSVA/cfsva-2015-child-DB- annex.sav'))
 
 
+
+# Checking how weights should be applied ----------------------------------
+
+# According to CFSVA final report, they used a two-stage survey design, with the districts as the primary cut and villages as the secondary:
+# (from CFSVA 2015 detailed survey methodolgy)
+# To facilitate comparison with existing studies, the CFSVA 2015 was designed to provide statistically representative
+# and precise information at the district level. In addition, it was decided to include both urban and rural households
+# and not to exclude the capital province Kigali. The sampling frame was organized according to the 30 districts.
+# Subsequently, a two-stage cluster sample procedure was applied.
+# In the first stage, 25 villages per district were randomly selected with probability to be selected proportional to the
+# population size. In the second stage, ten households in each of the 25 villages in the 30 provinces were selected for
+# participation in the survey. A systematic random sampling technique was chosen for this stage. The team leader,
+# together with the village head, listed all households in the village. Based on this list, a systematic random sample
+# was utilized to pick ten households to be interviewed and three reserve households should any of the first ten
+# households be missing at the time of the interview or not agree to participate. Households were eligible for
+# participation in the assessment if living in one of the selected villages at the time of the interviews.
+# Thus, ten households, from 25 villages, from 30 provinces were chosen to participate in the survey, amounting up
+# to 7,500 households.
+
+# And from the NISR explanation of the data:
+# "Taking into consideration the two-stage cluster sampling methodology described above, adjustment weights were
+# computed to provide results representative at country level. The household probability of being selected in the
+# sample is equal to the product of a household’s probability of being selected in a village by the probability of the
+# village of being sampled. The inverse of this probability is the design weight. The design weight was adjusted for
+# the expected and actual number of households in the surveyed villages and was used in the complex sample
+# calculations. The design weight was divided by the product of the total number of households in the population
+# divided by the number of sampled households. The resulting weight was used in all non-complex sample analyses."
+
+# Based on this info, it seems like the primary strata = 30 districts (S0_D_Dist) and the enumeration areas are the villages (S0_G_Vill)
+
+# Note: straight averages don't work:
+x = ch %>% mutate(st = Stunted_global * normalized_weight_CHILD)
+
+# Similar but not right
+x  %>% group_by(Urban) %>% summarise(tot = sum(Stunted_global), n = n()) %>% mutate(pct = tot/n)
+
+library(survey)
+
+# Seems right on target w/ the strata being the 30 districts (first sampling division)
+# Comparing final numbers from the CFSVA to the ones I calculated
+# Point of difference: report says there are 4058 children measured, but the smaple only contains 3810.
+# Guessing (?) difference is that there were 4058 eligible, but only 3810 measured / valid. 
+# Raw children's file very clearly has 280 NAs, and numbers check out.
+cfsva = svydesign(id = ~S0_G_Vill, strata = ~S0_D_Dist, weights = ~weight, data = children_raw)
+
+svymean(~Stunted_global, design = cfsva, na.rm = TRUE)
+# mean   SE
+# Stunted_global 0.36708 0.01
+
+svyby(~Stunted_global, design = cfsva, by = ~Urban, svymean, na.rm = TRUE)
+# Urban Stunted_global         se
+# 1     1      0.2709561 0.02541909
+# 2     2      0.3961389 0.01039587
+
+svyby(~Stunted_global, design = cfsva, by = ~S0_C_Prov, svymean, na.rm = TRUE)
+# S0_C_Prov Stunted_global         se
+# 1         1      0.2477522 0.02854823
+# 2         2      0.3415020 0.01877670
+# 3         3      0.4588179 0.01703526
+# 4         4      0.3888858 0.03046762
+# 5         5      0.3506154 0.02088620
+
+svyby(~Stunted_global, design = cfsva, by = ~livezone, svymean, na.rm = TRUE)
+# livezone Stunted_global         se
+# 0         0      0.2301671 0.03235057
+# 1         1      0.3688482 0.02093194
+# 2         2      0.5335319 0.03735974
+# 3         3      0.4485097 0.04902240
+# 4         4      0.4869630 0.02606977
+# 5         5      0.2838102 0.01948119
+# 6         6      0.5135553 0.07400019
+# 7         7      0.3799819 0.03584594
+# 8         8      0.2901785 0.03686537
+# 9         9      0.3981396 0.03688260
+# 10       10      0.3147220 0.03375017
+# 11       11      0.3910140 0.04925721
+# 12       12      0.2366302 0.05193559
+
+svyby(~Stunted_global, design = cfsva, by = ~S0_D_Dist, svymean, na.rm = TRUE)
 
 
 # Notes on data -----------------------------------------------------------
@@ -39,7 +118,7 @@ children_raw = read_sav(paste0(baseDir, 'cfsva-2015-child-DB- annex.sav'))
 ch = children_raw %>% 
   select(
     # -- IDs --
-    child_id = CHN_KEY,
+    child_id = CHN_KEY, # Despite the name, this isn't a unique id! Is merely a link to the database on their end.
     parent_id = PARENT_KEY,
     village = S0_G_Vill, # village (746 villages)
     weight,
@@ -114,6 +193,9 @@ ch = ch %>%
   )
 
 # old stuff ---------------------------------------------------------------
+cfsva2012 = svydesign(id = ~v_code, strata = ~d_code, weights = ~FINAL_PopWeight, data = ch2012)
+svyby(~G_Stunted, design = cfsva2012, by = ~fews_code, svymean, na.rm = TRUE)
+svyby(~G_Stunted, design = cfsva2012, by = ~d_code, svymean, na.rm = TRUE)
 
 # 2012 data
 stuntingDist12 = ch2012 %>% filter(!is.na(G_Stunted)) %>% group_by(dist) %>% summarise(avg = mean(G_Stunted), 
@@ -202,87 +284,11 @@ hh_raw %>% group_by(livezone) %>% summarise(num = n()) %>% arrange(desc(num))
 # zone 5 == Central Plateau Cassava and Coffee Zone
 
 # older datasets ----------------------------------------------------------
-ch2012 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2012_CFSVA/cfsvans-2012- children-v01.sav')
+ch2012 = read_sav(paste0(baseDir, 'RW_2012_CFSVA/cfsvans-2012- children-v01.sav'))
 
-# 2009 data are unprocessed.  Also doesn't include Kigali
+
+
+# 2009 data are unprocessed.  Also doesn't include Kigali / urban areas.
 ch2009 = read_sav('~/Documents/USAID/Rwanda/rawdata/RW_2009_CFSVA/Section 13 enfants.sav')
 
 
-# Checking how weights should be applied ----------------------------------
-
-# According to CFSVA final report, they used a two-stage survey design, with the districts as the primary cut and villages as the secondary:
-# (from CFSVA 2015 detailed survey methodolgy)
-# To facilitate comparison with existing studies, the CFSVA 2015 was designed to provide statistically representative
-# and precise information at the district level. In addition, it was decided to include both urban and rural households
-# and not to exclude the capital province Kigali. The sampling frame was organized according to the 30 districts.
-# Subsequently, a two-stage cluster sample procedure was applied.
-# In the first stage, 25 villages per district were randomly selected with probability to be selected proportional to the
-# population size. In the second stage, ten households in each of the 25 villages in the 30 provinces were selected for
-# participation in the survey. A systematic random sampling technique was chosen for this stage. The team leader,
-# together with the village head, listed all households in the village. Based on this list, a systematic random sample
-# was utilized to pick ten households to be interviewed and three reserve households should any of the first ten
-# households be missing at the time of the interview or not agree to participate. Households were eligible for
-# participation in the assessment if living in one of the selected villages at the time of the interviews.
-# Thus, ten households, from 25 villages, from 30 provinces were chosen to participate in the survey, amounting up
-# to 7,500 households.
-
-# And from the NISR explanation of the data:
-# "Taking into consideration the two-stage cluster sampling methodology described above, adjustment weights were
-# computed to provide results representative at country level. The household probability of being selected in the
-# sample is equal to the product of a household’s probability of being selected in a village by the probability of the
-# village of being sampled. The inverse of this probability is the design weight. The design weight was adjusted for
-# the expected and actual number of households in the surveyed villages and was used in the complex sample
-# calculations. The design weight was divided by the product of the total number of households in the population
-# divided by the number of sampled households. The resulting weight was used in all non-complex sample analyses."
-
-# Based on this info, it seems like the primary strata = 30 districts (S0_D_Dist) and the enumeration areas are the villages (S0_G_Vill)
-
-# Note: straight averages don't work:
-x = ch %>% mutate(st = Stunted_global * normalized_weight_CHILD)
-
-# Similar but not right
-x  %>% group_by(Urban) %>% summarise(tot = sum(Stunted_global), n = n()) %>% mutate(pct = tot/n)
-
-library(survey)
-
-# Seems right on target w/ the strata being the 30 districts (first sampling division)
-# Comparing final numbers from the CFSVA to the ones I calculated
-# Point of difference: report says there are 4058 children measured, but the smaple only contains 3810.
-# Guessing (?) difference is that there were 4058 eligible, but only 3810 measured / valid. 
-# Raw children's file very clearly has 280 NAs, and numbers check out.
-cfsva = svydesign(id = ~S0_G_Vill, strata = ~S0_D_Dist, weights = ~weight, data = children_raw)
-
-svymean(~Stunted_global, design = cfsva, na.rm = TRUE)
-# mean   SE
-# Stunted_global 0.36708 0.01
-
-svyby(~Stunted_global, design = cfsva, by = ~Urban, svymean, na.rm = TRUE)
-# Urban Stunted_global         se
-# 1     1      0.2709561 0.02541909
-# 2     2      0.3961389 0.01039587
-
-svyby(~Stunted_global, design = cfsva, by = ~S0_C_Prov, svymean, na.rm = TRUE)
-# S0_C_Prov Stunted_global         se
-# 1         1      0.2477522 0.02854823
-# 2         2      0.3415020 0.01877670
-# 3         3      0.4588179 0.01703526
-# 4         4      0.3888858 0.03046762
-# 5         5      0.3506154 0.02088620
-
-svyby(~Stunted_global, design = cfsva, by = ~livezone, svymean, na.rm = TRUE)
-# livezone Stunted_global         se
-# 0         0      0.2301671 0.03235057
-# 1         1      0.3688482 0.02093194
-# 2         2      0.5335319 0.03735974
-# 3         3      0.4485097 0.04902240
-# 4         4      0.4869630 0.02606977
-# 5         5      0.2838102 0.01948119
-# 6         6      0.5135553 0.07400019
-# 7         7      0.3799819 0.03584594
-# 8         8      0.2901785 0.03686537
-# 9         9      0.3981396 0.03688260
-# 10       10      0.3147220 0.03375017
-# 11       11      0.3910140 0.04925721
-# 12       12      0.2366302 0.05193559
-
-svyby(~Stunted_global, design = cfsva, by = ~S0_D_Dist, svymean, na.rm = TRUE)
