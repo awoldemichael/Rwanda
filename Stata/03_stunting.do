@@ -175,7 +175,7 @@ ds(stunting stunting2 stunted stunted2 ageChild
 	dietdiv bmitmp motherBMI motherBWeight 
 	motherEd breastfeeding birthAtHome
 	motherEdYears DHSCLUST cweight wantedChild
-	vitaminA intParasites;
+	vitaminA intParasites);
 #delimit cr
 keep `r(varlist)'
 
@@ -188,7 +188,13 @@ ren DHSCLUST, lower
 
 merge m:1 dhsclust using "$pathout/RWA_DHS_Livelihoods.dta", gen(_dhs_FEWS)
 
+drop 
+
+save "$pathout/stunting.dta", replace
+
+
 * Label the cmc codes (di 12*(2014 - 1900)+1)
+recode intdate (1371 1369 = 1378)
 la def cmc 1378 "Oct. 2014" 1379 "Nov. 2014" 1380 "Dec. 2014" 1381 "Jan. 2015" /*
 */ 1382 "Feb. 2015" 1383 "Mar. 2015" 1384 "Apr. 2015"
 la val intdate cmc
@@ -198,6 +204,11 @@ svyset psu [pw = cweight], strata(strata)
 
 twoway (kdensity stunting2), xline(-2, lwidth(thin) /*
 */ lpattern(dash) lcolor("199 199 199")) by(lvdzone)
+
+* Show the distribituion of education on z-scores
+twoway (kdensity stunting2 if motherEd ==0)(kdensity stunting2 if motherEd ==1) /*
+*/ (kdensity stunting2 if motherEd ==2)(kdensity stunting2 if motherEd ==3) /*
+*/ , xline(-2, lwidth(thin) lpattern(dash) lcolor("199 199 199"))
 
 * Check stunting over standard covariates
 svy:mean stunting2, over(district)
@@ -293,15 +304,15 @@ saveold "$pathout/stuntingAnalysis.dta", replace
 
 * Stunting regression analysis using various models; 
 * First, try replicated the model Nada created in R
-global hhchar "female ib(1).religion ageChild c.ageChild#c.ageChild birthOrder birthWgt ageFirstBirth motherBWeight ib(1).motherBMI agehead birthAtHome hhsize"
+global hhchar "female ib(1).religion ageChild c.ageChild#c.ageChild birthOrder birthWgt motherBWeight ib(1).motherBMI agehead hhsize hhchildUnd5 numWomen15_25 numWomen26_65"
 global assets "roomPC mobile landless bankAcount"
-global health "diarrhea bednet toiletShare"
-global livestock "cowtrad horse goat sheep chicken pig rabbit cowmilk cowbull"
+global health "diarrhea bednet toiletShare intParasites vitaminA wantedChild"
+global livestock "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
 global geog "altitude ib(37).district rural"
 global geog2 "altitude ib(6).lvdzone rural"
 global cluster "cluster(dhsclust)"
 
 
 reg stunting2 $hhchar, $cluster
-reg stunting2 $hhchar $assets $health, $cluster
-
+reg stunting2 $hhchar $assets $health $livestock ib(1381).intdate $geog, $cluster
+logit stunted2 $hhchar $assets $health $livestock ib(1381).intdate $geog, $cluster 

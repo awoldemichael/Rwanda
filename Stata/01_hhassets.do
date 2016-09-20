@@ -12,6 +12,93 @@
 clear
 capture log close
 log using "$pathlog/01_hhassets", replace
+
+*******************************************
+* Add in data about male occupation in hh *
+*******************************************
+use "$pathmen/RWMR70FL.DTA", clear
+
+* Remove visitors from household to not convolute occupations
+drop if mv135 == 2
+
+* Check how many unique household there are: 4,660
+egen tag = tag( mv001 mv002)
+tab tag, mi
+
+* Create a variable for head of household's occupation
+* Note: not all household will have male head
+bys mv001 mv002: g occupationM = mv717 if mv150 == 1
+
+bys mv001 mv002: g headLit = mv155 if mv150 == 1
+recode headLit (3 4 = 1)
+lab val headLit MV155
+
+la var occupation "Occupation of male head"
+la var headLit "Literacy status of male head"
+
+include "$pathdo/Programs/copylabels.do"
+collapse (max) occupationM headLit, by(mv001 mv002)
+include "$pathdo/Programs/attachlabels.do"
+
+lab val headLit MV155
+lab val occupationM MV717
+
+ren (mv001 mv002)(v001 v002)
+isid v001 v002
+save "$pathout/hh_occupM.dta", replace
+clear
+
+*********************************************
+* Add in data about female occupation in hh *
+*********************************************
+use "$pathwomen/RWIR70FL.DTA", clear
+bys v001 v002: g occupationF = v717 if v150 == 1
+
+include "$pathdo/Programs/copylabels.do"
+collapse (max) occupationF, by(v001 v002)
+include "$pathdo/Programs/attachlabels.do"
+
+lab val occupationF V717
+
+save "$pathout/hh_occupF.dta", replace
+
+***********************************************
+* Adding in personal records for demographics *
+***********************************************
+use "$pathroster/RWPR70FL.dta", clear
+
+* Household composition of women; Is it an older or younger household?
+* Note: These need to be summed when collapsing to the household level
+g byte numWomen15_25 = inrange(hv105, 16, 25) if hv104 == 2 & hv102 == 1
+g byte numWomen26_65 = inrange(hv105, 26, 65) if hv104 == 2 & hv102 == 1
+
+clonevar hhsize = hv012
+clonevar numChildUnd5 = hv014
+
+clonevar maleEduc 	= hb68
+clonevar femaleEduc = ha68 
+clonevar motherEduc = hvc68
+
+
+include "$pathdo/Programs/copylabels.do"
+collapse (max) hhsize numChildUnd5 maleEduc femaleEduc /*
+*/ motherEduc (sum) numWomen15_25 numWomen26_65, by(hv001 hv002)
+include "$pathdo/Programs/attachlabels.do"
+
+ren (hv001 hv002)(v001 v002)
+isid v001 v002
+
+merge 1:1 v001 v002 using "$pathout/hh_occupF.dta", gen(_occupF)
+merge 1:1 v001 v002 using "$pathout/hh_occupM.dta", gen(_occupM)
+
+clonevar occupation = occupationM
+replace occupation = occupationF if occupation == . & occupationM == .
+la var occupation "occupation of head of household (male/female)"
+
+save "$pathout/hhdemog.dta", replace
+
+********************
+* Household info *
 use "$pathhh/RWHR70FL.dta"
 
 * Replicating work done in 02_RW_cleanDHS_hh.r
@@ -203,6 +290,12 @@ foreach x of local xValues {
 }
 *end
 
+merge 1:1 v001 v002 using "$pathout/hhdemog.dta", gen(_demog)
+compress
 saveold "$pathout/DHS_hhvar.dta", replace
 log close
+
+
+
+
 
