@@ -57,7 +57,7 @@ children_raw = read_sav(paste0(baseDir, 'RW_2015_CFSVA/cfsva-2015-child-DB- anne
 # Based on this info, it seems like the primary strata = 30 districts (S0_D_Dist) and the enumeration areas are the villages (S0_G_Vill)
 
 # Note: straight averages don't work:
-x = ch %>% mutate(st = Stunted_global * normalized_weight_CHILD)
+x = children_raw %>% mutate(st = Stunted_global * normalized_weight_CHILD)
 
 # Similar but not right
 x  %>% group_by(Urban) %>% summarise(tot = sum(Stunted_global), n = n()) %>% mutate(pct = tot/n)
@@ -108,13 +108,21 @@ svyby(~Stunted_global, design = cfsva, by = ~S0_D_Dist, svymean, na.rm = TRUE)
 
 # Notes on data -----------------------------------------------------------
 
+# -- stunting -- 
 # stunting is based on 2006 WHO children's growth standards
 # stunting was calculated by WFP in SPSS.
 # Key stunting variables for 2015 data is Stunted_global (binary stunted) and HAZWHO (height-for-age z-score based on the WHO distribution)
 
+# -- livelihood zones --
+# livelihood zones aren't entirely consistent w/ FEWS NET codes. 
+# 0 == Kigali City, NOT urban areas (as is in the FEWS NET spatial file, and therefore used in DHS spatial join)
+
 # select variables --------------------------------------------------------
+# Remove attributes so they can be added back in in a logical manner.
+ch = removeAttributes(children_raw)
+
 # Majority of household explanatory variables will be pulled from the household-level data.
-ch = children_raw %>% 
+ch = ch %>% 
   select(
     # -- IDs --
     child_id = CHN_KEY, # Despite the name, this isn't a unique id! Is merely a link to the database on their end.
@@ -179,22 +187,26 @@ ch = children_raw %>%
 
 
 # clean vars --------------------------------------------------------------
+codebk = data.frame(code = attr(children_raw$livezone_lyr, 'labels'))
+
+codebk = codebk %>% mutate(names =  row.names(codebk))
 
 ch = ch %>% 
   mutate(
-    
     # -- Replace NAs --
     ill_fortnight = na_if(S14_05, 88),
     fever = na_if(S14_05_2, 88),
     cough = na_if(S14_05_3, 88),
     diarrhea = na_if(S14_05_4, 88),
     dewormed = na_if(S14_05_6, 88)
-  )
-
-
-
-
-# determine what should be base -------------------------------------------
+  ) %>% 
+  # -- create factors based on the labels in original dataset --
+  factorize(children_raw, 'livezone_lyr', 'livelihood_zone') %>% 
+  factorise(children_raw, )
+  
+  
+  
+  # determine what should be base -------------------------------------------
 hh_raw %>% group_by(livezone) %>% summarise(num = n()) %>% arrange(desc(num))
 # livelihood zone #5 is most frequent therefore will be used as base.
 # zone 5 == Central Plateau Cassava and Coffee Zone
