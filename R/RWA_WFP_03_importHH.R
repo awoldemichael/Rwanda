@@ -99,22 +99,25 @@ x = left_join(children_raw, hh_raw, by = c('S0_E_Sect', 'Urban', 'weight', 'FCS'
 # Could do a fuzzy match with flexible date (+ 1-3 days?)
 # S0_E_Sect, weight (proxy for village), FCS, (Stunted_YN), FCS, FCG, CSI, FS_final
 
+
+
 # pull relevant vars ------------------------------------------------------
 
 hh = hh_raw %>% 
   mutate(
     # -- household ids / info --
-    hhid = KEY,
+    KEY, # sadly, not actually a unique id.
+    
     # Survey conducted in April/May, in midst of minor lean season http://www.fews.net/file/113529
     int_date = S0_B_DATE, # interview date
     month,
-    hh_wt = weight,
-    hh_wt_norm = normalized_weight,
+    weight,
+    normalized_weight,
     
     # -- geography --
-    Urban,
-    S0_C_Prov, # province
-    S0_D_Dist, # district
+    # Urban,
+    # S0_C_Prov, # province
+    # S0_D_Dist, # district
     S0_E_Sect, # sector
     livezone, # livelihood zone
     
