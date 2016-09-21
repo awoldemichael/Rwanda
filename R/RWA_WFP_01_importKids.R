@@ -132,6 +132,8 @@ ch = ch %>%
     # -- IDs --
     child_id = CHN_KEY, # Despite the name, this isn't a unique id! Is merely a link to the database on their end.
     parent_id = PARENT_KEY,
+    S0_C_Prov_lyr,
+    S0_D_Dist_lyr,
     village = S0_G_Vill, # village (746 villages)
     weight,
     # normalized_weight_CHILD, # redundant with actual weight; linearly related
@@ -147,9 +149,9 @@ ch = ch %>%
     # S13_02_4, # mother's education; relying on their classification in education_groups: children_raw %>% group_by(ed = S13_02_4, education_groups) %>% summarise(n()
     education_groups, # classified mother's education
     # stunted/underweight mother is very rare (69 or 161 mothers in dataset)
-    BMI, # mother's BMI
-    underweight_women, # mother is underweight
-    stunted_women, # mother is stunted
+    mother_BMI = BMI, # mother's BMI
+    underwt_mother = underweight_women, # mother is underweight
+    stunted_mother = stunted_women, # mother is stunted
     
     # -- nutrition --
     S14_03, # ever breastfed
@@ -194,13 +196,26 @@ ch = ch %>%
 # clean vars --------------------------------------------------------------
 # `factorize` is a function within custom-built llamar pkg.  See below for copy of code.
 
-codebk = data.frame(code = attr(children_raw$livezone_lyr, 'labels'))
-
-codebk = codebk %>% mutate(names =  row.names(codebk))
-
 ch = ch %>% 
   mutate(
+    # -- regroup --
+    mother_literate = case_when(ch$S13_02_3 == 0 ~ 0, # illiterate
+                                ch$S13_02_3 == 1 ~ 1, # can read & write
+                                ch$S13_02_3 == 2 ~ 1, # can read but not write
+                                TRUE ~ NA_real_), 
+    breastfed_afterbirth = case_when(ch$S14_03 == 0 ~ 0, # never breastfed
+                                     ch$S14_03_2 <= 1 ~ 1, # breastfed within first hr of birth
+                                     ch$S14_03_2 > 1 ~ 2, # breastfed more than 1 hr after birth
+                                     TRUE ~ NA_real_),
+    
+    breastfed_afterbirth = factor(breastfed_afterbirth,
+                                  levels = c(0, 1, 2),
+                                  labels = c('never breastfed', 
+                                             'breastfed within first hour of birth',
+                                             'breastfed > 1 hr after birth')),
+    
     # -- Replace NAs --
+    ever_breastfed = na_if(S14_03, 88),
     ill_fortnight = na_if(S14_05, 88),
     fever = na_if(S14_05_2, 88),
     cough = na_if(S14_05_3, 88),
@@ -208,9 +223,21 @@ ch = ch %>%
     dewormed = na_if(S14_05_6, 88)
   ) %>% 
   # -- create factors based on the labels in original dataset --
+  # -- location --
+  factorize(children_raw, 'S0_C_Prov_lyr', 'admin1') %>% 
+  factorize(children_raw, 'S0_D_Dist_lyr', 'admin2') %>% 
   factorize(children_raw, 'livezone_lyr', 'livelihood_zone') %>% 
+  # -- demographics --
+  factorize(children_raw, 'S14_02_2', 'prim_caregiver') %>% 
+  factorize(children_raw, 'S14_02_8', 'sex') %>% 
+  factorize(children_raw, 'S14_02_2', 'prim_caregiver') %>% 
+  factorize(children_raw, 'S14_02_2', 'prim_caregiver') %>% 
+  factorize(children_raw, 'S14_02_2', 'prim_caregiver') %>% 
+  factorize(children_raw, 'S14_02_2', 'prim_caregiver') %>% 
+  
   factorize(children_raw, 'education_groups', 'mother_education')
   
+
   
   
   # determine what should be base -------------------------------------------
@@ -218,6 +245,15 @@ hh_raw %>% group_by(livezone) %>% summarise(num = n()) %>% arrange(desc(num))
 # livelihood zone #5 is most frequent therefore will be used as base.
 # zone 5 == Central Plateau Cassava and Coffee Zone
 
+# double check there are no NA values in any of the vars ------------------
+# Assuming NA values are 88
+cutoff = 70
+
+ch_test = as.data.frame(ch > cutoff)
+
+ch_test = ch_test %>% summarise_each(funs(sum(., na.rm = TRUE)))
+
+ch_test = t(ch_test)
 
 # ARCHIVE: functions used from llamar -------------------------------------
 
