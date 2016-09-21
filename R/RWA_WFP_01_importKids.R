@@ -132,6 +132,7 @@ ch = ch %>%
     # -- IDs / survey --
     child_id = CHN_KEY, # Despite the name, this isn't a unique id! Is merely a link to the database on their end.
     parent_id = PARENT_KEY,
+    MHN_KEY,
     weight,
     # normalized_weight_CHILD, # redundant with actual weight; linearly related
     S0_B_DATE, # date of interview, in obnoxious SPSS form.
@@ -178,7 +179,7 @@ ch = ch %>%
     # -- mother attributes -- 
     mother_age = S13_02_2,
     S13_02_3, # mother read/write
-    # S13_02_4, # mother's education; relying on their classification in education_groups: children_raw %>% group_by(ed = S13_02_4, education_groups) %>% summarise(n()
+    S13_02_4, # mother's education; relying on their classification in education_groups: children_raw %>% group_by(ed = S13_02_4, education_groups) %>% summarise(n()
     education_groups, # classified mother's education
     # stunted/underweight mother is very rare (69 or 161 mothers in dataset)
     mother_BMI = BMI, # mother's BMI
