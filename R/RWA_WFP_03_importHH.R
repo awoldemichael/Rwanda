@@ -92,6 +92,13 @@ x %>% group_by(is.na(hh)) %>% summarise(n())
 
 x = left_join(children_raw, hh_raw, by = c('S0_E_Sect', 'Urban', 'weight', 'FCS', 'FS_final', 'S2_13', 'S12_01', 'S12_02'))
 
+
+# Looking at a tiny subsample, looks like these might be unique:
+# Note: though it'd make *so* much sense and make life easier, unfortunately date isn't consistent.
+# Presumably women's modules for some households were completed at a later date.
+# Could do a fuzzy match with flexible date (+ 1-3 days?)
+# S0_E_Sect, weight (proxy for village), FCS, (Stunted_YN), FCS, FCG, CSI, FS_final
+
 # pull relevant vars ------------------------------------------------------
 
 hh = hh_raw %>% 
