@@ -66,10 +66,61 @@ x  %>% group_by(WDDS) %>% summarise(n()) # WDDS is only in mother's module, and 
 nrow(women_raw %>% mutate(bmi = round(BMI, 2)) %>% select(PARENT_KEY, S13_02_2, bmi) %>% distinct())
 # down to 414.  (sigh)  NA for BMIs?  Gonna have to do this stepwise
 
-# investigating whether there are interesting unique variables in the women's  --------
 
+# investigating whether there are interesting unique variables in the women's  --------
+# received Vit A when pregnant: too many NAs
+women_raw %>% group_by(S13_03_3) %>% summarise(n())
+
+# antenatal care: S13_03_4-8
+women_raw %>% group_by(S13_03_4) %>% summarise(n())
+women_raw %>% group_by(S13_03_5) %>% summarise(n())
+women_raw %>% group_by(S13_03_6) %>% summarise(n())
+women_raw %>% group_by(S13_03_7) %>% summarise(n())
+women_raw %>% group_by(S13_03_8) %>% summarise(n())
+women_raw %>% group_by(S13_03_9) %>% summarise(n())
+
+
+# malaria; no freq bednet (most people sleep for 7 days/week)
+women_raw %>% group_by(S13_04) %>% summarise(n())
+women_raw %>% group_by(S13_04_2) %>% summarise(n())
+
+# ill past 2 weeks
+women_raw %>% group_by(S13_04_3) %>% summarise(n())
+
+# dietary diversity calc: 24 h recall from the woman.
+# in household data, looks like HDDS_24h should = WDDS
+women_raw %>% group_by(AS13_07) %>% summarise(n())
+# looks like no NAs
 
 
 # pull relevant vars ------------------------------------------------------
-women = women_raw %>% 
-  select(KEY, PARENT_KEY)
+# remove attributes
+women = removeAttributes(women_raw)
+
+women = women %>% 
+  select(
+    # -- unique ids for merging --
+    MHNKEY = KEY, 
+    
+    # -- antenatal care--
+    antenatal_care = S13_03_4,
+    S13_03_6, # when received antenatal care
+    S13_03_7, # how often rec'd antenatal care
+    Fe_supplements  = S13_03_8,
+    S13_03_9
+  )
+
+
+# Clean women's mod -------------------------------------------------------
+women  = women %>% 
+  mutate() %>% 
+  
+  # -- create factors based on the labels in original dataset --
+  # -- location --
+  factorize(children_raw, 'Urban', 'rural_cat') %>% 
+  weeks_tookFe 
+
+
+# Merge kids + women's ----------------------------------------------------
+
+
