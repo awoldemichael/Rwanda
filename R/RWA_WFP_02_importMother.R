@@ -1,6 +1,6 @@
 # Rwanda stunting analysis -----------------------------------------
 #
-# RW_WFP_05_importMother.R: import data from the mother module
+# RW_WFP_02_importMother.R: import data from the mother module
 #
 # Script to pull stunting data and associated household- or
 # child-level data for Rwanda from the CFSVA dataset

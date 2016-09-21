@@ -1,6 +1,6 @@
 # Rwanda stunting analysis -----------------------------------------
 #
-# RW_WFP_02_importKids2012.R: import children's data from 2012 dataset
+# RW_WFP_04_importKids2012.R: import children's data from 2012 dataset
 #
 # Script to pull stunting data and associated household- or
 # child-level data for Rwanda from the CFSVA dataset
