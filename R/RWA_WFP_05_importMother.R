@@ -102,12 +102,31 @@ women = women %>%
     # -- unique ids for merging --
     MHNKEY = KEY, 
     
-    # -- antenatal care--
+    # -- antenatal care --
+    # Note: for most recent baby, so *NOT NECESSARILY* the child in question
     antenatal_care = S13_03_4,
     S13_03_6, # when received antenatal care
     S13_03_7, # how often rec'd antenatal care
     Fe_supplements  = S13_03_8,
-    S13_03_9 # how long (in weeks) took iron supplements
+    S13_03_9, # how long (in weeks) took iron supplements
+    
+    # -- health --
+    mother_mosquito_net = S13_04,
+    moher_ill_2weeks = S13_04_3,
+    
+    # -- nutrition --
+    dietDiv_W24h = WDDS, # dietary diversity from women's module; 24 h recall
+    starch_W24h = AS13_07,
+    beans_W24h = BS13_07,
+    nuts_W24h = CS13_07,
+    milk_W24h = DS13_07,
+    protein_W24h = ES13_07,
+    eggs_W24h = FS13_07,
+    greenVeg_W24h = GS13_07,
+    orangeFruits_W24h = HS13_07,
+    otherVeg_W24h = IS13_07,
+    otherFruit_W24h = JS13_07,
+    superCereal_W24h = KS13_07
   )
 
 
@@ -142,10 +161,7 @@ women  = women %>%
                                      women$S13_03_7 > 20 ~ NA_real_, # unrealistic and unknown
                                      (women$S13_03_7 < 20 & women$S13_03_7 > 5) ~ 5,
                                      TRUE ~ NA_real_)
-  ) %>% 
-  # -- create factors based on the labels in original dataset --
-  # -- location --
-  factorize(children_raw, 'Urban', 'rural_cat')
+  ) 
    
 
 
