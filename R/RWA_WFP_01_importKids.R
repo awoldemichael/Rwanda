@@ -55,6 +55,7 @@ children_raw = read_sav(paste0(baseDir, 'RW_2015_CFSVA/cfsva-2015-child-DB- anne
 # divided by the number of sampled households. The resulting weight was used in all non-complex sample analyses."
 
 # Based on this info, it seems like the primary strata = 30 districts (S0_D_Dist) and the enumeration areas are the villages (S0_G_Vill)
+# Unfortunately, the village data are only located in the kids dataset, not the dataset at large.
 
 # Note: straight averages don't work:
 x = children_raw %>% mutate(st = Stunted_global * normalized_weight_CHILD)
@@ -111,7 +112,8 @@ svyby(~Stunted_global, design = cfsva, by = ~S0_D_Dist, svymean, na.rm = TRUE)
 # -- stunting -- 
 # stunting is based on 2006 WHO children's growth standards
 # stunting was calculated by WFP in SPSS.
-# Key stunting variables for 2015 data is Stunted_global (binary stunted) and HAZWHO (height-for-age z-score based on the WHO distribution)
+# Key stunting variables for 2015 data is *Stunted_global* (binary stunted) 
+# and *HAZWHO* (height-for-age z-score based on the WHO distribution)
 
 # -- livelihood zones --
 # livelihood zones aren't entirely consistent w/ FEWS NET codes. 
@@ -121,7 +123,10 @@ svyby(~Stunted_global, design = cfsva, by = ~S0_D_Dist, svymean, na.rm = TRUE)
 # Remove attributes so they can be added back in in a logical manner.
 ch = removeAttributes(children_raw)
 
-# Majority of household explanatory variables will be pulled from the household-level data.
+# Was intending to pull majority of household explanatory variables from the household-level data.
+# However, there's no unique id, so I have to jerry rig one.  
+# As a result, pulling all the household-level variables I can from the children's dataset.
+
 ch = ch %>% 
   select(
     # -- IDs --
@@ -129,7 +134,7 @@ ch = ch %>%
     parent_id = PARENT_KEY,
     village = S0_G_Vill, # village (746 villages)
     weight,
-    normalized_weight_CHILD,
+    # normalized_weight_CHILD, # redundant with actual weight; linearly related
     livezone_lyr,
     
     # -- demographics --
@@ -139,9 +144,9 @@ ch = ch %>%
     S14_02_8, # sex
     mother_age = S13_02_2,
     S13_02_3, # mother read/write
-    # S13_02_4, # mother's education
-    mother_education = education_groups, # classified mother's education
-    # stunted/underweight mother is very rare (69 or 161)
+    # S13_02_4, # mother's education; relying on their classification in education_groups: children_raw %>% group_by(ed = S13_02_4, education_groups) %>% summarise(n()
+    education_groups, # classified mother's education
+    # stunted/underweight mother is very rare (69 or 161 mothers in dataset)
     BMI, # mother's BMI
     underweight_women, # mother is underweight
     stunted_women, # mother is stunted
@@ -187,6 +192,8 @@ ch = ch %>%
 
 
 # clean vars --------------------------------------------------------------
+# `factorize` is a function within custom-built llamar pkg.  See below for copy of code.
+
 codebk = data.frame(code = attr(children_raw$livezone_lyr, 'labels'))
 
 codebk = codebk %>% mutate(names =  row.names(codebk))
@@ -202,7 +209,7 @@ ch = ch %>%
   ) %>% 
   # -- create factors based on the labels in original dataset --
   factorize(children_raw, 'livezone_lyr', 'livelihood_zone') %>% 
-  factorise(children_raw, )
+  factorize(children_raw, 'education_groups', 'mother_education')
   
   
   
@@ -210,3 +217,43 @@ ch = ch %>%
 hh_raw %>% group_by(livezone) %>% summarise(num = n()) %>% arrange(desc(num))
 # livelihood zone #5 is most frequent therefore will be used as base.
 # zone 5 == Central Plateau Cassava and Coffee Zone
+
+
+# ARCHIVE: functions used from llamar -------------------------------------
+
+# -- factorize --
+
+# factorize = function(df, ref_df, var, new_var) {
+#   # ref_df has labels associated with it.
+#   # Note: can pipe with magrittr pipe, a la: df %>% factorize(ref_df, var, new_var)
+#   
+#   # -- check var is within both df and ref_df --
+#   if(!var %in% colnames(df)) {
+#     stop('variable is not in the current dataset (argument df)')
+#   }
+#   
+#   if(!var %in% colnames(ref_df)) {
+#     stop('variable is not in the reference dataset (argument ref_df)')
+#   }
+#   
+#   # -- pull out the label values --
+#   codebk = data.frame(code = attr(ref_df[[var]], 'labels'))
+#   
+#   # -- pull out the label names --
+#   codebk = codebk %>% mutate(names =  row.names(codebk))
+#   
+#   # -- create a factor with the labels from the original dataset -- 
+#   # levels will be sorted by the frequency of occurance (high to low)
+#   df = df %>% 
+#     mutate_(.dots = setNames(
+#       list(paste0('forcats::fct_infreq(
+#                   factor(', var, ',',
+#                   'levels = ', list(codebk$code), ',',
+#                   'labels = ', list(codebk$names),'))'
+#                   )), new_var 
+#       ))
+#   
+#   return(df)
+# }
+
+
