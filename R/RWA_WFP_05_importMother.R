@@ -25,73 +25,9 @@
 
 women_raw = read_sav(paste0(baseDir, 'RW_2015_CFSVA/cfsva-2015-mother-DB- annex.sav'))
 
-
-# Can women be merged w/ kids? --------------------------------------------
-
-x = left_join(ch, women_raw, by = c("parent_id" = "PARENT_KEY"))
-
-# Result: some mergal, but also extra ch values (presumably from non-unqiueness of argument)
-
-# PARENT_KEY isn't unique...
-nrow(women_raw %>% select(PARENT_KEY) %>% distinct())
-
-# .., but KEY is (mother's id?)
-nrow(women_raw %>% select(KEY) %>% distinct())
-
-# Unfortunately, mother's key in children's dataset is missing 415 values.
-x = left_join(children_raw, women_raw, by = c('MHN_KEY' = 'KEY'))
-
-# Simplest thing should be to do parent id + age of mother.
-nrow(women_raw %>% select(PARENT_KEY, S13_02_2) %>% distinct())
-# Okay.  25 mismatches.
-
-# Throwing in BMI:
-nrow(women_raw %>% select(PARENT_KEY, S13_02_2, BMI) %>% distinct())
-
-# Yippee!
-x = left_join(ch, women_raw, by = c("parent_id" = "PARENT_KEY", "mother_age" = "S13_02_2", "mother_BMI" = "BMI")) # unique
-
-# Only doesn't merge properly, b/c imprecise precision of BMI.
-x  %>% group_by(WDDS) %>% summarise(n()) # WDDS is only in mother's module, and contains no NAs
-
-ch = ch %>% mutate(rounded_BMI = round(mother_BMI, 2))
-women_raw = women_raw %>% mutate(rounded_BMI = round(BMI, 2))
-
-x = left_join(ch, women_raw, by = c("parent_id" = "PARENT_KEY", "mother_age" = "S13_02_2", "rounded_BMI" = "rounded_BMI")) # unique
-
-# Only doesn't merge properly, b/c imprecise precision of BMI.
-x  %>% group_by(WDDS) %>% summarise(n()) # WDDS is only in mother's module, and contains no NAs
-
-# Still unique
-nrow(women_raw %>% mutate(bmi = round(BMI, 2)) %>% select(PARENT_KEY, S13_02_2, bmi) %>% distinct())
-# down to 414.  (sigh)  NA for BMIs?  Gonna have to do this stepwise
-
-
-# investigating whether there are interesting unique variables in the women's  --------
-# received Vit A when pregnant: too many NAs
-women_raw %>% group_by(S13_03_3) %>% summarise(n())
-
-# antenatal care: S13_03_4-8
-women_raw %>% group_by(S13_03_4) %>% summarise(n())
-women_raw %>% group_by(S13_03_5) %>% summarise(n())
-women_raw %>% group_by(S13_03_6) %>% summarise(n())
-women_raw %>% group_by(S13_03_7) %>% summarise(n())
-women_raw %>% group_by(S13_03_8) %>% summarise(n())
-women_raw %>% group_by(S13_03_9) %>% summarise(n())
-
-
-# malaria; no freq bednet (most people sleep for 7 days/week)
-women_raw %>% group_by(S13_04) %>% summarise(n())
-women_raw %>% group_by(S13_04_2) %>% summarise(n())
-
-# ill past 2 weeks
-women_raw %>% group_by(S13_04_3) %>% summarise(n())
-
-# dietary diversity calc: 24 h recall from the woman.
-# in household data, looks like HDDS_24h should = WDDS
-women_raw %>% group_by(AS13_07) %>% summarise(n())
-# looks like no NAs
-
+# Necessary for part of unique id
+has_MHN_KEY = children_raw %>% 
+  filter(MHN_KEY != '')
 
 # pull relevant vars ------------------------------------------------------
 # remove attributes
@@ -100,7 +36,10 @@ women = removeAttributes(women_raw)
 women = women %>% 
   select(
     # -- unique ids for merging --
-    MHNKEY = KEY, 
+    PARENT_KEY,
+    MHN_KEY = KEY,
+    mother_BMI = BMI,
+    mother_age = S13_02_2,
     
     # -- antenatal care --
     # Note: for most recent baby, so *NOT NECESSARILY* the child in question
@@ -133,11 +72,19 @@ women = women %>%
 # Clean women's mod -------------------------------------------------------
 women  = women %>% 
   mutate(
+    # -- Create unique id --
+    
+    kids_mom_id = ifelse(MHN_KEY %in% has_MHN_KEY$MHN_KEY, 
+                         # use mother ID when can.
+                         as.character(MHN_KEY),
+                         # otherwise, make a wacky merged variable
+                        paste(PARENT_KEY, mother_age, round(mother_BMI, 2), sep = '*')),
+    
     # -- Fix weirdness --
     # some unrealistically large numbers.  converting to NAs. 
     weeks_tookFe = ifelse(S13_03_9 > 39, NA_real_, S13_03_9), 
     
-    # -- regroup --
+    
     when_antenatal = case_when(women$S13_03_6 <= 3 ~ 1, # first trimester
                                (women$S13_03_6 > 3 & women$S13_03_6 <= 6 ) ~ 2, # second trimester
                                women$S13_03_6 > 6 ~ 3, # third trimester
@@ -163,8 +110,78 @@ women  = women %>%
                                      TRUE ~ NA_real_)
   ) 
    
-
-
 # Merge kids + women's ----------------------------------------------------
 
+
+
+
+# -------------------------------------------------------------------------
+# -------------------------------------------------------------------------
+# ARCHIVE: Can women be merged w/ kids? --------------------------------------------
+
+test1 = left_join(ch, women_raw, by = c("parent_id" = "PARENT_KEY"))
+
+# Result: some mergal, but also extra ch values (presumably from non-unqiueness of argument)
+
+# PARENT_KEY isn't unique...
+nrow(women_raw %>% select(PARENT_KEY) %>% distinct())
+
+# .., but KEY is (mother's id?)
+nrow(women_raw %>% select(KEY) %>% distinct())
+
+# Unfortunately, mother's key in children's dataset is missing 415 values.
+test2 = left_join(children_raw, women_raw, by = c('MHN_KEY' = 'KEY'))
+
+
+# Simplest thing should be to do parent id + age of mother.
+nrow(women_raw %>% select(PARENT_KEY, S13_02_2) %>% distinct())
+# Okay.  25 mismatches.
+
+# Throwing in BMI:
+nrow(women_raw %>% select(PARENT_KEY, S13_02_2, BMI) %>% distinct())
+
+# Yippee!
+test3 = left_join(ch, women_raw, by = c("parent_id" = "PARENT_KEY", "mother_age" = "S13_02_2", "mother_BMI" = "BMI")) # unique
+
+# Only doesn't merge properly, b/c imprecise precision of BMI.
+test3 %>% group_by(WDDS) %>% summarise(n()) # WDDS is only in mother's module, and contains no NAs
+
+ch = ch %>% mutate(rounded_BMI = round(mother_BMI, 2))
+women_raw = women_raw %>% mutate(rounded_BMI = round(BMI, 2))
+
+test4 = left_join(ch, women_raw, by = c("parent_id" = "PARENT_KEY", "mother_age" = "S13_02_2", "rounded_BMI" = "rounded_BMI")) # unique
+
+# Only doesn't merge properly, b/c imprecise precision of BMI.
+test4  %>% group_by(WDDS) %>% summarise(n()) # WDDS is only in mother's module, and contains no NAs
+
+# Still unique
+nrow(women_raw %>% mutate(bmi = round(BMI, 2)) %>% select(PARENT_KEY, S13_02_2, bmi) %>% distinct())
+# down to 414.  (sigh)  NA for BMIs?  Gonna have to do this stepwise
+
+
+
+# ARCHIVE: investigating whether there are interesting unique variables in the women's  --------
+# # received Vit A when pregnant: too many NAs
+# women_raw %>% group_by(S13_03_3) %>% summarise(n())
+# 
+# # antenatal care: S13_03_4-8
+# women_raw %>% group_by(S13_03_4) %>% summarise(n())
+# women_raw %>% group_by(S13_03_5) %>% summarise(n())
+# women_raw %>% group_by(S13_03_6) %>% summarise(n())
+# women_raw %>% group_by(S13_03_7) %>% summarise(n())
+# women_raw %>% group_by(S13_03_8) %>% summarise(n())
+# women_raw %>% group_by(S13_03_9) %>% summarise(n())
+# 
+# 
+# # malaria; no freq bednet (most people sleep for 7 days/week)
+# women_raw %>% group_by(S13_04) %>% summarise(n())
+# women_raw %>% group_by(S13_04_2) %>% summarise(n())
+# 
+# # ill past 2 weeks
+# women_raw %>% group_by(S13_04_3) %>% summarise(n())
+# 
+# # dietary diversity calc: 24 h recall from the woman.
+# # in household data, looks like HDDS_24h should = WDDS
+# women_raw %>% group_by(AS13_07) %>% summarise(n())
+# # looks like no NAs
 
