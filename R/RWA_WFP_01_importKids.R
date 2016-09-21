@@ -153,6 +153,7 @@ ch = ch %>%
     S14_02_2, # primary caregiver
     age_months = S14_02_7, # age
     S14_02_8, # sex
+    S14_01, # # kids < 5 y in household
     
     # -- village aid profile --
     v_S2_03_1, # VUP (schemes applied in the village)
@@ -284,6 +285,17 @@ ch = ch %>%
                                   TRUE ~ NA_real_), 
     
     # -- regroup --
+    kids_under5 = case_when(ch$S14_01 == 1 ~ 1, # one child < 5 years old in hh
+                            ch$S14_01 == 2 ~ 2, # 2 children < 5 years old in hh
+                            ch$S14_01 > 2 ~ 3, # 3+ children < 5 years old in hh
+                                     TRUE ~ NA_real_),
+    kids_under5 = forcats::fct_infreq( # sort by frequency
+      factor(kids_under5,
+             levels = 1:3,
+             labels = c('1 child < 5 years old in hh', 
+                        '2 children < 5 years old in hh',
+                        '3+ children < 5 years old in hh'))),
+    
     mother_literate = case_when(ch$S13_02_3 == 0 ~ 0, # illiterate
                                 ch$S13_02_3 == 1 ~ 1, # can read & write
                                 ch$S13_02_3 == 2 ~ 1, # can read but not write
