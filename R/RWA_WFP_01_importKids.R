@@ -129,21 +129,52 @@ ch = removeAttributes(children_raw)
 
 ch = ch %>% 
   select(
-    # -- IDs --
+    # -- IDs / survey --
     child_id = CHN_KEY, # Despite the name, this isn't a unique id! Is merely a link to the database on their end.
     parent_id = PARENT_KEY,
-    S0_C_Prov_lyr,
-    S0_D_Dist_lyr,
-    village = S0_G_Vill, # village (746 villages)
     weight,
     # normalized_weight_CHILD, # redundant with actual weight; linearly related
+    S0_B_DATE, # date of interview, in obnoxious SPSS form.
+    
+    # -- geo --
+    S0_C_Prov, # note: redundant w/ S0_C_Prov_lyr. Not sure why 2x...
+    S0_D_Dist,
+    S0_E_Sect,
+    village = S0_G_Vill, # village (746 villages)
+    Urban,
+    v_S2_02, # village category -- rural, urban organized, urban slum
     livezone_lyr,
     
     # -- demographics --
-    WI, # numeric wealth index
+    wealth_idx = WI, # numeric wealth index
+    WI_cat, # categorical classification of wealth
+    S12_01, # Old Ubudehe category (poverty status for aid)
+    S12_02, # New Ubudehe category (poverty status for aid)
     S14_02_2, # primary caregiver
     age_months = S14_02_7, # age
     S14_02_8, # sex
+    
+    # -- village aid profile --
+    v_S2_03_1, # VUP (schemes applied in the village)
+    v_S2_03_2, # Land consolidation (schemes applied in the village)
+    v_S2_03_3, # IDP model village (schemes applied in the village)
+    v_S2_03_4, # Structured umudugudu (schemes applied in the village)
+    v_S2_03_88, # None (schemes applied in the village)
+    # ignoring `v_S2_03_5`: other schemes applied to village; ~ 10% of the villages.
+    
+    # -- village connectivity --
+    # only ~ 5% villages have market within them; ignoring v_S4_01
+    # v_S3_01: # hh in village with electricity
+    village_school = v_S3_02,
+    v_S3_02_2, # time (minutes) to nearest school
+    # village_healthfac = v_S3_03, # only 276/4058 w/ health facility in village - 6-7%
+    health_facility_distance,
+    health_less_60min, 
+    market_distance,
+    market_less_60min,
+    road_distance,
+    
+    # -- mother attributes -- 
     mother_age = S13_02_2,
     S13_02_3, # mother read/write
     # S13_02_4, # mother's education; relying on their classification in education_groups: children_raw %>% group_by(ed = S13_02_4, education_groups) %>% summarise(n()
@@ -154,11 +185,23 @@ ch = ch %>%
     stunted_mother = stunted_women, # mother is stunted
     
     # -- nutrition --
+    FCS, # food consumption score
+    FCG, # classified food consumption score
+    FS_final, # Final CARI food security index
+    CSI, # reduced coping strategies index
     S14_03, # ever breastfed
     S14_03_2, # hours after birth breastfed
     S14_03_4, # given food/drink other than breastmilk in first 6 mo.
     still_breastfed = S14_03_5, # still breastfed (no NAs)
     # Children food consumption only for those who are currently breastfed (consumption, minimal acceptable diet, in feeding programs)
+    
+    # -- WASH -- 
+    impr_toilet = improved_toilet, # !! Note: does not include whether share toilet
+    share_toilet = S2_07_3, # no NAs
+    impr_water = improved_water, # !! Note: does not filter by < 30 min.
+    water_source_treatment,
+    S2_07_2, # if no toilet, what use; just in case is useful for merging
+    S2_13, # # liters of water used / day, what use; just in case is useful for merging
     
     # -- supplements --
     # most kids (3963) got vit A drops
@@ -198,10 +241,48 @@ ch = ch %>%
 
 ch = ch %>% 
   mutate(
+    # -- fix weirdness / create new var --
+    interview_date = as.Date(S0_B_DATE + ISOdate(1582,10,14)), # Convert SPSS date to a normal time; based on http://r.789695.n4.nabble.com/How-to-convert-SPSS-date-data-to-dates-td793972.html
+    
+    impr_unshared_toilet = case_when((ch$impr_toilet == 1 & ch$share_toilet == 0) ~ 1, # improved + unshared
+                                     (ch$impr_toilet == 1 & ch$share_toilet == 1) ~ 0, # improved + shared
+                                     ch$impr_toilet == 0 ~ 0,
+                                     TRUE ~ NA_real_),
+    
+    school_dist_cat = case_when(ch$village_school == 1 ~ 1, # school in village
+                                ch$v_S3_02_2 <= 30 ~ 2, # school w/i 30 min. of village
+                                (ch$v_S3_02_2 <= 60 & ch$v_S3_02_2 > 30) ~ 3, # school 30-60 min. of village
+                                ch$v_S3_02_2  > 60 ~ 4, # school > 60 min. of village
+                                TRUE ~ NA_real_),
+    school_dist_cat = forcats::fct_infreq( # sort by frequency
+      factor(school_dist_cat,
+                                  levels = 1:4,
+                                  labels = c('school in village', 
+                                             'school within 30 min. of village (outside village)',
+                                             'school 30 - 60 min. from village',
+                                             'school > 60 min. from village'))),
+    
     # -- create binaries --
     low_birthwt = case_when(ch$birthweight_cat == 1 ~ 1,
                             ch$birthweight_cat == 2 ~ 0,
                             TRUE ~ NA_real_),
+    
+    village_VUP = case_when(ch$v_S2_03_1 == 0 ~ 0,
+                            ch$v_S2_03_1 == 1 ~ 1,
+                            TRUE ~ NA_real_), 
+    village_landConsolid = case_when(ch$v_S2_03_2 == 0 ~ 0,
+                                     ch$v_S2_03_2 == 2 ~ 1,
+                                     TRUE ~ NA_real_), 
+    village_IDPmodel = case_when(ch$v_S2_03_3 == 0 ~ 0,
+                                 ch$v_S2_03_3 == 3 ~ 1,
+                                 TRUE ~ NA_real_), 
+    village_structUmudugudu = case_when(ch$v_S2_03_4 == 0 ~ 0,
+                                        ch$v_S2_03_4 == 4 ~ 1,
+                                        TRUE ~ NA_real_), 
+    village_noSchemes = case_when(ch$v_S2_03_88 == 88 ~ 1,
+                                  ch$v_S2_03_4 == 0 ~ 0,
+                                  TRUE ~ NA_real_), 
+    
     # -- regroup --
     mother_literate = case_when(ch$S13_02_3 == 0 ~ 0, # illiterate
                                 ch$S13_02_3 == 1 ~ 1, # can read & write
@@ -212,11 +293,12 @@ ch = ch %>%
                                      ch$S14_03_2 <= 1 ~ 1, # breastfed within first hr of birth
                                      ch$S14_03_2 > 1 ~ 2, # breastfed more than 1 hr after birth
                                      TRUE ~ NA_real_),
-    breastfed_afterbirth = factor(breastfed_afterbirth,
+    breastfed_afterbirth = forcats::fct_infreq( # sort by frequency
+      factor(breastfed_afterbirth,
                                   levels = c(0, 1, 2),
                                   labels = c('never breastfed', 
                                              'breastfed within first hour of birth',
-                                             'breastfed > 1 hr after birth')),
+                                             'breastfed > 1 hr after birth'))),
     
     # -- Replace NAs --
     ever_breastfed = na_if(S14_03, 88),
@@ -229,12 +311,29 @@ ch = ch %>%
     dewormed = na_if(S14_05_6, 88)) %>% 
   # -- create factors based on the labels in original dataset --
   # -- location --
-  factorize(children_raw, 'S0_C_Prov_lyr', 'admin1') %>% 
-  factorize(children_raw, 'S0_D_Dist_lyr', 'admin2') %>% 
+  factorize(children_raw, 'Urban', 'rural_cat') %>% 
+  factorize(children_raw, 'S0_C_Prov', 'admin1') %>% 
+  factorize(children_raw, 'S0_D_Dist', 'admin2') %>% 
+  factorize(children_raw, 'S0_E_Sect', 'admin3') %>% 
   factorize(children_raw, 'livezone_lyr', 'livelihood_zone') %>% 
   # -- demographics --
+  factorize(children_raw, 'WI_cat', 'wealth_idx_cat') %>% 
+  factorize(children_raw, 'S12_01', 'old_ubudehe') %>%
+  factorize(children_raw, 'S12_02', 'new_ubudehe') %>%
+  factorize(children_raw, 'v_S2_02', 'village_cat') %>%
   factorize(children_raw, 'S14_02_2', 'prim_caregiver') %>% 
   factorize(children_raw, 'S14_02_8', 'sex') %>% 
+  # -- village connectivity --
+  factorize(children_raw, 'health_facility_distance', 'health_dist_cat') %>% 
+  factorize(children_raw, 'health_less_60min', 'health_less_60min') %>% 
+  factorize(children_raw, 'market_distance', 'market_dist_cat') %>%
+  factorize(children_raw, 'market_less_60min', 'market_less_60min') %>% 
+  factorize(children_raw, 'road_distance', 'road_dist_cat') %>% 
+  # -- nutrition --
+  factorize(children_raw, 'FCG', 'FCS_cat') %>% 
+  factorize(children_raw, 'FS_final', 'CARI_cat') %>% 
+  # -- WASH --
+  factorize(children_raw, 'water_source_treatment', 'drinkingH2O_cat') %>% # whether improved source water + treatment
   # -- education --
   factorize(children_raw, 'education_groups', 'mother_education') %>% 
   
@@ -260,6 +359,10 @@ ch_test = ch_test %>% summarise_each(funs(sum(., na.rm = TRUE)))
 
 ch_test = t(ch_test)
 
+
+
+# ------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 # ARCHIVE: functions used from llamar -------------------------------------
 
 # -- factorize --
