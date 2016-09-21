@@ -72,27 +72,21 @@ women = women %>%
 # Clean women's mod -------------------------------------------------------
 women  = women %>% 
   mutate(
-    # -- Create unique id --
-    
-    kids_mom_id = ifelse(MHN_KEY %in% has_MHN_KEY$MHN_KEY, 
-                         # use mother ID when can.
-                         as.character(MHN_KEY),
-                         # otherwise, make a wacky merged variable
-                        paste(PARENT_KEY, mother_age, round(mother_BMI, 2), sep = '*')),
-    
     # -- Fix weirdness --
     # some unrealistically large numbers.  converting to NAs. 
     weeks_tookFe = ifelse(S13_03_9 > 39, NA_real_, S13_03_9), 
     
     
-    when_antenatal = case_when(women$S13_03_6 <= 3 ~ 1, # first trimester
+    when_antenatal = case_when(women$antenatal_care == 0 ~ 0, # never got antenatal care,
+                               women$S13_03_6 <= 3 ~ 1, # first trimester
                                (women$S13_03_6 > 3 & women$S13_03_6 <= 6 ) ~ 2, # second trimester
                                women$S13_03_6 > 6 ~ 3, # third trimester
                                TRUE ~ NA_real_),
     when_antenatal = forcats::fct_infreq( # sort by frequency
       factor(when_antenatal,
-             levels = 1:3,
-             labels = c('first trimester', 
+             levels = 0:3,
+             labels = c('never',
+               'first trimester', 
                         'second trimester',
                         'third trimester'))),
     
@@ -111,7 +105,15 @@ women  = women %>%
   ) 
    
 # Merge kids + women's ----------------------------------------------------
+# After much hemming and hawing about how to fix the merging issues, I'm not sure they can be fixed.
+# In the 413 who don't have a mother id (MHN_KEY), they're also missing age and BMI, which is available for all women in the module
+# I have to conclude, therefore, that the kids lacking a valid mother id have mothers who weren't interviewed in the survey,
+# e.g. they live with another woman in the household.  While the dietary diversity calcs should still be valid, I'm not sure it's worth getting into.
+# So taking the sacrifice of those 413 kids.
+ch = left_join(ch, women, by = "MHN_KEY")
 
+# Check merge is okay:
+ch %>% group_by(dietDiv_W24h) %>% summarise(n()) # WDDS is only in mother's module, and contains no NAs
 
 
 
