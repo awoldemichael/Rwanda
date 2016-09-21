@@ -241,6 +241,7 @@ ch = ch %>%
   # -- Create indices --
   rowwise() %>% 
   mutate(
+    # Creating crude cleanliness index.  Assuming NAs aren't important-- but the NAs are consistent for all washing questions anyway.
     wash_knowl = sum(wash_beforecook, wash_kidtoilet, wash_aftertoilet, wash_beforeeat, wash_ifdirty, na.rm = TRUE)
   )
 
