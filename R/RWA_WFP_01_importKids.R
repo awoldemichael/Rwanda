@@ -157,7 +157,7 @@ ch = ch %>%
     S14_03, # ever breastfed
     S14_03_2, # hours after birth breastfed
     S14_03_4, # given food/drink other than breastmilk in first 6 mo.
-    S14_03_5, # still breastfed
+    still_breastfed = S14_03_5, # still breastfed (no NAs)
     # Children food consumption only for those who are currently breastfed (consumption, minimal acceptable diet, in feeding programs)
     
     # -- supplements --
@@ -184,11 +184,11 @@ ch = ch %>%
     
     
     # -- stunting calcs --
-    Wasted_global, Stunted_global, Underweight_global, # binaries (yes or no)
-    Wasted, Stunted, Underweight, # normal, moderate, severe
-    WHO_Flag, # whether child has height/weight measured
-    HAZNCHS, # stunting score based on NCHS standards
-    HAZWHO
+    isWasted = Wasted_global, isStunted = Stunted_global, isUnderwt = Underweight_global, # binaries (yes or no)
+    wasted_cat = Wasted, stunted_cat = Stunted, underwt_cat = Underweight, # normal, moderate, severe
+    stunting_invalid = WHO_Flag, # whether child has height/weight measured
+    stuntingZ_NHCS = HAZNCHS, # stunting score based on NCHS standards
+    stuntingZ = HAZWHO # stunting z-score based on WHO standards
     
   )
 
@@ -198,16 +198,20 @@ ch = ch %>%
 
 ch = ch %>% 
   mutate(
+    # -- create binaries --
+    low_birthwt = case_when(ch$birthweight_cat == 1 ~ 1,
+                            ch$birthweight_cat == 2 ~ 0,
+                            TRUE ~ NA_real_),
     # -- regroup --
     mother_literate = case_when(ch$S13_02_3 == 0 ~ 0, # illiterate
                                 ch$S13_02_3 == 1 ~ 1, # can read & write
                                 ch$S13_02_3 == 2 ~ 1, # can read but not write
                                 TRUE ~ NA_real_), 
+    
     breastfed_afterbirth = case_when(ch$S14_03 == 0 ~ 0, # never breastfed
                                      ch$S14_03_2 <= 1 ~ 1, # breastfed within first hr of birth
                                      ch$S14_03_2 > 1 ~ 2, # breastfed more than 1 hr after birth
                                      TRUE ~ NA_real_),
-    
     breastfed_afterbirth = factor(breastfed_afterbirth,
                                   levels = c(0, 1, 2),
                                   labels = c('never breastfed', 
@@ -216,12 +220,13 @@ ch = ch %>%
     
     # -- Replace NAs --
     ever_breastfed = na_if(S14_03, 88),
+    fed_nonbreastmilk = na_if(S14_03_4, 88),
+    
     ill_fortnight = na_if(S14_05, 88),
     fever = na_if(S14_05_2, 88),
     cough = na_if(S14_05_3, 88),
     diarrhea = na_if(S14_05_4, 88),
-    dewormed = na_if(S14_05_6, 88)
-  ) %>% 
+    dewormed = na_if(S14_05_6, 88)) %>% 
   # -- create factors based on the labels in original dataset --
   # -- location --
   factorize(children_raw, 'S0_C_Prov_lyr', 'admin1') %>% 
@@ -230,23 +235,22 @@ ch = ch %>%
   # -- demographics --
   factorize(children_raw, 'S14_02_2', 'prim_caregiver') %>% 
   factorize(children_raw, 'S14_02_8', 'sex') %>% 
-  factorize(children_raw, 'S14_02_2', 'prim_caregiver') %>% 
-  factorize(children_raw, 'S14_02_2', 'prim_caregiver') %>% 
-  factorize(children_raw, 'S14_02_2', 'prim_caregiver') %>% 
-  factorize(children_raw, 'S14_02_2', 'prim_caregiver') %>% 
+  # -- education --
+  factorize(children_raw, 'education_groups', 'mother_education') %>% 
   
-  factorize(children_raw, 'education_groups', 'mother_education')
-  
+  # -- Create indices --
+  rowwise() %>% 
+  mutate(
+    wash_knowl = sum(wash_beforecook, wash_kidtoilet, wash_aftertoilet, wash_beforeeat, wash_ifdirty, na.rm = TRUE)
+  )
 
-  
-  
-  # determine what should be base -------------------------------------------
-hh_raw %>% group_by(livezone) %>% summarise(num = n()) %>% arrange(desc(num))
-# livelihood zone #5 is most frequent therefore will be used as base.
-# zone 5 == Central Plateau Cassava and Coffee Zone
+
+
+
 
 # double check there are no NA values in any of the vars ------------------
 # Assuming NA values are 88
+# Note: will ignore all the factor levels.
 cutoff = 70
 
 ch_test = as.data.frame(ch > cutoff)
