@@ -107,18 +107,46 @@ women = women %>%
     S13_03_6, # when received antenatal care
     S13_03_7, # how often rec'd antenatal care
     Fe_supplements  = S13_03_8,
-    S13_03_9
+    S13_03_9 # how long (in weeks) took iron supplements
   )
 
 
 # Clean women's mod -------------------------------------------------------
 women  = women %>% 
-  mutate() %>% 
-  
+  mutate(
+    # -- Fix weirdness --
+    # some unrealistically large numbers.  converting to NAs. 
+    weeks_tookFe = ifelse(S13_03_9 > 39, NA_real_, S13_03_9), 
+    
+    # -- regroup --
+    when_antenatal = case_when(women$S13_03_6 <= 3 ~ 1, # first trimester
+                               (women$S13_03_6 > 3 & women$S13_03_6 <= 6 ) ~ 2, # second trimester
+                               women$S13_03_6 > 6 ~ 3, # third trimester
+                               TRUE ~ NA_real_),
+    when_antenatal = forcats::fct_infreq( # sort by frequency
+      factor(when_antenatal,
+             levels = 1:3,
+             labels = c('first trimester', 
+                        'second trimester',
+                        'third trimester'))),
+    
+    # Grouping antenatal visits together.  Assuming 50 & 77 visits are "do not know" or something similar
+    # Note: technically, this should be treated as a factor.  Treating as pseudo-continuous, with 5 vistis being 5 or more.
+    num_antenatal_visits = case_when(women$antenatal_care == 0 ~ 0, # no antenatal care
+                                     women$S13_03_7 == 0 ~ 0, # weird b/c claim had antenatal care, but no visits. Only 13 obs. so keeping as 0
+                                     women$S13_03_7 == 1 ~ 1,
+                                     women$S13_03_7 == 2 ~ 2,
+                                     women$S13_03_7 == 3 ~ 3,
+                                     women$S13_03_7 == 4 ~ 4,
+                                     women$S13_03_7 == 5 ~ 5,
+                                     women$S13_03_7 > 20 ~ NA_real_, # unrealistic and unknown
+                                     (women$S13_03_7 < 20 & women$S13_03_7 > 5) ~ 5,
+                                     TRUE ~ NA_real_)
+  ) %>% 
   # -- create factors based on the labels in original dataset --
   # -- location --
-  factorize(children_raw, 'Urban', 'rural_cat') %>% 
-  weeks_tookFe 
+  factorize(children_raw, 'Urban', 'rural_cat')
+   
 
 
 # Merge kids + women's ----------------------------------------------------
