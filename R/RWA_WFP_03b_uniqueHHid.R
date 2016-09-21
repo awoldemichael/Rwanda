@@ -74,49 +74,82 @@ x = left_join(children_raw, hh_raw, by = c('S0_E_Sect', 'Urban', 'weight', 'FCS'
 # Presumably women's modules for some households were completed at a later date.
 # Could do a fuzzy match with flexible date (+ 1-3 days?)
 # S0_E_Sect, weight (proxy for village), FCS, (Stunted_YN), FCS, FCG, CSI, FS_final
+
+
+# STARTING OVER -----------------------------------------------------------
+
+# Let's look at EVERY variable in common.
+
 hh = removeAttributes(hh_raw) %>% 
   mutate(month = ifelse(month == 1, 4,
                         ifelse(month == 2, 5, NA)),
          CSI = ifelse(is.na(CSI), 0, CSI))
 
-x = left_join(ch, hh, by = c('S0_E_Sect', 'weight', 'FCS', 'FS_final', 'Urban', 
-                             "livezone_lyr" = "livezone", "S12_01", "S12_02", "WI_cat"))
+x = left_join(children_raw, hh, by = c("weight",                   
+                                       "S2_13",     # liters of water used              
+                                       "WI_cat",
+                                       "S12_01",
+                                       "S12_02",
+                                       "FCS",   
+                                       # "impr_water" = "improved_water", 
+                                       # "water_source_treatment",
+                                       # "impr_toilet" = "improved_toilet",         
+                                       # "share_toilet"  = "S2_07_3",   
+                                       # "improved_water", 
+                                       # "improved_toilet",         
+                                       # "S2_07_3",
+                                       # "S2_07_2", 
+                                       # "livezone_lyr" = "livezone",  
+                                       # "S0_B_DATE",   
+                                       # "CSI",
+                                       # "Urban",                    
+                                       # "S0_C_Prov",               
+                                       # "S0_D_Dist",
+                                       # "v_S2_01","v_S3_01",                   "v_S2_03_1",                "v_S2_03_2",
+                                       # "v_S2_03_3",                "v_S2_03_4",                                 "v_S3_02",
+                                       # "v_S3_02_2",                "v_S3_03",                  "v_S3_03_2",                "v_S4_01",
+                                       # "v_S4_02_2",                "v_S4_02_3",                "v_S4_02_4",        "health_less_60min",
+                                       # "market_less_60min",
+                                       # "v_S2_02",
+                                       # "health_facility_distance",
+                                       # "market_distance",
+                                       # "road_distance",
+                                       # "FCG",                      
+                                       "FS_final"))
 
-x = left_join(ch, hh, by = c("weight",                   
-                             "Urban",                    
-                             "S0_C_Prov",               
-                             "S0_D_Dist","S0_E_Sect",
-                             "livezone_lyr" = "livezone",                 
-                             "impr_toilet" = "improved_toilet",         
-                             "share_toilet"  = "S2_07_3",                  
-                             "S2_07_2",                  
-                             "impr_water" = "improved_water",          
-                             "S2_13",                   
-                             "water_source_treatment",   
-                             "WI_cat",                   
-                             "S12_01",                   
-                             "S12_02",                  
-                             "v_S2_02",
-                             "health_facility_distance",
-                             "market_distance",          
-                             "road_distance",        
-                             "FCS",                      
-                             "FCG",                      
-                             "FS_final"))
-
-x %>% group_by(is.na(DDS), is.na(village)) %>% summarise(n())
+# DDS is only in hh; village (S0_G_Vill) is only in children
+x %>% group_by(is.na(DDS), is.na(S0_G_Vill)) %>% summarise(n())
 nrow(x) == 4058
 
+# Not bad. only 31 missing differences.
+
 # -- Redundant --
+# "livezone_lyr" = "livezone"
+# "Urban",                    
+# "S0_C_Prov",               
+# "S0_D_Dist",
+# "S0_E_Sect",
+# "CSI" (when edited)
+# "health_facility_distance",
+# "market_distance",          
+# "road_distance",    
+# "FCG"
+# "v_S2_02",
+# "S2_07_2", 
+# "v_S2_03_3",                "v_S2_03_4",                                 "v_S3_02",                 
+# "v_S3_02_2",                "v_S3_03",                  "v_S3_03_2",                "v_S4_01",                 
+# "v_S4_02_2",                "v_S4_02_3",                "v_S4_02_4",        "health_less_60min",        
+# "market_less_60min",    
+# "v_S2_01","v_S3_01",                   "v_S2_03_1",                "v_S2_03_2",  
+# "impr_water" = "improved_water", 
+# "impr_toilet" = "improved_toilet",
+# "water_source_treatment",
+# "share_toilet"  = "S2_07_3",  
+
 # -- Different --
-"S0_B_DATE",   "CSI"
-# -- Not in ch --
-# "v_S2_01","v_S3_01",                   "v_S2_03_1",                "v_S2_03_2",               
-"v_S2_03_3",                "v_S2_03_4",                                 "v_S3_02",                 
-"v_S3_02_2",                "v_S3_03",                  "v_S3_03_2",                "v_S4_01",                 
-"v_S4_02_2",                "v_S4_02_3",                "v_S4_02_4",        "health_less_60min",        
-"market_less_60min",         
+# "S0_B_DATE",   "CSI"
+# -- Not in ch dataset --
 
 
 
-duplicated(x$CHN_KEY)
+
