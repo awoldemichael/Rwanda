@@ -88,8 +88,8 @@ hh = removeAttributes(hh_raw) %>%
 x = left_join(children_raw, hh, by = c("weight",                   
                                        "S2_13",     # liters of water used              
                                        "WI_cat",
-                                       "S12_01",
-                                       "S12_02",
+                                       "S12_01", # Ubudehe profile (old) 
+                                       "S12_02", # Ubudehe profile (new)
                                        "FCS",   
                                        # "impr_water" = "improved_water", 
                                        # "water_source_treatment",
@@ -115,7 +115,7 @@ x = left_join(children_raw, hh, by = c("weight",
                                        # "market_distance",
                                        # "road_distance",
                                        # "FCG",                      
-                                       "FS_final"))
+                                       "FS_final")) # food security CARI index
 
 # DDS is only in hh; village (S0_G_Vill) is only in children
 x %>% group_by(is.na(DDS), is.na(S0_G_Vill)) %>% summarise(n())
