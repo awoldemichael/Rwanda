@@ -187,3 +187,12 @@ hh = hh %>%
   )
 
 
+# merge into kids data ----------------------------------------------------
+
+ch_hh = left_join(ch, hh, by = c("weight",                   
+                                           "S2_13",     # liters of water used              
+                                           "WI_cat",
+                                           "S12_01", # Ubudehe profile (old) 
+                                           "S12_02", # Ubudehe profile (new)
+                                           "FCS",   
+                                           "FS_final")) # food security CARI index
