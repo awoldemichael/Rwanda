@@ -38,8 +38,8 @@ women = women %>%
     # -- unique ids for merging --
     PARENT_KEY,
     MHN_KEY = KEY,
-    mother_BMI = BMI,
-    mother_age = S13_02_2,
+    # mother_BMI = BMI,
+    # mother_age = S13_02_2,
     
     # -- antenatal care --
     # Note: for most recent baby, so *NOT NECESSARILY* the child in question
@@ -51,7 +51,7 @@ women = women %>%
     
     # -- health --
     mother_mosquito_net = S13_04,
-    moher_ill_2weeks = S13_04_3,
+    mother_ill_2weeks = S13_04_3,
     
     # -- nutrition --
     dietDiv_W24h = WDDS, # dietary diversity from women's module; 24 h recall
