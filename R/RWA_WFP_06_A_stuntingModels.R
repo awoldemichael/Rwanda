@@ -21,3 +21,9 @@ stunting_fits = ch %>% fit_with(lm, stunting_models)
                              # # -- nutrition --
                              # ever_breastfed + 
                              # FCS)
+# interview_date
+
+
+# basic fit ---------------------------------------------------------------
+
+summary(lm(formula = stuntingZ ~ wealth_idx + interview_date, data = ch))
