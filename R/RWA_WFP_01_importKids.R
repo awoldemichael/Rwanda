@@ -130,7 +130,7 @@ ch = removeAttributes(children_raw)
 ch = ch %>% 
   select(
     # -- IDs / survey --
-    # CHN_KEY, # Despite the name, this isn't a unique id! Is merely a link to the database on their end.
+    CHN_KEY, # Despite the name, this isn't a unique id! Is merely a (unique) link to the database on their end.
     # PARENT_KEY,
     MHN_KEY,
     weight,
@@ -246,6 +246,7 @@ ch = ch %>%
     
     # -- fix weirdness / create new var --
     interview_date = as.Date(S0_B_DATE + ISOdate(1582,10,14)), # Convert SPSS date to a normal time; based on http://r.789695.n4.nabble.com/How-to-convert-SPSS-date-data-to-dates-td793972.html
+    month = lubridate::month(interview_date),
     
     impr_unshared_toilet = case_when((ch$impr_toilet == 1 & ch$share_toilet == 0) ~ 1, # improved + unshared
                                      (ch$impr_toilet == 1 & ch$share_toilet == 1) ~ 0, # improved + shared
