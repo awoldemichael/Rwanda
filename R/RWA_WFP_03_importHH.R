@@ -130,7 +130,12 @@ hh = hh %>%
     impr_toilet = improved_toilet, # !! Note: does not include whether share toilet
     share_toilet = S2_07_3, # no NAs
     impr_water = improved_water, # !! Note: does not filter by < 30 min.
-    water_source_treatment
+    time_water_source,
+    S2_12, # treat water before drinking
+    water_source_treatment,
+    
+    # -- Stunting --
+    hh_stunted = Stunted_YN
   )
 
 
@@ -157,12 +162,6 @@ hh = hh_raw %>%
     growing_banana_cooking,
     growing_banana_wine,
     
-    # -- WASH -- 
-    impr_toilet = improved_toilet, # !! Note: does not include whether share toilet
-    impr_water = improved_water, # !! Note: does not filter by < 30 min.
-    time_water_source,
-    S2_12, # treat water before drinking
-    water_source_treatment, # how treat water before drinking
     
     # -- health facility --
     hlth_fac_village = v_S3_03, # health facility in village
@@ -195,8 +194,6 @@ hh = hh_raw %>%
     HDDS_24h, # 24 h dietary diversity recall (from hh module?).  Range = 0 - 12 
     CSI,
     
-    # Stunting
-    hh_stunted = Stunted_YN
   ) 
 
 
@@ -210,6 +207,10 @@ hh = hh %>%
     impr_unshared_toilet = case_when((hh$impr_toilet == 1 & hh$share_toilet == 0) ~ 1, # improved + unshared
                                      (hh$impr_toilet == 1 & hh$share_toilet == 1) ~ 0, # improved + shared
                                      hh$impr_toilet == 0 ~ 0,
+                                     TRUE ~ NA_real_),
+    impr_unshared_toilet = case_when((hh$impr_water == 1 & hh$time_water_source == 1) ~ 1, # improved + within 30 min.
+                                     (hh$impr_water == 1 & hh$time_water_source > 1) ~ 0, # improved + shared
+                                     hh$impr_water == 0 ~ 0,
                                      TRUE ~ NA_real_),
     
     
@@ -268,7 +269,9 @@ hh = hh %>%
   factorize(hh_raw, 'FCG', 'FCS_cat') %>% 
   factorize(hh_raw, 'FS_final', 'CARI_cat') %>% 
   # -- WASH --
+  factorize(hh_raw, 'S2_12', 'H2Otreatment_cat') %>%  
   factorize(hh_raw, 'water_source_treatment', 'drinkingH2O_cat') %>%  # whether improved source water + treatment
+  factorize(hh_raw, 'time_water_source', 'time_drinkingH2O_cat') %>%  
   # -- education --
   factorize(hh_raw, 'S1_01_8', 'head_education_cat') 
 
