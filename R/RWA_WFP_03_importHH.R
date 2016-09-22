@@ -17,6 +17,10 @@
 #
 # -------------------------------------------------------------------------
 
+
+# NOTES -------------------------------------------------------------------
+# FCS = 
+
 # Import in the raw data --------------------------------------------------
 # Raw data is contained in three files:
 # children's data: 'cfsva-2015-child-DB- annex.sav'
@@ -143,10 +147,39 @@ hh = hh %>%
     DDS, # dietary diversity score. Range = 0 - 7. Presuming based on the 7 day recall of food grps used to calc FCS.
     GDDS, # classified diet. diversity (from 24 h recall; hh module?)
     HDDS_24h, # 24 h dietary diversity recall (from hh module?).  Range = 0 - 12 
-
-        # -- food security --
-    FS_final, # Final CARI food security index
+    
+    # -- food security -- 
+    stock_durationA, # household stock in growing season A -- 2015.  B and C are from 2014 and get into too many NAs (> 6000)
+    # Ignoring infrequent food sources (< 5%); most households purchase or grow food
+    # hh_raw  %>% select(contains('shr_')) %>% summarise_each(funs(mean(., na.rm = TRUE)))
+    sh_food_purchased = shr_pur, # share of purchased food
+    sh_food_grown = shr_own, # share of own food grown.  
+    S9_01_cat, # adult meal frequency; categorical
+    S9_02_cat, # Note: child meal frequency; categorical (0, 1, 2, 3+)
+    S9_04, # preferred staple food
+    
+    # -- food consumption --
+    staples_days = Starch, # number of days consumed
+    pulse_days = Pulses,
+    meat_days = Meat,
+    veg_days = Vegetables,
+    oil_days = Oil,
+    fruit_days = Fruit,
+    milk_days = Milk,
+    sugar_days = Sugar,
+    
+    VitA_groups, # classified; sadly there's no RAW data on what consumed aside from what they've already lumped together.
+    protein_groups, # classified
+    HIron_groups, # classified
+    
+           
+    # -- food security --
+    FS_final, # Final CARI food security index; redundant with FS_final_lyr
     CSI, # reduced coping strategies index
+    CSI_terciles, # categorical coping index
+    food_access_prob = S10_01, # hh had food access problems in last week
+    FoodAccess, # food access problems in past year, categorized
+    Months_FA, # months w/ food access issues.
     
     # -- WASH -- 
     impr_toilet = improved_toilet, # !! Note: does not include whether share toilet
@@ -162,34 +195,6 @@ hh = hh %>%
 
 
 
-
-hh = hh_raw %>% 
-  mutate(
-    
-    
-    # -- food security -- 
-    cari_idx = FS_final_lyr, # CARI food security index
-    stock_durationA, # household stock in growing season A -- 2015.  B and C are from 2014 and get into too many NAs (> 6000)
-    # Ignoring infrequent food sources (< 5%)
-    # hh_raw  %>% select(contains('shr_')) %>% summarise_each(funs(mean(., na.rm = TRUE)))
-    sh_food_purchased = shr_pur, # share of purchased food
-    sh_food_grown = shr_own, # share of own food grown.  
-    child_meal_freq = S9_02_cat, # Note: categorical (0, 1, 2, 3+)
-    S9_04, # staple
-    num_starch = Starch, # number of days consumed
-    num_pulses = Pulses,
-    num_meat = Meat,
-    num_veg = Vegetables,
-    num_oil = Oil,
-    num_fruit = Fruit,
-    num_milk = Milk,
-    num_sugar = Sugar,
-    VitA_groups, # classified
-    protein_groups, # classified
-    HIron_groups, # classified
-
-    
-  ) 
 
 
 # Clean & recode vars -----------------------------------------------------
@@ -207,12 +212,13 @@ hh = hh %>%
                                      (hh$impr_water == 1 & hh$time_water_source > 1) ~ 0, # improved + shared
                                      hh$impr_water == 0 ~ 0,
                                      TRUE ~ NA_real_),
+    months_food_access = ifelse(FoodAccess == 0, 0, Months_FA), # # months have food access issues; setting NAs to 0 if no food access issues
     
     
     # -- create binaries --
-    fem_headed = case_when(hh$S1_01_3 == 1 ~ 0, # male-headed
-                           hh$S1_01_3 == 2 ~ 1, # female-headed
-                           TRUE ~ NA_real_),
+    fem_head = case_when(hh$S1_01_3 == 1 ~ 0, # male-headed
+                         hh$S1_01_3 == 2 ~ 1, # female-headed
+                         TRUE ~ NA_real_),
     
     village_VUP = case_when(hh$v_S2_03_1 == 0 ~ 0,
                             hh$v_S2_03_1 == 1 ~ 1,
@@ -232,16 +238,16 @@ hh = hh %>%
                               hh$S1_01_7 == 1 ~ 1, # can read & write
                               hh$S1_01_7 == 2 ~ 1, # can read but not write
                               TRUE ~ NA_real_), 
-      
-      land_size = case_when(hh$own_land == 0 ~ 0, # no land
-                            hh$S4_01_2 == 0 ~ 0, # land size reported as 'none'
-                            hh$S4_01_2 == 1 ~ 1, # land size = 0.00 - 0.10 ha
-                            hh$S4_01_2 == 2 ~ 2, # land size = 0.10 - 0.19 ha
-                            hh$S4_01_2 == 3 ~ 3, # land size = 0.20 - 0.49 ha
-                            hh$S4_01_2 == 4 ~ 4, # land size = 0.50 - 0.99 ha
-                            hh$S4_01_2 == 5 ~ 5, # land size = 1.00 - 1.99 ha
-                            hh$S4_01_2 >= 6 ~ 6, # land size > 2.00  ha - lumping previous category "> 5 ha" together, since only 9 hh
-        TRUE ~ NA_real_),
+    
+    land_size = case_when(hh$own_land == 0 ~ 0, # no land
+                          hh$S4_01_2 == 0 ~ 0, # land size reported as 'none'
+                          hh$S4_01_2 == 1 ~ 1, # land size = 0.00 - 0.10 ha
+                          hh$S4_01_2 == 2 ~ 2, # land size = 0.10 - 0.19 ha
+                          hh$S4_01_2 == 3 ~ 3, # land size = 0.20 - 0.49 ha
+                          hh$S4_01_2 == 4 ~ 4, # land size = 0.50 - 0.99 ha
+                          hh$S4_01_2 == 5 ~ 5, # land size = 1.00 - 1.99 ha
+                          hh$S4_01_2 >= 6 ~ 6, # land size > 2.00  ha - lumping previous category "> 5 ha" together, since only 9 hh
+                          TRUE ~ NA_real_),
     land_size = forcats::fct_infreq( # sort by frequency
       factor(land_size,
              levels = 0:6,
@@ -282,7 +288,15 @@ hh = hh %>%
   factorize(hh_raw, 'road_distance', 'road_dist_cat') %>% 
   # -- nutrition --
   factorize(hh_raw, 'FCG', 'FCS_cat') %>% 
-  factorize(hh_raw, 'FS_final', 'CARI_cat') %>% 
+  factorize(hh_raw, 'FS_final', 'CARI_cat') %>% # CARI food security index
+  factorize(hh_raw, 'CSI_terciles', 'CSI_cat') %>% # CSI food security coping categories
+  factorize(hh_raw, 'S9_01_cat', 'adult_meal_freq') %>% 
+  factorize(hh_raw, 'S9_02_cat', 'child_meal_freq') %>% 
+  factorize(hh_raw, 'S9_04', 'pref_staple') %>% # other than beans, soup 
+  factorize(hh_raw, 'VitA_groups', 'vitAfruitveg_days') %>% 
+  factorize(hh_raw, 'protein_groups', 'protein_days') %>% 
+  factorize(hh_raw, 'HIron_groups', 'ironrich_days') %>% 
+  factorize(hh_raw, 'FoodAccess', 'food_access_year_cat') %>% # food access issues over past year 
   # -- WASH --
   factorize(hh_raw, 'S2_12', 'H2Otreatment_cat') %>%  
   factorize(hh_raw, 'water_source_treatment', 'drinkingH2O_cat') %>%  # whether improved source water + treatment
@@ -290,25 +304,7 @@ hh = hh %>%
   # -- education --
   factorize(hh_raw, 'S1_01_8', 'head_education_cat') 
 
-# hh$int_month = plyr::mapvalues(hh$livezone_lyr, from = livelihood_zones$codes, to = livelihood_zones$lz)
-int_month
-admin1-3
-hh division m/f
-umudugudu 
-!! check food expend == per capita
-asset idx
-impr_toilet
 
-hh = hh %>% 
-  mutate(
-    
-    urban = case_when(hh$Urban == 1 ~ 1,
-                      hh$Urban == 2 ~ 0,
-                      TRUE ~ NA_real_),
-    fem_head = case_when(hh$S1_01_3 == 1 ~ 0, # male
-                         hh$S1_01_3 == 2 ~ 1,
-                         TRUE ~ NA_real_)
-  )
 
 
 # merge into kids data ----------------------------------------------------
