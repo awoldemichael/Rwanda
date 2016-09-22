@@ -33,6 +33,7 @@ For the CFSVA and Nutrition Survey 2012, data collection was conducted during th
 * check food expend == per capita
 * build up asset indices
 * FAO price indices: are changes due to external market volatility?
+* food groups by wealth plot
 
 ### Done:
 
