@@ -77,6 +77,18 @@ hh = hh %>%
     sh_food_expend = S_FIE,
     S12_01, # Old Ubudehe category (external assistance classification; poverty status for aid)
     S12_02, # New Ubudehe category (poverty status for aid)
+    mostly_selling, # HH selling more than 50% of the produce
+    mostly_consuming, # HH consuming more than 50% of the produce
+    
+    # -- assets (infrastructure) --
+    S2_05, # own or rent house
+    bedrooms = S2_06,
+    crowding, # # people/room
+    impr_roof = improved_roof2, # improved roof. Note: only 42/7500 WITHOUT good roof.
+    impr_floor = improved_floor,
+    impr_wall = improved_wall,
+    impr_light = improved_light,
+    S2_09, # source of cooking fuel
     
     # -- occupations --
     num_jobs = S3_01, # number of livelihood activities for HOUSEHOLD
@@ -88,6 +100,7 @@ hh = hh %>%
     livelihood_group_2, # categorization of how earn living
     
     # -- village aid profile --
+    S2_04, # whether house in umudugudu (new recommended settlement)
     v_S2_03_1, # VUP (schemes applied in the village) Vision 2020 Umurenge Program-- Integrated Local Development Program to Accelerate Poverty Eradication, Rural Growth, and Social Protection
     v_S2_03_2, # Land consolidation (schemes applied in the village)
     v_S2_03_3, # IDP model village (schemes applied in the village)
@@ -125,82 +138,65 @@ hh = hh %>%
 
 hh = hh_raw %>% 
   mutate(
-
-                        
-
-
-                        
-                        # -- assets (infrastructure) --
-                        S2_04, # whether house in umudugudu (new recommended settlement)
-                        S2_05, # own or rent house
-                        bedrooms = S2_06,
-                        crowding, # # people/room
-                        impr_roof = improved_roof2, # improved roof. Note: only 42/7500 WITHOUT good roof.
-                        impr_floor = improved_floor,
-                        impr_wall = improved_wall,
-                        share_toilet = S2_07_3,
-                        impr_light = improved_light,
-                        S2_09, # source of cooking fuel
-                        mostly_selling,
-                        mostly_consuming,
-                        
-                        # -- farming assets --
-                        own_livestock,
-                        own_cattle,
-                        manage_livestock,
-                        TLU,
-                        own_land = S4_01,
-                        S4_01_2, # land size. Note classified, and in ha
-                        hh_garden = S4_01_8, # own garden
-                        growing_beans, # whether hh grows crop
-                        growing_maize,
-                        growing_s_potato,
-                        growing_cassava,       
-                        growing_i_potato,
-                        growing_sorghum,
-                        growing_banana_cooking,
-                        growing_banana_wine,
-                        
-                        # -- WASH -- 
-                        impr_toilet = improved_toilet, # !! Note: does not include whether share toilet
-                        impr_water = improved_water, # !! Note: does not filter by < 30 min.
-                        time_water_source,
-                        S2_12, # treat water before drinking
-                        water_source_treatment, # how treat water before drinking
-                        
-                        # -- health facility --
-                        hlth_fac_village = v_S3_03, # health facility in village
-                        health_less_60min, # health facility less than 60 min. from house or in village
-                        
-                        # -- food security -- 
-                        cari_idx = FS_final_lyr, # CARI food security index
-                        stock_durationA, # household stock in growing season A -- 2015.  B and C are from 2014 and get into too many NAs (> 6000)
-                        # Ignoring infrequent food sources (< 5%)
-                        # hh_raw  %>% select(contains('shr_')) %>% summarise_each(funs(mean(., na.rm = TRUE)))
-                        sh_food_purchased = shr_pur, # share of purchased food
-                        sh_food_grown = shr_own, # share of own food grown.  
-                        child_meal_freq = S9_02_cat, # Note: categorical (0, 1, 2, 3+)
-                        S9_04, # staple
-                        num_starch = Starch, # number of days consumed
-                        num_pulses = Pulses,
-                        num_meat = Meat,
-                        num_veg = Vegetables,
-                        num_oil = Oil,
-                        num_fruit = Fruit,
-                        num_milk = Milk,
-                        num_sugar = Sugar,
-                        VitA_groups, # classified
-                        protein_groups, # classified
-                        HIron_groups, # classified
-                        FCS, 
-                        FCG, # classified food consumption score
-                        DDS, # dietary diversity score. Range = 0 - 7 
-                        GDDS, # classified diet. diversity (from 24 h recall; hh module?)
-                        HDDS_24h, # 24 h dietary diversity recall (from hh module?).  Range = 0 - 12 
-                        CSI,
-                        
-                        # Stunting
-                        hh_stunted = Stunted_YN
+    
+    
+    # -- farming assets --
+    own_livestock,
+    own_cattle,
+    manage_livestock,
+    TLU,
+    own_land = S4_01,
+    S4_01_2, # land size. Note classified, and in ha
+    hh_garden = S4_01_8, # own garden
+    growing_beans, # whether hh grows crop
+    growing_maize,
+    growing_s_potato,
+    growing_cassava,       
+    growing_i_potato,
+    growing_sorghum,
+    growing_banana_cooking,
+    growing_banana_wine,
+    
+    # -- WASH -- 
+    impr_toilet = improved_toilet, # !! Note: does not include whether share toilet
+    impr_water = improved_water, # !! Note: does not filter by < 30 min.
+    time_water_source,
+    S2_12, # treat water before drinking
+    water_source_treatment, # how treat water before drinking
+    
+    # -- health facility --
+    hlth_fac_village = v_S3_03, # health facility in village
+    health_less_60min, # health facility less than 60 min. from house or in village
+    
+    # -- food security -- 
+    cari_idx = FS_final_lyr, # CARI food security index
+    stock_durationA, # household stock in growing season A -- 2015.  B and C are from 2014 and get into too many NAs (> 6000)
+    # Ignoring infrequent food sources (< 5%)
+    # hh_raw  %>% select(contains('shr_')) %>% summarise_each(funs(mean(., na.rm = TRUE)))
+    sh_food_purchased = shr_pur, # share of purchased food
+    sh_food_grown = shr_own, # share of own food grown.  
+    child_meal_freq = S9_02_cat, # Note: categorical (0, 1, 2, 3+)
+    S9_04, # staple
+    num_starch = Starch, # number of days consumed
+    num_pulses = Pulses,
+    num_meat = Meat,
+    num_veg = Vegetables,
+    num_oil = Oil,
+    num_fruit = Fruit,
+    num_milk = Milk,
+    num_sugar = Sugar,
+    VitA_groups, # classified
+    protein_groups, # classified
+    HIron_groups, # classified
+    FCS, 
+    FCG, # classified food consumption score
+    DDS, # dietary diversity score. Range = 0 - 7 
+    GDDS, # classified diet. diversity (from 24 h recall; hh module?)
+    HDDS_24h, # 24 h dietary diversity recall (from hh module?).  Range = 0 - 12 
+    CSI,
+    
+    # Stunting
+    hh_stunted = Stunted_YN
   ) 
 
 
@@ -237,15 +233,16 @@ hh = hh %>%
     
     # -- regroup --
     head_literate = case_when(hh$S1_01_7 == 0 ~ 0, # illiterate
-                                hh$S1_01_7 == 1 ~ 1, # can read & write
-                                hh$S1_01_7 == 2 ~ 1, # can read but not write
-                                TRUE ~ NA_real_) 
+                              hh$S1_01_7 == 1 ~ 1, # can read & write
+                              hh$S1_01_7 == 2 ~ 1, # can read but not write
+                              TRUE ~ NA_real_) 
     
     # -- Replace NAs --
   ) %>% 
   # -- create factors based on the labels in original dataset -
   # -- location --
   factorize(hh_raw, 'Urban', 'rural_cat') %>% 
+  factorize(hh_raw, 'S2_04', 'umudugudu_cat') %>% # Note: "town" isn't 100% urba
   factorize(hh_raw, 'S0_C_Prov', 'admin1') %>% 
   factorize(hh_raw, 'S0_D_Dist', 'admin2') %>% 
   factorize(hh_raw, 'S0_E_Sect', 'admin3') %>% 
@@ -257,6 +254,10 @@ hh = hh %>%
   factorize(hh_raw, 'S12_01', 'old_ubudehe') %>%
   factorize(hh_raw, 'S12_02', 'new_ubudehe') %>%
   factorize(hh_raw, 'v_S2_02', 'village_cat') %>%
+  # -- assets --
+  factorize(hh_raw, 'S2_05', 'own_house_cat') %>%
+  factorize(hh_raw, 'S2_09', 'cookingfuel_cat') %>%
+  mutate(cookingfuel_cat = forcats::fct_lump(cookingfuel_cat, prop = 0.02)) %>% # grouping all "good" fuels into an other category. all infrequent anyway
   # -- village connectivity --
   factorize(hh_raw, 'health_facility_distance', 'health_dist_cat') %>% 
   factorize(hh_raw, 'health_less_60min', 'health_less_60min') %>% 
@@ -268,8 +269,8 @@ hh = hh %>%
   factorize(hh_raw, 'FS_final', 'CARI_cat') %>% 
   # -- WASH --
   factorize(hh_raw, 'water_source_treatment', 'drinkingH2O_cat') %>%  # whether improved source water + treatment
-# -- education --
-factorize(hh_raw, 'S1_01_8', 'head_education_cat') 
+  # -- education --
+  factorize(hh_raw, 'S1_01_8', 'head_education_cat') 
 
 # hh$int_month = plyr::mapvalues(hh$livezone_lyr, from = livelihood_zones$codes, to = livelihood_zones$lz)
 int_month
