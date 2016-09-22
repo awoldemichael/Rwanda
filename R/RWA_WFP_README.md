@@ -14,8 +14,6 @@ For the CFSVA and Nutrition Survey 2012, data collection was conducted during th
 (March-April) that followed a relatively good harvest. 
 
 ### To Do:
-* clean hh module
-* merge hh + kids
 * choropleth: stunting by district, livelihood zone
 * reproducible choropleth function (frontier)
 * regressions: stunting
@@ -27,13 +25,13 @@ For the CFSVA and Nutrition Survey 2012, data collection was conducted during th
 * heatmap of dd over dist, lz
 * FCS hist
 * choropleth FCS/dd?
-* heatmap function (llamar)
+* reproducible heatmap function (llamar)
 * pull individual diets (dd, MAD) for children 6 mo. - 2 y and add to models / compare dd over hh
 * add in hh composition data (breakdown of M/F, ages)
 * check food expend == per capita
-* build up asset indices
+* build up asset indices (? -- not enough raw data?)
 * FAO price indices: are changes due to external market volatility?
-* food groups by wealth plot
+* food groups by (FCS, wealth, % total expenditures on food) plot
 * group good/bad coping, if going to use
 
 ### Done:
@@ -41,7 +39,9 @@ For the CFSVA and Nutrition Survey 2012, data collection was conducted during th
 #### Data prep
 * clean children's module
 * clean women's module
+* clean hh module
 * merge kids + women
+* merge hh + kids
 * figure out survey weights for CFSVA
 
 #### Reproducible code
