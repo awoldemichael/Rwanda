@@ -19,7 +19,6 @@
 
 
 # NOTES -------------------------------------------------------------------
-# FCS = 
 
 # Import in the raw data --------------------------------------------------
 # Raw data is contained in three files:
@@ -127,13 +126,24 @@ hh = hh %>%
     sh_unskilled_labour,
     livelihood_group_2, # categorization of how earn living
     
-    # -- village aid profile --
+    # -- village & hh aid profile --
     S2_04, # whether house in umudugudu (new recommended settlement)
     v_S2_03_1, # VUP (schemes applied in the village) Vision 2020 Umurenge Program-- Integrated Local Development Program to Accelerate Poverty Eradication, Rural Growth, and Social Protection
     v_S2_03_2, # Land consolidation (schemes applied in the village)
     v_S2_03_3, # IDP model village (schemes applied in the village)
     v_S2_03_4, # Structured umudugudu (schemes applied in the village)
     # ignoring `v_S2_03_5`: other schemes applied to village; ~ 10% of the villages.
+    
+    # looking at most frequent sources of hh aid:
+    # hh_raw  %>% select(contains('assistance')) %>% summarise_each(funs(mean(., na.rm = TRUE)))
+    # hh_raw  %>% select(contains('S12_04_2')) %>% summarise_each(funs(mean(., na.rm = TRUE)))
+    # t(hh_raw  %>% select(contains('S12_07_2')) %>% summarise_each(funs(mean(., na.rm = TRUE))))
+    any_food_assistance, # categorical
+    any_non_food_assistance, # categorical
+    financial_assistance,
+    ag_assistance = agriculture_assisstance,
+    # S12_04_2... variables give the type of food assistance.  most free food distribution but not a whole lot of observations
+    # S12_07_2... variables give the type of other assistance. very few values.
     
     # -- village connectivity --
     # only ~ 5% villages have market within them; ignoring v_S4_01
@@ -304,6 +314,8 @@ hh = hh %>%
   mutate(cookingfuel_cat = forcats::fct_lump(cookingfuel_cat, prop = 0.02)) %>% # grouping all "good" fuels into an other category. all infrequent anyway
   factorize(hh_raw, 'S7_02', 'loan_purpose') %>% # note: should condense
   factorize(hh_raw, 'S7_03', 'loan_source') %>% # note: should condense
+  factorize(hh_raw, 'any_food_assistance', 'food_assistance') %>% # note: should condense
+  factorize(hh_raw, 'any_non_food_assistance', 'nonfood_assistance') %>% # note: should condense
     # -- village connectivity --
   factorize(hh_raw, 'health_facility_distance', 'health_dist_cat') %>% 
   factorize(hh_raw, 'health_less_60min', 'health_less_60min') %>% 
