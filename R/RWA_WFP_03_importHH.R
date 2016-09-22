@@ -90,6 +90,24 @@ hh = hh %>%
     impr_light = improved_light,
     S2_09, # source of cooking fuel
     
+    # -- farming assets --
+    # blissfully, no NA codes.
+    own_livestock,
+    own_cattle,
+    manage_livestock,
+    TLU,
+    own_land = S4_01,
+    S4_01_2, # land size. Note classified, and in ha
+    hh_garden = S4_01_8, # own garden
+    growing_beans, # whether hh grows crop
+    growing_maize,
+    growing_s_potato,
+    growing_cassava,       
+    growing_i_potato,
+    growing_sorghum,
+    growing_banana_cooking,
+    growing_banana_wine,
+    
     # -- occupations --
     num_jobs = S3_01, # number of livelihood activities for HOUSEHOLD
     # Keeping shares of livelihoods > 5% on average
@@ -119,10 +137,14 @@ hh = hh %>%
     market_less_60min,
     road_distance,
     
-    
     # -- nutrition --
     FCS, # food consumption score
     FCG, # classified food consumption score
+    DDS, # dietary diversity score. Range = 0 - 7. Presuming based on the 7 day recall of food grps used to calc FCS.
+    GDDS, # classified diet. diversity (from 24 h recall; hh module?)
+    HDDS_24h, # 24 h dietary diversity recall (from hh module?).  Range = 0 - 12 
+
+        # -- food security --
     FS_final, # Final CARI food security index
     CSI, # reduced coping strategies index
     
@@ -145,28 +167,6 @@ hh = hh_raw %>%
   mutate(
     
     
-    # -- farming assets --
-    own_livestock,
-    own_cattle,
-    manage_livestock,
-    TLU,
-    own_land = S4_01,
-    S4_01_2, # land size. Note classified, and in ha
-    hh_garden = S4_01_8, # own garden
-    growing_beans, # whether hh grows crop
-    growing_maize,
-    growing_s_potato,
-    growing_cassava,       
-    growing_i_potato,
-    growing_sorghum,
-    growing_banana_cooking,
-    growing_banana_wine,
-    
-    
-    # -- health facility --
-    hlth_fac_village = v_S3_03, # health facility in village
-    health_less_60min, # health facility less than 60 min. from house or in village
-    
     # -- food security -- 
     cari_idx = FS_final_lyr, # CARI food security index
     stock_durationA, # household stock in growing season A -- 2015.  B and C are from 2014 and get into too many NAs (> 6000)
@@ -187,12 +187,7 @@ hh = hh_raw %>%
     VitA_groups, # classified
     protein_groups, # classified
     HIron_groups, # classified
-    FCS, 
-    FCG, # classified food consumption score
-    DDS, # dietary diversity score. Range = 0 - 7 
-    GDDS, # classified diet. diversity (from 24 h recall; hh module?)
-    HDDS_24h, # 24 h dietary diversity recall (from hh module?).  Range = 0 - 12 
-    CSI,
+
     
   ) 
 
@@ -236,7 +231,27 @@ hh = hh %>%
     head_literate = case_when(hh$S1_01_7 == 0 ~ 0, # illiterate
                               hh$S1_01_7 == 1 ~ 1, # can read & write
                               hh$S1_01_7 == 2 ~ 1, # can read but not write
-                              TRUE ~ NA_real_) 
+                              TRUE ~ NA_real_), 
+      
+      land_size = case_when(hh$own_land == 0 ~ 0, # no land
+                            hh$S4_01_2 == 0 ~ 0, # land size reported as 'none'
+                            hh$S4_01_2 == 1 ~ 1, # land size = 0.00 - 0.10 ha
+                            hh$S4_01_2 == 2 ~ 2, # land size = 0.10 - 0.19 ha
+                            hh$S4_01_2 == 3 ~ 3, # land size = 0.20 - 0.49 ha
+                            hh$S4_01_2 == 4 ~ 4, # land size = 0.50 - 0.99 ha
+                            hh$S4_01_2 == 5 ~ 5, # land size = 1.00 - 1.99 ha
+                            hh$S4_01_2 >= 6 ~ 6, # land size > 2.00  ha - lumping previous category "> 5 ha" together, since only 9 hh
+        TRUE ~ NA_real_),
+    land_size = forcats::fct_infreq( # sort by frequency
+      factor(land_size,
+             levels = 0:6,
+             labels = c('no land', 
+                        '0.00 - 0.10 ha',
+                        '0.10 - 0.19 ha',
+                        '0.20 - 0.49 ha',
+                        '0.50 - 0.99 ha',
+                        '1.00 - 1.99 ha',
+                        'more than 2.00 ha')))
     
     # -- Replace NAs --
   ) %>% 
