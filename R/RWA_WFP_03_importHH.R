@@ -76,7 +76,7 @@ hh = hh %>%
     # -- wealth/assets --
     WI_cat, # categorical classification of wealth; redundant with WI_cat_lyr: sum(hh_raw$WI_cat == hh_raw$WI_cat_lyr)
     monthly_pc_expend = P_CAP_EXP, # monthly per capita expenditures
-    food_expend = FIE,
+    food_expend = FIE, # monthly
     sh_food_expend = S_FIE,
     S12_01, # Old Ubudehe category (external assistance classification; poverty status for aid)
     S12_02, # New Ubudehe category (poverty status for aid)
