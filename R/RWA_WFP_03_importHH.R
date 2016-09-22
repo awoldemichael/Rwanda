@@ -83,7 +83,7 @@ hh = hh %>%
     mostly_selling, # HH selling more than 50% of the produce
     mostly_consuming, # HH consuming more than 50% of the produce
     
-    asked_loan = S7_01, # loan in last 12 mo.; anyone in hh
+    S7_01, # loan in last 12 mo.; anyone in hh
     S7_01_2, # whether received loan
     S7_02, # how loan was used
     S7_03, # source of loan
@@ -228,19 +228,24 @@ hh = hh %>%
 
 hh = hh %>% 
   mutate(
+    # -- Replace NAs --
+    asked_loan = na_if(S7_01, 88),
     
     # -- fix weirdness / create new var --
-    impr_unshared_toilet = case_when((hh$impr_toilet == 1 & hh$share_toilet == 0) ~ 1, # improved + unshared
+    impr_unshared_toilet = case_when(hh$impr_toilet == 0 ~ 0,
+                                     (hh$impr_toilet == 1 & hh$share_toilet == 0) ~ 1, # improved + unshared
                                      (hh$impr_toilet == 1 & hh$share_toilet == 1) ~ 0, # improved + shared
-                                     hh$impr_toilet == 0 ~ 0,
-                                     TRUE ~ NA_real_),
-    impr_unshared_toilet = case_when((hh$impr_water == 1 & hh$time_water_source == 1) ~ 1, # improved + within 30 min.
-                                     (hh$impr_water == 1 & hh$time_water_source > 1) ~ 0, # improved + shared
-                                     hh$impr_water == 0 ~ 0,
                                      TRUE ~ NA_real_),
     months_food_access = ifelse(FoodAccess == 0, 0, Months_FA), # # months have food access issues; setting NAs to 0 if no food access issues
     
     loan_value = ifelse((asked_loan == 0 | S7_01_2 == 0), 0, S7_04), # value of loan; setting to 0 if didn't get a loan
+    
+    # -- convert shares to ratios --
+    sh_food_grown = sh_food_grown / 100,
+    sh_labour_ag_work = sh_labour_ag_work / 100,
+    sh_agricultural_production = sh_agricultural_production / 100,
+    sh_unskilled_labour = sh_unskilled_labour / 100,
+    sh_food_purchased = sh_food_purchased / 100,
     
     
     # -- create binaries --
@@ -260,7 +265,7 @@ hh = hh %>%
     village_structUmudugudu = case_when(hh$v_S2_03_4 == 0 ~ 0,
                                         hh$v_S2_03_4 == 4 ~ 1,
                                         TRUE ~ NA_real_),
-    got_loan = case_when(hh$asked_loan == 0 ~ 0, # didn't ask for one, so couldn't get one!
+    got_loan = case_when(hh$S7_01 == 0 ~ 0, # didn't ask for one, so couldn't get one!
                          hh$S7_01_2 == 0 ~ 0, # asked but didn't receive (note: only 19 hh)
                          hh$S7_01_2 == 1 ~ 1, # asked & received
                          TRUE ~ NA_real_),
@@ -291,7 +296,6 @@ hh = hh %>%
                         '1.00 - 1.99 ha',
                         'more than 2.00 ha')))
     
-    # -- Replace NAs --
   ) %>% 
   # -- create factors based on the labels in original dataset -
   # -- location --
@@ -345,13 +349,64 @@ hh = hh %>%
 
 
 
+# double check there are no NA values in any of the vars ------------------
+# Assuming NA values are 88
+# Note: will ignore all the factor levels.
+cutoff = 70
+
+hh_test = as.data.frame(hh > cutoff)
+
+hh_test = hh_test %>% summarise_each(funs(sum(., na.rm = TRUE)))
+
+hh_test = t(hh_test)
+
 
 # merge into kids data ----------------------------------------------------
 
 ch_hh = left_join(ch, hh, by = c("weight",                   
                                  "S2_13",     # liters of water used              
-                                 "WI_cat",
+                                 "WI_cat_lyr_lyr" = "WI_cat",
                                  "S12_01", # Ubudehe profile (old) 
                                  "S12_02", # Ubudehe profile (new)
                                  "FCS",   
-                                 "FS_final")) # food security CARI index
+                                 "FS_final", # food security CARI index
+                                 # common variables along for the ride
+                                 "rural_cat",
+                                 "S0_C_Prov", 
+                                 "S0_D_Dist", 
+                                 "S0_E_Sect", 
+                                 "Urban",  
+                                 "village_school",
+                                 "health_facility_distance",
+                                 "health_less_60min",
+                                 "market_distance",
+                                 "market_less_60min",
+                                 "road_distance",
+                                 "FCG",
+                                 "impr_toilet",
+                                 "share_toilet",
+                                 "impr_water",
+                                 "water_source_treatment",
+                                 "impr_unshared_toilet",
+                                 "village_VUP",
+                                 "village_landConsolid", "village_IDPmodel", "village_structUmudugudu",
+                                 "admin1",
+                                 "admin2", 
+                                 "admin3",
+                                 "livelihood_zone",
+                                 "wealth_idx_cat",
+                                 "old_ubudehe", "new_ubudehe",
+                                 "village_cat",
+                                 "health_dist_cat",
+                                 "market_dist_cat", "road_dist_cat",
+                                 "FCS_cat", "CARI_cat", "drinkingH2O_cat"
+                                 )) 
+
+# Checking merge
+ch_hh %>% group_by(is.na(DDS), is.na(village)) %>% summarise(n())
+nrow(ch_hh) == 4058
+
+# is.na(DDS) is.na(village)   n()
+# <lgl>          <lgl> <int>
+#   1      FALSE          FALSE  4027
+# 2       TRUE          FALSE    31

@@ -248,9 +248,9 @@ ch = ch %>%
     interview_date = as.Date(S0_B_DATE + ISOdate(1582,10,14)), # Convert SPSS date to a normal time; based on http://r.789695.n4.nabble.com/How-to-convert-SPSS-date-data-to-dates-td793972.html
     month = lubridate::month(interview_date),
     
-    impr_unshared_toilet = case_when((ch$impr_toilet == 1 & ch$share_toilet == 0) ~ 1, # improved + unshared
+    impr_unshared_toilet = case_when(ch$impr_toilet == 0 ~ 0, # unimproved
+                                     (ch$impr_toilet == 1 & ch$share_toilet == 0) ~ 1, # improved + unshared
                                      (ch$impr_toilet == 1 & ch$share_toilet == 1) ~ 0, # improved + shared
-                                     ch$impr_toilet == 0 ~ 0,
                                      TRUE ~ NA_real_),
     
     school_dist_cat = case_when(ch$village_school == 1 ~ 1, # school in village
@@ -260,11 +260,11 @@ ch = ch %>%
                                 TRUE ~ NA_real_),
     school_dist_cat = forcats::fct_infreq( # sort by frequency
       factor(school_dist_cat,
-                                  levels = 1:4,
-                                  labels = c('school in village', 
-                                             'school within 30 min. of village (outside village)',
-                                             'school 30 - 60 min. from village',
-                                             'school > 60 min. from village'))),
+             levels = 1:4,
+             labels = c('school in village', 
+                        'school within 30 min. of village (outside village)',
+                        'school 30 - 60 min. from village',
+                        'school > 60 min. from village'))),
     
     # -- create binaries --
     low_birthwt = case_when(ch$birthweight_cat == 1 ~ 1,
@@ -291,7 +291,7 @@ ch = ch %>%
     kids_under5 = case_when(ch$S14_01 == 1 ~ 1, # one child < 5 years old in hh
                             ch$S14_01 == 2 ~ 2, # 2 children < 5 years old in hh
                             ch$S14_01 > 2 ~ 3, # 3+ children < 5 years old in hh
-                                     TRUE ~ NA_real_),
+                            TRUE ~ NA_real_),
     kids_under5 = forcats::fct_infreq( # sort by frequency
       factor(kids_under5,
              levels = 1:3,
@@ -310,10 +310,10 @@ ch = ch %>%
                                      TRUE ~ NA_real_),
     breastfed_afterbirth = forcats::fct_infreq( # sort by frequency
       factor(breastfed_afterbirth,
-                                  levels = c(0, 1, 2),
-                                  labels = c('never breastfed', 
-                                             'breastfed within first hour of birth',
-                                             'breastfed > 1 hr after birth'))),
+             levels = c(0, 1, 2),
+             labels = c('never breastfed', 
+                        'breastfed within first hour of birth',
+                        'breastfed > 1 hr after birth'))),
     
     # -- Replace NAs --
     ever_breastfed = na_if(S14_03, 88),
