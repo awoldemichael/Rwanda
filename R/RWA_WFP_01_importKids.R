@@ -148,7 +148,7 @@ ch = ch %>%
     
     # -- demographics --
     wealth_idx = WI, # numeric wealth index
-    WI_cat, # categorical classification of wealth
+    WI_cat_lyr_lyr, # categorical classification of wealth; same as WI_cat but w/ lables
     S12_01, # Old Ubudehe category (poverty status for aid)
     S12_02, # New Ubudehe category (poverty status for aid)
     S14_02_2, # primary caregiver
@@ -332,7 +332,7 @@ ch = ch %>%
   factorize(children_raw, 'S0_E_Sect', 'admin3') %>% 
   factorize(children_raw, 'livezone_lyr', 'livelihood_zone') %>% 
   # -- demographics --
-  factorize(children_raw, 'WI_cat', 'wealth_idx_cat') %>% 
+  factorize(children_raw, 'WI_cat_lyr_lyr', 'wealth_idx_cat') %>% 
   factorize(children_raw, 'S12_01', 'old_ubudehe') %>%
   factorize(children_raw, 'S12_02', 'new_ubudehe') %>%
   factorize(children_raw, 'v_S2_02', 'village_cat') %>%
