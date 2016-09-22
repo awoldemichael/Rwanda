@@ -26,4 +26,8 @@ stunting_fits = ch %>% fit_with(lm, stunting_models)
 
 # basic fit ---------------------------------------------------------------
 
-summary(lm(formula = stuntingZ ~ wealth_idx + interview_date + FS_final + sex + age_months + FCS + impr_water + impr_toilet, data = ch %>% filter(!is.na(isStunted))))
+summary(lm(formula = stuntingZ ~ wealth_idx + interview_date + FS_final  + diarrhea + wash_
+             age_months + milk_days + meat_days + impr_water + impr_toilet, data = ch_hh %>% filter(!is.na(isStunted), sex == 'Female')))
+
+summary(lm(formula = stuntingZ ~ wealth_idx + interview_date + FS_final  + diarrhea +
+             age_months + milk_days + meat_days + impr_water + impr_toilet, data = ch_hh %>% filter(!is.na(isStunted), sex == 'Male')))

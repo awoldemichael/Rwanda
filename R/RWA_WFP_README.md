@@ -29,6 +29,7 @@ For the CFSVA and Nutrition Survey 2012, data collection was conducted during th
 * pull individual diets (dd, MAD) for children 6 mo. - 2 y and add to models / compare dd over hh
 * add in hh composition data (breakdown of M/F, ages)
 * check food expend == per capita
+* quantile per capita expenditures
 * build up asset indices (? -- not enough raw data?)
 * FAO price indices: are changes due to external market volatility?
 * food groups by (FCS, wealth, % total expenditures on food) plot
