@@ -34,6 +34,7 @@ For the CFSVA and Nutrition Survey 2012, data collection was conducted during th
 * build up asset indices
 * FAO price indices: are changes due to external market volatility?
 * food groups by wealth plot
+* group good/bad coping, if going to use
 
 ### Done:
 
