@@ -29,17 +29,76 @@ hh2012 = read_sav(paste0(baseDir, 'RW_2012_CFSVA/cfsvans-2012- household-v01.sav
 
 
 # pull relevant vars ------------------------------------------------------
+hh = removeAttributes(hh_raw)
+
+hh = hh %>% 
+  select(
+                                    # -- IDs / merging vars --
+                                    S2_13, # # liters of water used / day, what use; just in case is useful for merging
+
+                                    # -- survey vars --                                    
+                                    weight,
+                                    S0_B_DATE, # date of interview, in obnoxious SPSS form.
+                                    
+                                    # -- geo --
+                                    S0_C_Prov, # note: redundant w/ S0_C_Prov_lyr. Not sure why 2x...
+                                    S0_D_Dist,
+                                    S0_E_Sect,
+                                    Urban,
+                                    v_S2_02, # village category -- rural, urban organized, urban slum
+                                    livezone,
+                                    
+                                    # -- demographics --
+                                    WI_cat, # categorical classification of wealth
+                                    S12_01, # Old Ubudehe category (poverty status for aid)
+                                    S12_02, # New Ubudehe category (poverty status for aid)
+                                    
+                                    # -- village aid profile --
+                                    v_S2_03_1, # VUP (schemes applied in the village)
+                                    v_S2_03_2, # Land consolidation (schemes applied in the village)
+                                    v_S2_03_3, # IDP model village (schemes applied in the village)
+                                    v_S2_03_4, # Structured umudugudu (schemes applied in the village)
+                                    # ignoring `v_S2_03_5`: other schemes applied to village; ~ 10% of the villages.
+                                    
+                                    # -- village connectivity --
+                                    # only ~ 5% villages have market within them; ignoring v_S4_01
+                                    # v_S3_01: # hh in village with electricity
+                                    village_school = v_S3_02,
+                                    v_S3_02_2, # time (minutes) to nearest school
+                                    # village_healthfac = v_S3_03, # only 276/4058 w/ health facility in village - 6-7%
+                                    health_facility_distance,
+                                    health_less_60min, 
+                                    market_distance,
+                                    market_less_60min,
+                                    road_distance,
+                                    
+                                    
+                                    # -- nutrition --
+                                    FCS, # food consumption score
+                                    FCG, # classified food consumption score
+                                    FS_final, # Final CARI food security index
+                                    CSI, # reduced coping strategies index
+                                    
+                                    # -- WASH -- 
+                                    impr_toilet = improved_toilet, # !! Note: does not include whether share toilet
+                                    share_toilet = S2_07_3, # no NAs
+                                    impr_water = improved_water, # !! Note: does not filter by < 30 min.
+                                    water_source_treatment
+  )
+
+
+
 
 hh = hh_raw %>% 
   mutate(
     # -- household ids / info --
-    KEY, # sadly, not actually a unique id.
+    KEY, # sadly, not actually a unique id. Well, not a *consistent* unique id
     
     # Survey conducted in April/May, in midst of minor lean season http://www.fews.net/file/113529
     int_date = S0_B_DATE, # interview date
     month,
     weight,
-    normalized_weight,
+    # normalized_weight, # redundant with weight
     
     # -- geography --
     Urban,
@@ -166,6 +225,62 @@ hh = hh_raw %>%
 
 
 # Clean & recode vars -----------------------------------------------------
+# `factorize` is a function within custom-built llamar pkg.  See below for copy of code.
+
+hh = hh %>% 
+  mutate(
+    
+    # -- fix weirdness / create new var --
+    impr_unshared_toilet = case_when((hh$impr_toilet == 1 & hh$share_toilet == 0) ~ 1, # improved + unshared
+                                     (hh$impr_toilet == 1 & hh$share_toilet == 1) ~ 0, # improved + shared
+                                     hh$impr_toilet == 0 ~ 0,
+                                     TRUE ~ NA_real_),
+    
+    
+    # -- create binaries --
+    village_VUP = case_when(hh$v_S2_03_1 == 0 ~ 0,
+                            hh$v_S2_03_1 == 1 ~ 1,
+                            TRUE ~ NA_real_), 
+    village_landConsolid = case_when(hh$v_S2_03_2 == 0 ~ 0,
+                                     hh$v_S2_03_2 == 2 ~ 1,
+                                     TRUE ~ NA_real_), 
+    village_IDPmodel = case_when(hh$v_S2_03_3 == 0 ~ 0,
+                                 hh$v_S2_03_3 == 3 ~ 1,
+                                 TRUE ~ NA_real_), 
+    village_structUmudugudu = case_when(hh$v_S2_03_4 == 0 ~ 0,
+                                        hh$v_S2_03_4 == 4 ~ 1,
+                                        TRUE ~ NA_real_)
+    
+    # -- regroup --
+    
+    # -- Replace NAs --
+) %>% 
+      # -- create factors based on the labels in original dataset --
+  # -- location --
+  factorize(hh_raw, 'Urban', 'rural_cat') %>% 
+  factorize(hh_raw, 'S0_C_Prov', 'admin1') %>% 
+  factorize(hh_raw, 'S0_D_Dist', 'admin2') %>% 
+  factorize(hh_raw, 'S0_E_Sect', 'admin3') %>% 
+  factorize(hh_raw, 'livezone', 'livelihood_zone') %>% 
+  # -- demographics --
+  factorize(hh_raw, 'WI_cat', 'wealth_idx_cat') %>% 
+  factorize(hh_raw, 'S12_01', 'old_ubudehe') %>%
+  factorize(hh_raw, 'S12_02', 'new_ubudehe') %>%
+  factorize(hh_raw, 'v_S2_02', 'village_cat') %>%
+  # -- village connectivity --
+  factorize(hh_raw, 'health_facility_distance', 'health_dist_cat') %>% 
+  factorize(hh_raw, 'health_less_60min', 'health_less_60min') %>% 
+  factorize(hh_raw, 'market_distance', 'market_dist_cat') %>%
+  factorize(hh_raw, 'market_less_60min', 'market_less_60min') %>% 
+  factorize(hh_raw, 'road_distance', 'road_dist_cat') %>% 
+  # -- nutrition --
+  factorize(hh_raw, 'FCG', 'FCS_cat') %>% 
+  factorize(hh_raw, 'FS_final', 'CARI_cat') %>% 
+  # -- WASH --
+  factorize(hh_raw, 'water_source_treatment', 'drinkingH2O_cat')  # whether improved source water + treatment
+  # -- education --
+  )
+
 # hh$int_month = plyr::mapvalues(hh$livezone_lyr, from = livelihood_zones$codes, to = livelihood_zones$lz)
 int_month
 admin1-3
