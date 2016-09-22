@@ -113,52 +113,52 @@ women  = women %>%
 ch = left_join(ch, women, by = "MHN_KEY")
 
 # Check merge is okay:
-ch %>% group_by(dietDiv_W24h) %>% summarise(n()) # WDDS is only in mother's module, and contains no NAs
+print(ch %>% group_by(dietDiv_W24h) %>% summarise(n())) # WDDS is only in mother's module, and contains no NAs
 
 
 
 # -------------------------------------------------------------------------
 # -------------------------------------------------------------------------
 # ARCHIVE: Can women be merged w/ kids? --------------------------------------------
-
-test1 = left_join(ch, women_raw, by = c("parent_id" = "PARENT_KEY"))
-
-# Result: some mergal, but also extra ch values (presumably from non-unqiueness of argument)
-
-# PARENT_KEY isn't unique...
-nrow(women_raw %>% select(PARENT_KEY) %>% distinct())
-
-# .., but KEY is (mother's id?)
-nrow(women_raw %>% select(KEY) %>% distinct())
-
-# Unfortunately, mother's key in children's dataset is missing 415 values.
-test2 = left_join(children_raw, women_raw, by = c('MHN_KEY' = 'KEY'))
-
-
-# Simplest thing should be to do parent id + age of mother.
-nrow(women_raw %>% select(PARENT_KEY, S13_02_2) %>% distinct())
-# Okay.  25 mismatches.
-
-# Throwing in BMI:
-nrow(women_raw %>% select(PARENT_KEY, S13_02_2, BMI) %>% distinct())
-
-# Yippee!
-test3 = left_join(ch, women_raw, by = c("parent_id" = "PARENT_KEY", "mother_age" = "S13_02_2", "mother_BMI" = "BMI")) # unique
-
-# Only doesn't merge properly, b/c imprecise precision of BMI.
-test3 %>% group_by(WDDS) %>% summarise(n()) # WDDS is only in mother's module, and contains no NAs
-
-ch = ch %>% mutate(rounded_BMI = round(mother_BMI, 2))
-women_raw = women_raw %>% mutate(rounded_BMI = round(BMI, 2))
-
-test4 = left_join(ch, women_raw, by = c("parent_id" = "PARENT_KEY", "mother_age" = "S13_02_2", "rounded_BMI" = "rounded_BMI")) # unique
-
-# Only doesn't merge properly, b/c imprecise precision of BMI.
-test4  %>% group_by(WDDS) %>% summarise(n()) # WDDS is only in mother's module, and contains no NAs
-
-# Still unique
-nrow(women_raw %>% mutate(bmi = round(BMI, 2)) %>% select(PARENT_KEY, S13_02_2, bmi) %>% distinct())
-# down to 414.  (sigh)  NA for BMIs?  Gonna have to do this stepwise
+# 
+# test1 = left_join(ch, women_raw, by = c("PARENT_KEY" = "PARENT_KEY"))
+# 
+# # Result: some mergal, but also extra ch values (presumably from non-unqiueness of argument)
+# 
+# # PARENT_KEY isn't unique...
+# nrow(women_raw %>% select(PARENT_KEY) %>% distinct())
+# 
+# # .., but KEY is (mother's id?)
+# nrow(women_raw %>% select(KEY) %>% distinct())
+# 
+# # Unfortunately, mother's key in children's dataset is missing 415 values.
+# test2 = left_join(children_raw, women_raw, by = c('MHN_KEY' = 'KEY'))
+# 
+# 
+# # Simplest thing should be to do parent id + age of mother.
+# nrow(women_raw %>% select(PARENT_KEY, S13_02_2) %>% distinct())
+# # Okay.  25 mismatches.
+# 
+# # Throwing in BMI:
+# nrow(women_raw %>% select(PARENT_KEY, S13_02_2, BMI) %>% distinct())
+# 
+# # Yippee!
+# test3 = left_join(ch, women_raw, by = c("parent_id" = "PARENT_KEY", "mother_age" = "S13_02_2", "mother_BMI" = "BMI")) # unique
+# 
+# # Only doesn't merge properly, b/c imprecise precision of BMI.
+# test3 %>% group_by(WDDS) %>% summarise(n()) # WDDS is only in mother's module, and contains no NAs
+# 
+# ch = ch %>% mutate(rounded_BMI = round(mother_BMI, 2))
+# women_raw = women_raw %>% mutate(rounded_BMI = round(BMI, 2))
+# 
+# test4 = left_join(ch, women_raw, by = c("parent_id" = "PARENT_KEY", "mother_age" = "S13_02_2", "rounded_BMI" = "rounded_BMI")) # unique
+# 
+# # Only doesn't merge properly, b/c imprecise precision of BMI.
+# test4  %>% group_by(WDDS) %>% summarise(n()) # WDDS is only in mother's module, and contains no NAs
+# 
+# # Still unique
+# nrow(women_raw %>% mutate(bmi = round(BMI, 2)) %>% select(PARENT_KEY, S13_02_2, bmi) %>% distinct())
+# # down to 414.  (sigh)  NA for BMIs?  Gonna have to do this stepwise
 
 
 

@@ -21,10 +21,13 @@ setwd('~/GitHub/Rwanda/R/')
   
 
 # Load setup functions / vars ---------------------------------------------
-source('RW_WFP_00_setup.R')
-
-# Import / clean hh-level data --------------------------------------------
-source('RW_WFP_01_importHH.R')
+source('RWA_WFP_00_setup.R')
 
 # Import / clean individual children-level data --------------------------------------------
-source('RW_WFP_02_importKids.R')
+source('RWA_WFP_01_importKids.R')
+
+# Import / clean individual women's data --------------------------------------------
+source('RWA_WFP_02_importMother.R')
+
+# Import / clean hh-level data --------------------------------------------
+source('RWA_WFP_03_importHH.R')

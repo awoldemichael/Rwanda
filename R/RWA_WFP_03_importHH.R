@@ -403,7 +403,7 @@ ch_hh = left_join(ch, hh, by = c("weight",
                                  )) 
 
 # Checking merge
-ch_hh %>% group_by(is.na(DDS), is.na(village)) %>% summarise(n())
+print(ch_hh %>% group_by(is.na(DDS), is.na(village)) %>% summarise(n()))
 nrow(ch_hh) == 4058
 
 # is.na(DDS) is.na(village)   n()
