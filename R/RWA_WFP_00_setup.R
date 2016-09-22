@@ -19,11 +19,12 @@
 
 
 # Setup local directory ---------------------------------------------------
+# -- Windows (within My Documents) --
+baseDir = '~/Rwanda/rawdata/'
+
 # -- Mac --
 baseDir = '~/Documents/USAID/Rwanda/rawdata/'
 
-# -- Windows (within My Documents) --
-baseDir = '~/Rwanda/rawdata/'
 
 # Set aesthetics ----------------------------------------------------------
 font_light = 'Lato Light'
