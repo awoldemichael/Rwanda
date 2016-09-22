@@ -84,6 +84,12 @@ hh = hh %>%
     mostly_selling, # HH selling more than 50% of the produce
     mostly_consuming, # HH consuming more than 50% of the produce
     
+    asked_loan = S7_01, # loan in last 12 mo.; anyone in hh
+    S7_01_2, # whether received loan
+    S7_02, # how loan was used
+    S7_03, # source of loan
+    S7_04, # value of loan
+    
     # -- assets (infrastructure) --
     S2_05, # own or rent house
     bedrooms = S2_06,
@@ -181,6 +187,16 @@ hh = hh %>%
     FoodAccess, # food access problems in past year, categorized
     Months_FA, # months w/ food access issues.
     
+    # -- shocks --
+    # hh_raw  %>% select(contains('shock')) %>% summarise_each(funs(mean(., na.rm = TRUE)))
+    # ~ 10% had shock from drought or illness. ignoring losing job, b/c only 3% of full sample
+    # S11_02 -- whether the hh exp. a shock -- contains a surprising number of NAs, given that there are none in drought/illness shock vars.
+    shock_drought,
+    drought_coping,
+    shock_illness,
+    illness_coping,
+    shock_ongoing = household_still_recovering, # still recovering from shock in last year (?). something is weird.  209 hh didn't experience shock but they're still recovering (?)
+    
     # -- WASH -- 
     impr_toilet = improved_toilet, # !! Note: does not include whether share toilet
     share_toilet = S2_07_3, # no NAs
@@ -214,6 +230,8 @@ hh = hh %>%
                                      TRUE ~ NA_real_),
     months_food_access = ifelse(FoodAccess == 0, 0, Months_FA), # # months have food access issues; setting NAs to 0 if no food access issues
     
+    loan_value = ifelse((asked_loan == 0 | S7_01_2 == 0), 0, S7_04), # value of loan; setting to 0 if didn't get a loan
+    
     
     # -- create binaries --
     fem_head = case_when(hh$S1_01_3 == 1 ~ 0, # male-headed
@@ -232,7 +250,11 @@ hh = hh %>%
     village_structUmudugudu = case_when(hh$v_S2_03_4 == 0 ~ 0,
                                         hh$v_S2_03_4 == 4 ~ 1,
                                         TRUE ~ NA_real_),
-    
+    got_loan = case_when(hh$asked_loan == 0 ~ 0, # didn't ask for one, so couldn't get one!
+                         hh$S7_01_2 == 0 ~ 0, # asked but didn't receive (note: only 19 hh)
+                         hh$S7_01_2 == 1 ~ 1, # asked & received
+                         TRUE ~ NA_real_),
+
     # -- regroup --
     head_literate = case_when(hh$S1_01_7 == 0 ~ 0, # illiterate
                               hh$S1_01_7 == 1 ~ 1, # can read & write
@@ -280,7 +302,9 @@ hh = hh %>%
   factorize(hh_raw, 'S2_05', 'own_house_cat') %>%
   factorize(hh_raw, 'S2_09', 'cookingfuel_cat') %>%
   mutate(cookingfuel_cat = forcats::fct_lump(cookingfuel_cat, prop = 0.02)) %>% # grouping all "good" fuels into an other category. all infrequent anyway
-  # -- village connectivity --
+  factorize(hh_raw, 'S7_02', 'loan_purpose') %>% # note: should condense
+  factorize(hh_raw, 'S7_03', 'loan_source') %>% # note: should condense
+    # -- village connectivity --
   factorize(hh_raw, 'health_facility_distance', 'health_dist_cat') %>% 
   factorize(hh_raw, 'health_less_60min', 'health_less_60min') %>% 
   factorize(hh_raw, 'market_distance', 'market_dist_cat') %>%
@@ -297,6 +321,9 @@ hh = hh %>%
   factorize(hh_raw, 'protein_groups', 'protein_days') %>% 
   factorize(hh_raw, 'HIron_groups', 'ironrich_days') %>% 
   factorize(hh_raw, 'FoodAccess', 'food_access_year_cat') %>% # food access issues over past year 
+  # -- shock coping --
+  factorize(hh_raw, 'drought_coping', 'drought_coping') %>%  # whether improved source water + treatment
+  factorize(hh_raw, 'illness_coping', 'illness_coping') %>%  
   # -- WASH --
   factorize(hh_raw, 'S2_12', 'H2Otreatment_cat') %>%  
   factorize(hh_raw, 'water_source_treatment', 'drinkingH2O_cat') %>%  # whether improved source water + treatment
