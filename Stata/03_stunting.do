@@ -188,7 +188,6 @@ ren DHSCLUST, lower
 
 merge m:1 dhsclust using "$pathout/RWA_DHS_Livelihoods.dta", gen(_dhs_FEWS)
 
-drop 
 
 save "$pathout/stunting.dta", replace
 
@@ -214,6 +213,8 @@ twoway (kdensity stunting2 if motherEd ==0)(kdensity stunting2 if motherEd ==1) 
 svy:mean stunting2, over(district)
 svy:mean stunted2, over(district)
 matrix smean = r(table)
+matrix district = smean'
+mat2txt, matrix(district) saving("$pathxls/stunting_dist") replace
 
 * Create locals for reference lines in coefplot
 local stuntmean = smean[1,1]
@@ -231,6 +232,24 @@ matrix stunt = smean'
 matrix gis = district, stunt
 mat2txt, matrix(gis) saving("$pathxls/district_stunting.csv") replace
 matrix drop _all
+
+* Check stunting over livelihood zones
+svy:mean stunting2, over(lvdzone)
+svy:mean stunted2, over(lvdzone)
+matrix smean = r(table)
+matrix lvdzone = smean'
+mat2txt, matrix(lvdzone) saving("$pathxls/stunting_lvd") replace
+
+
+
+
+
+
+
+
+
+
+
 
 * running a few other statistics
 svy:mean stunted2, over(female)
