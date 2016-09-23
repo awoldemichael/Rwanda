@@ -25,4 +25,64 @@ stunting_admin2 = calcPtEst(ch, 'isStunted', by_var = 'admin2',
 # Calculate estimates for livelihood zones ---------------------------------
 
 stunting_lz = calcPtEst(ch, 'isStunted', by_var = 'livelihood_zone',
-                            psu_var = 'village', strata_var = 'admin2', weight_var = 'weight')
+                        psu_var = 'village', strata_var = 'admin2', weight_var = 'weight')
+
+
+# import DHS stunting admin2 results ---------------------------------------------
+stunting_admin2_dhs = data.frame(read.table('~/GitHub/Rwanda/Export/stunting_dist.txt')) 
+
+stunting_admin2_dhs = stunting_admin2_dhs %>% 
+  mutate(name = row.names(stunting_admin2_dhs)) %>% 
+  separate(name, into = c('x', 'admin2'), by = ':')
+
+s = full_join(stunting_admin2_dhs, stunting_admin2, by = 'admin2')
+
+
+ggplot(s, aes(x = b, y = isStunted)) + 
+  geom_abline(slope = 1, intercept = 0, colour = 'red') +
+  geom_rect(aes(xmin = ll, xmax = ul, ymin = lb, ymax = ub),
+            alpha = 0.2) +
+  geom_segment(aes(xend = b, y = lb, yend = ub), alpha = 0.3) +
+  geom_segment(aes(yend = isStunted, x = ll, xend = ul), alpha = 0.3) +
+  geom_point(size = 3, colour = 'dodgerblue') + 
+  coord_equal() +
+  xlab('DHS') +
+  ylab('CFSVA') +
+  ggtitle('districts') +
+  theme_xygridlight()
+
+# import DHS stunting livelihood zone results ---------------------------------------------
+stunting_lz_dhs = data.frame(read.delim('~/GitHub/Rwanda/Export/stunting_lvd.txt'))
+
+library(data.table)
+stunting_lz_dhs = stunting_lz_dhs %>% 
+  mutate(livelihood_zone = case_when(stunting_lz_dhs$X %like% 'Tea' ~ 'West Congo-Nile Crest Tea Zone',
+                   stunting_lz_dhs$X %like% 'Wheat' ~ 'Northern Highland Beans and Wheat Zone',                          
+                   stunting_lz_dhs$X %like% 'Eastern Congo' ~ 'East Congo-Nile Highland Subsistence Farming Zone',
+                   stunting_lz_dhs$X %like% 'Volcanic' ~ 'Northwest Volcanic Irish Potato Zone',                            
+                   stunting_lz_dhs$X %like% 'Mixed' ~ 'Eastern Plateau Mixed Agriculture Zone',
+                   stunting_lz_dhs$X %like% 'Eastern Ag' ~ 'Eastern Agropastoral Zone',                                       
+                   stunting_lz_dhs$X %like% 'Central-Northern' ~ 'Central-Northern Highland Irish Potato, Beans and Vegetable Zone',
+                   stunting_lz_dhs$X %like% 'Kivu' ~ 'Lake Kivu Coffee Zone',
+                   stunting_lz_dhs$X %like% 'Banana' ~ 'Southeastern Plateau Banana Zone',
+                   stunting_lz_dhs$X %like% 'Bugesera' ~ 'Bugesera Cassava Zone',                                           
+                   stunting_lz_dhs$X %like% 'Central Plateau' ~ 'Central Plateau Cassava and Coffee Zone',
+                   stunting_lz_dhs$X %like% 'Semi-Arid' ~ 'Eastern Semi-Arid Agropastoral Zone',                             
+                   stunting_lz_dhs$X %like% 'Urban' ~ 'Kigali city',
+                   TRUE ~ NA_character_))
+
+s = full_join(stunting_lz_dhs, stunting_lz, by = 'livelihood_zone')
+
+
+ggplot(s, aes(x = b, y = isStunted)) + 
+  geom_abline(slope = 1, intercept = 0, colour = 'red') +
+  geom_rect(aes(xmin = ll, xmax = ul, ymin = lb, ymax = ub),
+            alpha = 0.2) +
+  geom_segment(aes(xend = b, y = lb, yend = ub), alpha = 0.3) +
+  geom_segment(aes(yend = isStunted, x = ll, xend = ul), alpha = 0.3) +
+  geom_point(size = 3, colour = 'dodgerblue') + 
+  coord_equal()  +
+  xlab('DHS') +
+  ylab('CFSVA') +
+  ggtitle('livelihood zones') +
+  theme_xygridlight()
