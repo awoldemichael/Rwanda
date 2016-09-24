@@ -19,12 +19,12 @@
 
 # Calculate estimates at the Admin2 level ---------------------------------
 
-stunting_admin2 = calcPtEst(ch, 'isStunted', by_var = 'admin2',
+stunting_admin2_cfsva = calcPtEst(ch, 'isStunted', by_var = 'admin2',
                             psu_var = 'village', strata_var = 'admin2', weight_var = 'weight')
 
 # Calculate estimates for livelihood zones ---------------------------------
 
-stunting_lz = calcPtEst(ch, 'isStunted', by_var = 'livelihood_zone',
+stunting_lz_cfsva = calcPtEst(ch, 'isStunted', by_var = 'livelihood_zone',
                         psu_var = 'village', strata_var = 'admin2', weight_var = 'weight')
 
 
@@ -35,7 +35,7 @@ stunting_admin2_dhs = stunting_admin2_dhs %>%
   mutate(name = row.names(stunting_admin2_dhs)) %>% 
   separate(name, into = c('x', 'admin2'), by = ':')
 
-s = full_join(stunting_admin2_dhs, stunting_admin2, by = 'admin2')
+stunting_admin2 = full_join(stunting_admin2_dhs, stunting_admin2_cfsva, by = 'admin2')
 
 
 ggplot(s, aes(x = b, y = isStunted)) + 
@@ -71,7 +71,7 @@ stunting_lz_dhs = stunting_lz_dhs %>%
                    stunting_lz_dhs$X %like% 'Urban' ~ 'Kigali city',
                    TRUE ~ NA_character_))
 
-s = full_join(stunting_lz_dhs, stunting_lz, by = 'livelihood_zone')
+stunting_lz = full_join(stunting_lz_dhs, stunting_lz_cfsva, by = 'livelihood_zone')
 
 
 ggplot(s, aes(x = b, y = isStunted)) + 

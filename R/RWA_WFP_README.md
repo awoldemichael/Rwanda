@@ -17,6 +17,8 @@ For the CFSVA and Nutrition Survey 2012, data collection was conducted during th
 - [ ] choropleth: stunting by district, livelihood zone
 - [ ] reproducible choropleth function (frontier)
 - [ ] regressions: stunting
+    - [ ] cluster standard errors
+    - [ ] recenter/scale to standardize coefficients
 - [ ] regressions: FCS/dd
 - [ ] wealth by occupation / livelihood zone (over time)
 - [ ] how has stunting changed over time, where?
