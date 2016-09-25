@@ -20,8 +20,15 @@
 setwd('~/GitHub/Rwanda/R/')
   
 
+# SETUP -------------------------------------------------------------------
+
+
 # Load setup functions / vars ---------------------------------------------
 source('RWA_WFP_00_setup.R')
+
+
+# IMPORT ------------------------------------------------------------------
+
 
 # Import / clean individual children-level data --------------------------------------------
 source('RWA_WFP_01_importKids.R')
@@ -31,3 +38,19 @@ source('RWA_WFP_02_importMother.R')
 
 # Import / clean hh-level data --------------------------------------------
 source('RWA_WFP_03_importHH.R')
+
+
+# Import shapefiles for choropleths ---------------------------------------
+source('RWA_WFP_05_importGeo.R')
+
+
+# ANALYSE -----------------------------------------------------------------
+
+# Calculate point estimates for stunting
+source('RWA_WFP_A01_calcStunting.R')
+
+# Run stunting linear models
+
+# PLOT --------------------------------------------------------------------
+
+
