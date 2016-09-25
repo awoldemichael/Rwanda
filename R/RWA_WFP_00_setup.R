@@ -36,7 +36,7 @@ stunting_range = c(0, 1)
 
 
 # load appropriate packages -----------------------------------------------
-library(dplyr)
+library(data.table)
 library(haven)
 library(ggplot2)
 library(tidyr)
@@ -45,6 +45,8 @@ library(llamar)
 library(survey)
 library(forcats)
 library(modelr) # devtools::install_github('hadley/modelr')
+library(RColorBrewer)
+library(dplyr)
 
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
