@@ -34,10 +34,13 @@ chain = full_join(stunting_admin2,nutrition, by = c('admin2' = 'District'))
 
 # plot CHAIN relative to stunting -----------------------------------------
 
+# CFSVA data
+
 ggplot(chain) +
   # -- error bars --
   geom_segment(aes(x = lb_cfsva, xend = ub_cfsva, 
-                   y = fct_reorder(admin2, stunting_cfsva), yend = fct_reorder(admin2, stunting_cfsva)), 
+                   y = fct_reorder(admin2, stunting_cfsva), 
+                   yend = fct_reorder(admin2, stunting_cfsva)), 
                colour = grey50K, alpha = 0.2,
                size = 1.25) +
   # -- averages (squares) --
@@ -45,6 +48,12 @@ ggplot(chain) +
                  y = fct_reorder(admin2, stunting_cfsva), 
                  fill = stunting_cfsva),
              size = 4, shape = 22, colour = grey90K) +
+  
+  # -- overlay %s on top --
+  geom_text(aes(x = stunting_cfsva, 
+                y = fct_reorder(admin2, stunting_cfsva), 
+                label = round(stunting_cfsva * 100, 0)),
+            size = 2, colour = grey90K) +
   
   # -- binary values for CHAIN projects --
   geom_point(aes(x = 0.9, 
@@ -73,5 +82,9 @@ ggplot(chain) +
   # -- themes --
   theme_xygridlight() +
   theme(axis.title.y = element_blank(), 
-          panel.grid.major.y = element_line(size = 0.05, color = grey50K) # lighter and half as thick
+        axis.title.x = element_text(hjust = 0),
+        panel.grid.major.y = element_line(size = 0.05, color = grey50K) # lighter and half as thick
   )
+
+
+save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/RWA_02_CHAIN_stunting.pdf')
