@@ -37,6 +37,7 @@ For the CFSVA and Nutrition Survey 2012, data collection was conducted during th
 - [ ] food groups by (FCS, wealth, % total expenditures on food) plot
 - [ ] group good/bad coping, if going to use
 - [ ] compare w/ district-level data on projects
+- [ ] fix themes of llamar wrt fonts
 
 ### Done:
 
