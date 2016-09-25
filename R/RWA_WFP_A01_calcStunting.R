@@ -22,28 +22,32 @@
 stunting_admin2_cfsva = calcPtEst(ch, 'isStunted', by_var = 'admin2',
                             psu_var = 'village', strata_var = 'admin2', weight_var = 'weight')
 
-# Calculate estimates for livelihood zones ---------------------------------
-
-stunting_lz_cfsva = calcPtEst(ch, 'isStunted', by_var = 'livelihood_zone',
-                        psu_var = 'village', strata_var = 'admin2', weight_var = 'weight')
 
 
 # import DHS stunting admin2 results ---------------------------------------------
 stunting_admin2_dhs = data.frame(read.table('~/GitHub/Rwanda/Export/stunting_dist.txt')) 
 
+# separate district column
 stunting_admin2_dhs = stunting_admin2_dhs %>% 
   mutate(name = row.names(stunting_admin2_dhs)) %>% 
   separate(name, into = c('x', 'admin2'), by = ':')
 
-stunting_admin2 = full_join(stunting_admin2_dhs, stunting_admin2_cfsva, by = 'admin2')
+# -- merge DHS and CFSVA results --
+stunting_admin2 = full_join(stunting_admin2_dhs, stunting_admin2_cfsva, by = 'admin2') %>% 
+  rename(stunting_dhs = b,
+         stunting_cfsva = isStunted,
+         lb_dhs = ll,
+         ub_dhs = ul,
+         lb_cfsva = lb,
+         ub_cfsva = ub)
 
-
-ggplot(s, aes(x = b, y = isStunted)) + 
+# -- Plot difference in CFSVA and DHS --
+ggplot(stunting_admin2, aes(x = stunting_dhs, y = stunting_cfsva)) + 
   geom_abline(slope = 1, intercept = 0, colour = 'red') +
-  geom_rect(aes(xmin = ll, xmax = ul, ymin = lb, ymax = ub),
+  geom_rect(aes(xmin = lb_dhs, xmax = ub_dhs, ymin = lb_cfsva, ymax = ub_cfsva),
             alpha = 0.2) +
-  geom_segment(aes(xend = b, y = lb, yend = ub), alpha = 0.3) +
-  geom_segment(aes(yend = isStunted, x = ll, xend = ul), alpha = 0.3) +
+  geom_segment(aes(xend = stunting_dhs, y = lb_cfsva, yend = ub_cfsva), alpha = 0.3) +
+  geom_segment(aes(yend = stunting_cfsva, x = lb_dhs, xend = ub_dhs), alpha = 0.3) +
   geom_point(size = 3, colour = 'dodgerblue') + 
   coord_equal() +
   xlab('DHS') +
@@ -51,10 +55,16 @@ ggplot(s, aes(x = b, y = isStunted)) +
   ggtitle('districts') +
   theme_xygridlight()
 
+# Calculate estimates for livelihood zones ---------------------------------
+
+stunting_lz_cfsva = calcPtEst(ch, 'isStunted', by_var = 'livelihood_zone',
+                              psu_var = 'village', strata_var = 'admin2', weight_var = 'weight')
+
 # import DHS stunting livelihood zone results ---------------------------------------------
 stunting_lz_dhs = data.frame(read.delim('~/GitHub/Rwanda/Export/stunting_lvd.txt'))
 
-library(data.table)
+# Fix merging name issues for livelihood zones
+# %like% requires library(data.table)
 stunting_lz_dhs = stunting_lz_dhs %>% 
   mutate(livelihood_zone = case_when(stunting_lz_dhs$X %like% 'Tea' ~ 'West Congo-Nile Crest Tea Zone',
                    stunting_lz_dhs$X %like% 'Wheat' ~ 'Northern Highland Beans and Wheat Zone',                          
@@ -71,15 +81,22 @@ stunting_lz_dhs = stunting_lz_dhs %>%
                    stunting_lz_dhs$X %like% 'Urban' ~ 'Kigali city',
                    TRUE ~ NA_character_))
 
-stunting_lz = full_join(stunting_lz_dhs, stunting_lz_cfsva, by = 'livelihood_zone')
+# -- Merge DHS and CFSVA results -- 
+stunting_lz = full_join(stunting_lz_dhs, stunting_lz_cfsva, by = 'livelihood_zone') %>% 
+  rename(stunting_dhs = b,
+         stunting_cfsva = isStunted,
+         lb_dhs = ll,
+         ub_dhs = ul,
+         lb_cfsva = lb,
+         ub_cfsva = ub)
 
-
-ggplot(s, aes(x = b, y = isStunted)) + 
+# -- Plot difference b/w DHS and CFSVA --
+ggplot(stunting_lz, aes(x = stunting_dhs, y = stunting_cfsva)) + 
   geom_abline(slope = 1, intercept = 0, colour = 'red') +
-  geom_rect(aes(xmin = ll, xmax = ul, ymin = lb, ymax = ub),
+  geom_rect(aes(xmin = lb_dhs, xmax = ub_dhs, ymin = lb_cfsva, ymax = ub_cfsva),
             alpha = 0.2) +
-  geom_segment(aes(xend = b, y = lb, yend = ub), alpha = 0.3) +
-  geom_segment(aes(yend = isStunted, x = ll, xend = ul), alpha = 0.3) +
+  geom_segment(aes(xend = stunting_dhs, y = lb_cfsva, yend = ub_cfsva), alpha = 0.3) +
+  geom_segment(aes(yend = stunting_cfsva, x = lb_dhs, xend = ub_dhs), alpha = 0.3) +
   geom_point(size = 3, colour = 'dodgerblue') + 
   coord_equal()  +
   xlab('DHS') +
