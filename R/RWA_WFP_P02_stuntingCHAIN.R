@@ -1,12 +1,13 @@
 # Merging w/ CHAIN data and plotting
 
-ggplot(stunting_admin2, aes(x = isStunted, y = fct_reorder(admin2, isStunted), fill = isStunted)) +
-  geom_segment(aes(x = lb, xend = ub, yend = fct_reorder(admin2, isStunted)), 
+ggplot(stunting_admin2, aes(x = stunting_cfsva, y = fct_reorder(admin2, stunting_cfsva), 
+                            fill = stunting_cfsva)) +
+  geom_segment(aes(x = lb_cfsva, xend = ub_cfsva, yend = fct_reorder(admin2, stunting_cfsva)), 
                colour = grey50K, alpha = 0.2,
                size = 1.5) +
   geom_point(size = 4, shape = 22, colour = grey90K) +
   scale_fill_gradientn(colours = rev(brewer.pal(11, 'Spectral')[1:6])) +
-  theme_xgrid()
+  theme_xygrid()
 
 
 # import CHAIN data -------------------------------------------------------
@@ -29,33 +30,35 @@ nutrition[is.na(nutrition)] = 0
 
 chain = full_join(stunting_admin2,nutrition, by = c('admin2' = 'District'))
 
-ggplot(chain, aes(x = isStunted, y = fct_reorder(admin2, isStunted), fill = isStunted)) +
-  geom_segment(aes(x = lb, xend = ub, yend = fct_reorder(admin2, isStunted)), 
+
+# plot CHAIN relative to stunting -----------------------------------------
+
+ggplot(chain, aes(x = stunting_cfsva, y = fct_reorder(admin2, stunting_cfsva), 
+                  fill = stunting_cfsva)) +
+  geom_segment(aes(x = lb_cfsva, xend = ub_cfsva, 
+                   yend = fct_reorder(admin2, stunting_cfsva)), 
                colour = grey50K, alpha = 0.2,
                size = 1.25) +
   geom_point(size = 4, shape = 22, colour = grey90K) +
-  geom_point(aes(x = 0.9, y = fct_reorder(admin2, isStunted),
+  geom_point(aes(x = 0.9, y = fct_reorder(admin2, stunting_cfsva),
                  colour = factor(RSMP)),
     size = 5) +
-  geom_point(aes(x = 1, y = fct_reorder(admin2, isStunted),
+  geom_point(aes(x = 1, y = fct_reorder(admin2, stunting_cfsva),
                  colour = factor(AEE)),
              size = 5) +
-  geom_point(aes(x = 1.1, y = fct_reorder(admin2, isStunted),
+  geom_point(aes(x = 1.1, y = fct_reorder(admin2, stunting_cfsva),
                  colour = factor(OFSP)),
              size = 5) +
-  geom_point(aes(x = 1.2, y = fct_reorder(admin2, isStunted),
+  geom_point(aes(x = 1.2, y = fct_reorder(admin2, stunting_cfsva),
                  colour = factor(PSDAG)),
              size = 5) +
-  geom_point(aes(x = 1.3, y = fct_reorder(admin2, isStunted),
+  geom_point(aes(x = 1.3, y = fct_reorder(admin2, stunting_cfsva),
                  colour = factor(`ROADS III`)),
              size = 5) +
   scale_colour_manual(values = c('0' = grey15K, '1' = brewer.pal(11, 'Spectral')[9])) +
   scale_fill_gradientn(colours = rev(brewer.pal(11, 'Spectral')[1:6])) +
-  theme_xgrid()
-
-ggplot(nutrition, aes(x = shortName, y = fct_reorder(District, shortName))) +
-  geom_point(aes(
-                 colour = factor(worksIn)),
-             size = 5) +
-  scale_colour_manual(values = c('0' = grey15K, '1' = brewer.pal(11, 'Spectral')[9])) +
-  theme_xgrid()
+  scale_x_continuous(name = 'percent of stunted children (under 5 years old)',
+                     labels = scales::percent,
+                     breaks = c(0, 0.2, 0.4, 0.6, 0.8)) +
+  theme_xygrid() +
+  theme(axis.y.title = element_blank())
