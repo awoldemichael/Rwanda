@@ -72,7 +72,7 @@ ggplot(chain) +
   
   # -- country average --
   geom_vline(xintercept = 0.38,
-             size = 0.5, colour = grey70K) +
+             size = 0.25, colour = grey70K) + # note: stroke gets doubled when saved
   
   # -- averages (squares) --
   geom_point(aes(x = stunting_dhs, 
