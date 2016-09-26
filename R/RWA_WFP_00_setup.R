@@ -26,15 +26,6 @@ baseDir = '~/Rwanda/rawdata/'
 baseDir = '~/Documents/USAID/Rwanda/rawdata/'
 
 
-# Set aesthetics ----------------------------------------------------------
-font_light = 'Lato Light'
-font_normal = 'Lato'
-
-stunting_colour = 'YlOrRd'
-stunting_range = c(0, 1)
-
-
-
 # load appropriate packages -----------------------------------------------
 library(data.table)
 library(haven)
@@ -47,6 +38,19 @@ library(forcats)
 library(modelr) # devtools::install_github('hadley/modelr')
 library(RColorBrewer)
 library(dplyr)
+
+
+# Set aesthetics ----------------------------------------------------------
+font_light = 'Lato Light'
+font_normal = 'Lato'
+
+stunting_pal = c('#ffffe3', rev(brewer.pal(11, 'Spectral')[1:6]), '#68002d')
+# linear range; max values for raster = 0.685; DHS @ admin2 = 0.574; DHS @ lz = 0.524; CFSVA @ admin2 = 0.678; CFSVA @ lz = 0.534
+stunting_range = c(0, 0.70)
+
+
+
+
 
 # ------------------------------------------------------------------------
 # ------------------------------------------------------------------------
