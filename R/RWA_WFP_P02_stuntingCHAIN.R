@@ -1,9 +1,13 @@
 # Merging w/ CHAIN data and plotting
 
 
+# import data -------------------------------------------------------------
+source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
+
+
 # set constants -----------------------------------------------------------
-stunting_pal = rev(brewer.pal(11, 'Spectral')[1:6])
-stunting_range = c(0, 0.80)
+stunting_pal = stunting_pal
+stunting_range = stunting_range
 
 IM_pal = c(grey15K, colorRampPalette(c('#66C2A5', '#1E4436'))(9)) # color ramp from Spectral #9 to Spectral #10 w/ grey15K appended to the start
 IM_range = c(0, 9)
