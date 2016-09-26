@@ -84,6 +84,7 @@ ggplot(chain) +
   geom_text(aes(x = stunting_dhs, 
                 y = fct_reorder(admin2, stunting_dhs), 
                 label = round(stunting_dhs * 100, 0)),
+            family = font_normal,
             size = 2, colour = grey90K) +
   
   # -- binary values for CHAIN projects --
@@ -229,6 +230,7 @@ ggplot(chain) +
   geom_text(aes(x = max(nutrit_order) + 2 * squish_factor, 
                 y = fct_reorder(admin2, stunting_dhs), 
                 label = total),
+            family = font_normal,
             size = 3, colour = grey10K) +
   
   
@@ -243,7 +245,8 @@ ggplot(chain) +
   # -- themes --
   theme_xygridlight() +
   theme(axis.title.y = element_blank(), 
-        axis.title.x = element_text(hjust = 0),
+        axis.title.x = element_text(hjust = 0, family = font_normal),
+        axis.text = element_text(family = font_light),
         panel.grid.major.y = element_line(size = 0.05, color = grey50K) # lighter and half as thick
   )
 
