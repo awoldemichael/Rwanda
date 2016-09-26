@@ -44,7 +44,7 @@ for (i in seq_along(districts)){
     # -- choropleth over regions --
     geom_polygon(fill = highlight_colour) 
   
-  save_plot(paste0('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/', districts[i], '.pdf'),
+  save_plot(paste0('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/', districts[i], '_raw.pdf'),
             width = rw_size, 
             height = rw_size)
   
