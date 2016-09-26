@@ -27,6 +27,7 @@ baseDir_geo = '~/Documents/USAID/Rwanda/geodata/'
 RWA_admin0 = shp2df(baseDir =  baseDir_geo,
                     folderName = 'Rwanda_Admin0',
                     layerName = 'National_Boundary_2001', 
+                    getCentroids = FALSE,
                     exportData = FALSE)
 
 # import Admin1 -----------------------------------------------------------
@@ -40,6 +41,7 @@ RWA_admin1 = shp2df(baseDir =  baseDir_geo,
 RWA_admin2 = shp2df(baseDir =  baseDir_geo,
                     folderName = 'Rwanda_Admin2',
                     layerName = 'District_Boundary_2006',
+                    labelVar = 'District',
                     exportData = FALSE)
 
 # import FEWS NET livelihood zones ----------------------------------------
@@ -47,5 +49,14 @@ RWA_LZ = shp2df(baseDir =  baseDir_geo,
                     folderName = 'RW_LivelihoodZones_FEWS_2012',
                     layerName = 'RW_LHZ_2012',
                     exportData = FALSE)
+
+
+# import lakes ------------------------------------------------------------
+RWA_lakes = shp2df(baseDir =  baseDir_geo,
+                   folderName = 'Rwanda basemaps',
+                   layerName = 'RWA_Lakes',
+                   getCentroids = FALSE,
+                   exportData = FALSE)
+
 
 
