@@ -64,8 +64,14 @@ For the CFSVA and Nutrition Survey 2012, data collection was conducted during th
 * Label 'total'
 * Label nat'l avg.
 * round square edges 0.02"
-* drop shadow squares multiply 75 @ 90% K, 0.02" 0.02" 0.02"
+* drop shadow squares & total circles multiply 75 @ 90% K, 0.02" 0.02" 0.02"
 * Adjust CHAIN project labels
-* decrease/add stroke squares, 90% K, 0.1 pt.
+* decrease/add stroke squares, 90% K, 0.15 pt.
+* add stroke circles, 90% K, 0.1 pt
 * duplicate horizontal axis guides and surround text
 * change % labels to white where appropriate
+* add maps
+* move total over, duplicate district names
+
+#### Interpolation histogram for stunting
+* group raster slices together and group
