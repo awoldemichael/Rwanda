@@ -54,3 +54,18 @@ For the CFSVA and Nutrition Survey 2012, data collection was conducted during th
 - [x] factorize (llamar)
 
 #### Vis. products
+
+---
+
+### Modifications for polished products
+
+#### CHAIN/stunting overlay
+* Label CHAIN project
+* Label 'total'
+* Label nat'l avg.
+* round square edges 0.02"
+* drop shadow squares multiply 75 @ 90% K, 0.02" 0.02" 0.02"
+* Adjust CHAIN project labels
+* decrease/add stroke squares, 90% K, 0.1 pt.
+* duplicate horizontal axis guides and surround text
+* change % labels to white where appropriate
