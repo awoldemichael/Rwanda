@@ -18,15 +18,12 @@
 
 # set params --------------------------------------------------------------
 
-fill_colour = 'BuPu' # RColorBrewer palette
-fill_limits = c(0, 1)
 
 # load libraries ----------------------------------------------------------
 library(rgdal)
 library(raster)
 library(dplyr)
 library(ggplot2)
-library(RColorBrewer)
 
 # import data -------------------------------------------------------------
 
@@ -41,9 +38,33 @@ stunted_matrix = as.matrix(raw_stunted_raster)
 stunted_array = data.frame(pct = as.vector(raw_stunted_raster))
 
 ggplot(stunted_array, aes(x = pct)) + 
+  # -- histogram to get the color bars --
   geom_histogram(binwidth = 0.01, 
                  aes(y = ..density..,
                    fill = ..x..)) +
-  geom_density() +
-  scale_fill_gradientn(colours = brewer.pal(9, fill_colour), 
-                       values = fill_limits)
+  
+  # -- density to get the surface --
+  geom_density(size = 0.125, colour = grey90K) +
+  
+  # -- scales --
+  scale_fill_gradientn(colours = stunting_pal, 
+                       limits = stunting_range,
+                       name = NULL,
+                       labels = scales::percent) +
+  scale_x_continuous(labels = scales::percent,
+                     breaks = seq(0.0, 0.8, by = 0.2),
+                     limits = c(0.0, 0.80)) +
+  # -- themes --
+  theme_xgrid() +
+  theme(legend.position = c(0.1, 0.4),
+        axis.title = element_blank(),
+        axis.text.y = element_blank(),
+        legend.direction = 'horizontal',
+        legend.text = element_text(size = 12, 
+                                   family = font_light, hjust = 0, color = grey60K))
+
+
+# save plots --------------------------------------------------------------
+
+save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/RWA_DHS_interpHist.pdf', 
+          width = 8.5, height = 4.5)
