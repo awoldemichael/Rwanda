@@ -8,7 +8,7 @@
 # Available at http://geodata.nisr.opendata.arcgis.com/datasets?q=Rwanda
 #
 # Livelihood zone polygons from FEWS NET
-# Available at 
+# Available at http://www.fews.net/east-africa/rwanda/livelihood-zone-map/july-2012
 #
 # Laura Hughes, lhughes@usaid.gov, 23 September 2016
 # with Tim Essam (tessam@usaid.gov) and Nada Petrovic (npetrovic@usaid.gov)
