@@ -74,10 +74,9 @@ plot_choro = function(df,
     
     # -- themes --
     theme_void() + 
-    theme(rect = element_rect(fill = '#ffffff', colour = '#ffffff', size = 0, linetype = 1),
-          legend.position = c(0.2, 0.7),
-          panel.background = element_rect(fill = bg_fill),
-          plot.margin = margin(0)) 
+    theme(
+      legend.position = c(0.2, 0.7),
+      plot.margin = margin(0)) 
   
   
   # -- add lakes and inland water --
@@ -111,19 +110,19 @@ plot_choro = function(df,
     
     df_avg =  df %>% 
       group_by_(centroids_var) %>% 
-      summarise_(var_pct = paste0('llamar::percent(mean(', fill_var,'))'))
+      summarise_(var_pct = paste0('llamar::percent(mean(', fill_var,'), ndigits = 0)'))
     
     centroids = left_join(centroids, df_avg, by = c('label' = centroids_var))
     
     p = p +
       geom_text(aes(label = label, x = long, y = lat, group = 1),
                 size = size_label,
-                colour = fill_scale[9],
+                colour = grey90K,
                 family = font_normal,
                 data = centroids) +
       geom_text(aes(label = var_pct, x = long, y = lat, group = 1),
                 size = size_label,
-                colour = fill_scale[9],
+                colour = grey90K,
                 family = font_light,
                 nudge_y = -label_y,
                 data = centroids)
@@ -137,7 +136,8 @@ plot_choro = function(df,
   
   # -- export ==
   if (exportPlot == TRUE) {
-    ggsave(filename = fileName, 
+    ggsave(plot = p,
+           filename = fileName, 
            width = plotWidth, height = plotHeight, units = "in", 
            bg = "transparent", 
            paper = "special", useDingbats = FALSE, compress = FALSE, dpi = 300)
@@ -152,13 +152,11 @@ plot_choro = function(df,
 rw_polygons = left_join(RWA_admin2$df, stunting_admin2, by = c('District' = 'admin2'))
 
 plot_choro(rw_polygons,          
-           admin0 = RWA_admin0$df,         
-           clipping_mask = RWA_admin0$df, 
-           centroids = NA,
+           admin0 = RWA_admin0,         
+           clipping_mask = RWA_admin0, 
+           centroids = RWA_admin2$centroids,
            fill_var = 'stunting_dhs',
            centroids_var = 'District',
-           bounding_x = NA,
-           bounding_y = NA,
            fill_scale = stunting_pal,
            fill_limits = stunting_range, 
            plot_base = FALSE,
@@ -174,10 +172,7 @@ plot_choro(rw_polygons,
            clipping_mask = RWA_admin0, 
            centroids = RWA_admin2$centroids,
            fill_var = 'stunting_cfsva',
-           lakes = RWA_lakes,
            centroids_var = 'District',
-           bounding_x = NA,
-           bounding_y = NA,
            fill_scale = stunting_pal,
            fill_limits = stunting_range, 
            plot_base = FALSE,
