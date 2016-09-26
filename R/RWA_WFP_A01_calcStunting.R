@@ -16,6 +16,12 @@
 #
 # -------------------------------------------------------------------------
 
+# Calculate estimates at the Admin0 level ---------------------------------
+
+stunting_admin0_cfsva = calcPtEst(ch, 'isStunted', 
+                                  psu_var = 'village', strata_var = 'admin2', weight_var = 'weight')
+
+
 
 # Calculate estimates at the Admin2 level ---------------------------------
 
