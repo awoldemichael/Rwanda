@@ -46,10 +46,42 @@ RWA_admin2 = shp2df(baseDir =  baseDir_geo,
 
 # import FEWS NET livelihood zones ----------------------------------------
 RWA_LZ = shp2df(baseDir =  baseDir_geo,
-                    folderName = 'RW_LivelihoodZones_FEWS_2012',
-                    layerName = 'RW_LHZ_2012',
-                    exportData = FALSE)
+                folderName = 'RW_LivelihoodZones_FEWS_2012',
+                layerName = 'RW_LHZ_2012',
+                labelVar = 'LZNAMEE',
+                exportData = FALSE)
 
+RWA_LZ$df = RWA_LZ$df %>% 
+  mutate(livelihood_zone = case_when(RWA_LZ$df$LZNAMEE %like% 'Tea' ~ 'West Congo-Nile Crest Tea Zone',
+                                     RWA_LZ$df$LZNAMEE %like% 'Wheat' ~ 'Northern Highland Beans and Wheat Zone',                          
+                                     RWA_LZ$df$LZNAMEE %like% 'Eastern Congo' ~ 'East Congo-Nile Highland Subsistence Farming Zone',
+                                     RWA_LZ$df$LZNAMEE %like% 'Volcanic' ~ 'Northwest Volcanic Irish Potato Zone',                            
+                                     RWA_LZ$df$LZNAMEE %like% 'Mixed' ~ 'Eastern Plateau Mixed Agriculture Zone',
+                                     RWA_LZ$df$LZNAMEE %like% 'Eastern Ag' ~ 'Eastern Agropastoral Zone',                                       
+                                     RWA_LZ$df$LZNAMEE %like% 'Central-Northern' ~ 'Central-Northern Highland Irish Potato, Beans and Vegetable Zone',
+                                     RWA_LZ$df$LZNAMEE %like% 'Kivu' ~ 'Lake Kivu Coffee Zone',
+                                     RWA_LZ$df$LZNAMEE %like% 'Banana' ~ 'Southeastern Plateau Banana Zone',
+                                     RWA_LZ$df$LZNAMEE %like% 'Bugesera' ~ 'Bugesera Cassava Zone',                                           
+                                     RWA_LZ$df$LZNAMEE %like% 'Central Plateau' ~ 'Central Plateau Cassava and Coffee Zone',
+                                     RWA_LZ$df$LZNAMEE %like% 'Semi-Arid' ~ 'Eastern Semi-Arid Agropastoral Zone',                             
+                                     RWA_LZ$df$LZNAMEE %like% 'Urban' ~ 'Kigali city',
+                                     TRUE ~ NA_character_))
+
+RWA_LZ$centroids = RWA_LZ$centroids %>% 
+  mutate(label = case_when(RWA_LZ$centroids$label %like% 'Tea' ~ 'West Congo-Nile Crest Tea Zone',
+                           RWA_LZ$centroids$label %like% 'Wheat' ~ 'Northern Highland Beans and Wheat Zone',                          
+                           RWA_LZ$centroids$label %like% 'Eastern Congo' ~ 'East Congo-Nile Highland Subsistence Farming Zone',
+                           RWA_LZ$centroids$label %like% 'Volcanic' ~ 'Northwest Volcanic Irish Potato Zone',                            
+                           RWA_LZ$centroids$label %like% 'Mixed' ~ 'Eastern Plateau Mixed Agriculture Zone',
+                           RWA_LZ$centroids$label %like% 'Eastern Ag' ~ 'Eastern Agropastoral Zone',                                       
+                           RWA_LZ$centroids$label %like% 'Central-Northern' ~ 'Central-Northern Highland Irish Potato, Beans and Vegetable Zone',
+                           RWA_LZ$centroids$label %like% 'Kivu' ~ 'Lake Kivu Coffee Zone',
+                           RWA_LZ$centroids$label %like% 'Banana' ~ 'Southeastern Plateau Banana Zone',
+                           RWA_LZ$centroids$label %like% 'Bugesera' ~ 'Bugesera Cassava Zone',                                           
+                           RWA_LZ$centroids$label %like% 'Central Plateau' ~ 'Central Plateau Cassava and Coffee Zone',
+                           RWA_LZ$centroids$label %like% 'Semi-Arid' ~ 'Eastern Semi-Arid Agropastoral Zone',                             
+                           RWA_LZ$centroids$label %like% 'Urban' ~ 'Kigali city',
+                           TRUE ~ NA_character_))
 
 # import lakes ------------------------------------------------------------
 RWA_lakes = shp2df(baseDir =  baseDir_geo,

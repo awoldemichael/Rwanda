@@ -181,9 +181,38 @@ plot_choro(rw_polygons,
            plotHeight = rw_width,
            fileName = '~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/RWA_stunted_admin2_cfsva.pdf')
 
-# Admin2 map --------------------------------------------------------------
+
+# DHS, by lz --------------------------------------------------------
+rw_polygons_lz = left_join(RWA_LZ$df, stunting_lz, by = c('livelihood_zone' = 'livelihood_zone'))
+
+plot_choro(rw_polygons_lz,          
+           admin0 = RWA_admin0,         
+           clipping_mask = RWA_admin0, 
+           centroids = RWA_LZ$centroids,
+           fill_var = 'stunting_dhs',
+           centroids_var = 'livelihood_zone',
+           fill_scale = stunting_pal,
+           fill_limits = stunting_range, 
+           plot_base = FALSE,
+           exportPlot = TRUE, 
+           plotWidth = rw_width,
+           plotHeight = rw_width,
+           fileName = '~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/RWA_stunted_LZ_dhs.pdf')
 
 
-# rw_polygons = left_join(RWA_LZ$df, stunting_lz, by = c('LZNAMEE' = 'livelihood_zone'))
+# CFSVA, by lz ------------------------------------------------------------
 
-# -- AVERAGE --
+plot_choro(rw_polygons_lz,          
+           admin0 = RWA_admin0,         
+           clipping_mask = RWA_admin0, 
+           centroids = RWA_LZ$centroids,
+           fill_var = 'stunting_cfsva',
+           centroids_var = 'livelihood_zone',
+           fill_scale = stunting_pal,
+           fill_limits = stunting_range, 
+           plot_base = FALSE,
+           exportPlot = TRUE, 
+           plotWidth = rw_width,
+           plotHeight = rw_width,
+           fileName = '~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/RWA_stunted_LZ_cfsva.pdf')
+
