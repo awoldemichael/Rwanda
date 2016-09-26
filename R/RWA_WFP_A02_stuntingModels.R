@@ -24,8 +24,9 @@ stunting_fit_cfsva = lm(formula = stuntingZ ~ sex + age_months + low_birthwt +
                           wealth_idx_cat + new_ubudehe + 
                           rural_cat + livelihood_zone +
                           CARI_cat + diarrhea +
-                          market_distance + school_dist_cat+ market_dist_cat + health_dist_cat,
+                          road_distance + school_dist_cat+ market_dist_cat + health_dist_cat,
                         data = all)
+summary(stunting_fit_cfsva)
 
 # stunting score
 stunted_fit_cfsva = lm(formula = isStunted ~ sex + age_months + low_birthwt +
@@ -35,7 +36,7 @@ stunted_fit_cfsva = lm(formula = isStunted ~ sex + age_months + low_birthwt +
                          wealth_idx_cat + new_ubudehe + 
                          rural_cat + livelihood_zone +
                          CARI_cat + diarrhea +
-                         market_distance + school_dist_cat+ market_dist_cat + health_dist_cat,
+                         road_distance + school_dist_cat+ market_dist_cat + health_dist_cat,
                        data = all)
 
 summary(stunted_fit_cfsva)
@@ -43,7 +44,7 @@ summary(stunted_fit_cfsva)
 # define models ------------------------------------------------------------------
 
 stunting_models = formulas(~stuntingZ, # lhs
-                           cfsva = ~sex + age_months + low_birthwt +
+                           cfsva = ~ age_months + low_birthwt +
                              beans_W24h + milk_W24h + 
                              stunted_mother + mother_age + mother_education +
                              wealth_idx_cat + new_ubudehe + 
@@ -53,7 +54,7 @@ stunting_models = formulas(~stuntingZ, # lhs
                            
                            demo_child = 
                              # -- demographic variables --
-                             ~ splines::bs(age_months, degree = 3, knots = 2) +
+                             ~ splines::bs(age_months, degree = 3, knots = 24) +
                              interview_date,
                            
                            wealth = ~wealth_idx,
@@ -71,7 +72,7 @@ stunting_fits_m = males %>% fit_with(lm, stunting_models)
 stunting_fits_f = females %>% fit_with(lm, stunting_models)
 stunting_fits_all = all %>% fit_with(lm, stunting_models)
 
-# lapply(stunting_fits_f, function(x) summary(x))
+lapply(stunting_fits_f, function(x) summary(x))
 
 summary(stunting_fits_m$comb)
 summary(stunting_fits_f$comb)
@@ -80,7 +81,7 @@ summary(stunting_fits_f$comb)
 # basic fit ---------------------------------------------------------------
 
 summary(lm(formula = stuntingZ ~ wealth_idx + interview_date + FS_final  + diarrhea + 
-             splines::bs(age_months, degree = 3, knots = 2) + 
+             splines::bs(age_months, degree = 3, knots = 24) + 
              milk_days + meat_days + impr_water + impr_toilet, 
            data = ch_hh %>% filter(!is.na(isStunted), sex == 'Male')))
 
