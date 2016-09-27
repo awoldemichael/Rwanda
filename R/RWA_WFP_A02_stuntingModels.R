@@ -63,7 +63,11 @@ stunting_models = formulas(~stuntingZ, # lhs
                            nutrition = ~FCS + CARI_cat + ever_breastfed,
                            health = ~fever + birthwt, 
                            ed = ~mother_literate + mother_education,
-                           comb = add_predictors(geo, demo_child, wealth, wash, nutrition, ed))
+                           
+                           comb = add_predictors(geo, demo_child, wealth, wash, nutrition, ed)
+                           
+                           
+)
 
 
 # run models --------------------------------------------------------------
@@ -87,3 +91,62 @@ summary(lm(formula = stuntingZ ~ wealth_idx + interview_date + FS_final  + diarr
 
 summary(lm(formula = stuntingZ ~ wealth_idx + interview_date + FS_final  + diarrhea +
              age_months + milk_days + meat_days + impr_water + impr_toilet, data = ch_hh %>% filter(!is.na(isStunted), sex == 'Male')))
+
+
+# Nada comparison ---------------------------------------------------------
+
+# Modeling age as a third order spline with knot at 24 months (2 years) 
+nada_f_model = lm(stuntingZ ~ splines::bs(age_months, degree = 3, knots = 24) + #use for male/female only
+                  # birth_order+birth_interval_preceding*firstborn+ # demographics; not in CFSVA
+                  stunted_mother + mother_education + # mother
+                  ever_breastfed + # nutrition
+                  infrastruct_idx + wash_idx + # infrastructure, WASH indices
+                  # comm_ind + # communication index; asked in CFSVA but not given to me :(
+                  cookingfuel_cat + # improved cooking fuel; 
+                  TLU + land_size + # livestock + land
+                  # bike + bankAccount + # Not in CFSVA
+                  diarrhea +
+                  month.y +
+                  rural_cat +
+                  livelihood_zone, #other
+                data = ch_hh %>% filter(sex == 'Female')) 
+
+nada_m_model = lm(stuntingZ ~ splines::bs(age_months, degree = 3, knots = 24) + #use for male/female only
+                    # birth_order+birth_interval_preceding*firstborn+ # demographics; not in CFSVA
+                    stunted_mother + mother_education + # mother
+                    ever_breastfed + # nutrition
+                    infrastruct_idx + wash_idx + # infrastructure, WASH indices
+                    # comm_ind + # communication index; asked in CFSVA but not given to me :(
+                    cookingfuel_cat + # improved cooking fuel; 
+                    TLU + land_size + # livestock + land
+                    # bike + bankAccount + # Not in CFSVA
+                    diarrhea +
+                    month.y +
+                    rural_cat +
+                    livelihood_zone, #other
+                  data = ch_hh %>% filter(sex == 'Male')) 
+
+summary(nada_m_model)
+summary(nada_f_model)
+
+nada_mf <- glm(isStunted ~
+             #Modeling age as a third order spline with knot at 24 months (2 years) 
+             #bs(age_calc_months,degree=3,knots=24)+ #use for male/female only
+             splines::bs(age_months, degree = 3, knots = 24) * sex + #use for entire data set    
+             # birth_order+birth_interval_preceding*firstborn+ #demographics
+             stunted_mother + mother_education + # mother
+             ever_breastfed + # nutrition
+             infrastruct_idx + wash_idx +
+             # +comm_ind+ #infrastructure, WASH, communication indeces
+               cookingfuel_cat + #improved cooking fuel
+             TLU + own_land + #livestock+land
+             # bike+bankAccount+
+             diarrhea +
+             month.y +
+             rural_cat +
+             livelihood_zone, 
+           data = ch_hh, family = binomial(link = 'logit')) 
+
+summary(nada_mf)
+
+! need to refactor post merge

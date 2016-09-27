@@ -236,6 +236,12 @@ hh = hh %>%
                                      (hh$impr_toilet == 1 & hh$share_toilet == 0) ~ 1, # improved + unshared
                                      (hh$impr_toilet == 1 & hh$share_toilet == 1) ~ 0, # improved + shared
                                      TRUE ~ NA_real_),
+    
+    impr_water_30min = case_when(hh$impr_water == 0 ~ 0, # unimproved
+                                 (hh$impr_water == 1 & hh$time_water_source == 1) ~ 1, # improved + < 30 min. away
+                                 (hh$impr_water == 1 & hh$time_water_source > 1) ~ 0, # improved + > 30 min. away
+                                 TRUE ~ NA_real_),
+    
     months_food_access = ifelse(FoodAccess == 0, 0, Months_FA), # # months have food access issues; setting NAs to 0 if no food access issues
     
     loan_value = ifelse((asked_loan == 0 | S7_01_2 == 0), 0, S7_04), # value of loan; setting to 0 if didn't get a loan
@@ -252,6 +258,11 @@ hh = hh %>%
     fem_head = case_when(hh$S1_01_3 == 1 ~ 0, # male-headed
                          hh$S1_01_3 == 2 ~ 1, # female-headed
                          TRUE ~ NA_real_),
+    
+    treat_water = case_when(hh$S2_12 == 6 ~ 0, # no water treatment
+                            hh$S2_12 %in% 1:5 ~ 1, # boil, train, filter, bleach, or sediment water
+                            TRUE ~ NA_real_
+                            ),
     
     village_VUP = case_when(hh$v_S2_03_1 == 0 ~ 0,
                             hh$v_S2_03_1 == 1 ~ 1,
@@ -349,6 +360,8 @@ hh = hh %>%
 
 
 
+
+
 # double check there are no NA values in any of the vars ------------------
 # Assuming NA values are 88
 # Note: will ignore all the factor levels.
@@ -410,3 +423,9 @@ nrow(ch_hh) == 4058
 # <lgl>          <lgl> <int>
 #   1      FALSE          FALSE  4027
 # 2       TRUE          FALSE    31
+
+# Create some simple indices ----------------------------------------------
+ch_hh = ch_hh %>% 
+  mutate(
+    infrastruct_idx = impr_roof + impr_floor + impr_wall + impr_light,
+    wash_idx = impr_unshared_toilet + impr_water_30min + as.numeric(wash_knowl > 0) + treat_water)
