@@ -99,7 +99,7 @@ save "$pathout/hhdemog.dta", replace
 
 ********************
 * Household info *
-use "$pathhh/RWHR70FL.dta"
+use "$pathhh/RWHR70FL.dta", clear
 
 * Replicating work done in 02_RW_cleanDHS_hh.r
 /* Create a unique id for merging (not that compliciated! -- see: 
@@ -163,6 +163,16 @@ recode hv237 (8 = .)(0 = 0 "no")(1 = 1 "yes"), gen(treatwater)
 
 recode hv242 (0 = 0 "no")(1 = 1 "yes")(. = .), gen(kitchen)
 clonevar bednet = hv227 
+
+* Wash variables (http://www.wssinfo.org/definitions-methods/watsan-categories/)
+
+g byte improvedWater = inlist(hv201, 10, 11, 12, 13, 20, 21, 30, 31, 41, 51)
+g byte unimprovedWater = inlist(hv201, 41, 42, 43, 61, 62)
+
+g byte improvedSanit = inlist(hv205, 10, 11, 12, 13, 20, 41, 22, 41)
+g byte unimprovedSanit = inlist(hv205, 14, 15, 23, 30, 31, 42, 43, 96)
+
+
 
 **********************************************
 * HH Landholding for agricultural production *

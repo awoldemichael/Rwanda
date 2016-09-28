@@ -303,7 +303,7 @@ restore
 bob
 
 * Appears to be a weak negative relationship w/ altitude
-twoway(scatter stunting2 altitude)(lpolyci stunting2 altitude)
+twoway(scatter stunted altitude)(lpoly stunted altitude)
 
 * How does stunting look by cluster?
 twoway(scatter stunting dhsclust)(scatter clust_stunting dhsclust) 
@@ -322,16 +322,39 @@ export delimited "$pathout/stuntingAnalysis.csv", replace
 saveold "$pathout/stuntingAnalysis.dta", replace
 
 * Stunting regression analysis using various models; 
+g agechildsq = ageChild^2
 * First, try replicated the model Nada created in R
-global hhchar "female ib(1).religion ageChild c.ageChild#c.ageChild birthOrder birthWgt motherBWeight ib(1).motherBMI agehead hhsize hhchildUnd5 numWomen15_25 numWomen26_65"
-global assets "roomPC mobile landless bankAcount"
+global hhchar "female ageChild agechildsq birthOrder birthWgt motherBWeight ib(1).motherBMI agehead hhsize hhchildUnd5 numWomen15_25 numWomen26_65"
+global assets "roomPC mobile landless bankAcount improvedSanit improvedWater"
+global assets2 "wealth"
 global health "diarrhea bednet toiletShare intParasites vitaminA wantedChild"
 global livestock "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
 global geog "altitude ib(37).district rural"
-global geog2 "altitude ib(6).lvdzone rural"
+global geog2 "altitude ib(1).lvdzone rural"
 global cluster "cluster(dhsclust)"
 
 
-reg stunting2 $hhchar, $cluster
-reg stunting2 $hhchar $assets $health $livestock ib(1381).intdate $geog, $cluster
-logit stunted2 $hhchar $assets $health $livestock ib(1381).intdate $geog, $cluster 
+est clear
+eststo sted2_1, title("Stunted 1"): logit stunted2 $hhchar $health $geog2 ib(1381).intdate, $cluster or
+eststo sted2_2, title("Stunted 2"): logit stunted2 $hhchar $health $geog2 ib(1381).intdate $assets2, $cluster or 
+eststo sted2_3, title("Stunted 3"): logit stunted2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate, $cluster or
+eststo sted2_4, title("Stunted 4"): logit stunted2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate, $cluster or
+eststo sted2_5, title("Stunted 4"): reg stunting2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate, beta
+*esttab sted2_*, se star(* 0.10 ** 0.05 *** 0.01) label
+
+* Sort the coefficients before plotting
+matrix smean = r(table)
+matrix district = smean'
+matrix plot = r(table)'
+matsort plot 1 "down"
+matrix plot = plot'
+coefplot (matrix(plot[1,])) , ci((plot[5,] plot[6,]))  xline(0, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) xlabel(, labsize(small))
+
+coefplot sted2_4 , xline(0, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) /*
+*/ msize(small) /*mc(black) mlsty(black) mcolor(red) mlstyle(p1)*/ xlabel(, labsize(small)) cismooth norecycle/*
+*/ scale(1) drop(_cons) keep() base
+
+*Run separate models for sex
+eststo stM, title("Stunted 4"): logit stunted2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate if female == 0,  robust or
+eststo stF, title("Stunted 4"): logit stunted2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate if female == 1,  robust or
+coefplot stM stF, xline(1, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) xlabel(, labsize(small)) drop(_cons)
