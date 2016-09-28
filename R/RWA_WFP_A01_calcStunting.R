@@ -24,6 +24,13 @@ stunting_admin0_cfsva = calcPtEst(ch, 'isStunted',
 stuntingZ_admin0_cfsva = calcPtEst(ch, 'stuntingZ', 
                                   psu_var = 'village', strata_var = 'admin2', weight_var = 'weight')
 
+# Calculate estimates at the Admin1 level ---------------------------------
+
+stunting_admin1_cfsva = calcPtEst(ch, 'isStunted', by_var = 'admin1',
+                                  psu_var = 'village', strata_var = 'admin2', weight_var = 'weight')
+
+stuntingZ_admin1_cfsva = calcPtEst(ch, 'stuntingZ', by_var = 'admin1',
+                                   psu_var = 'village', strata_var = 'admin2', weight_var = 'weight')
 
 # Calculate estimates at the Admin2 level ---------------------------------
 
@@ -233,3 +240,14 @@ stunting_admin2_dhs %>%
 #     Nyamasheke -0.07829360  0.04519376 -0.096727361
 #     Ngoma      -0.08618574 -0.04959870  0.079977652
 
+
+# Base for provinces ------------------------------------------------------
+# North!
+
+# stunting %
+# 2    Northern 0.3888858 0.03046762 
+# 3     Eastern 0.3506154 0.02088620 
+
+# stunting score
+# 3     Eastern -1.558357 0.05364396 
+# 4    Northern -1.655170 0.08967943 
