@@ -149,4 +149,63 @@ nada_mf <- glm(isStunted ~
 
 summary(nada_mf)
 
-! need to refactor post merge
+# ! need to refactor post merge
+
+
+# prelim fit ---------------------------------------------------------------
+
+summary(lm(formula = stuntingZ ~ 
+             livelihood_zone + 
+             rural_cat +
+             # wealth_idx + 
+             monthly_pc_expend + 
+             interview_date + 
+             diarrhea + 
+             impr_unshared_toilet + impr_water_30min +
+             health_less_60min + market_dist_cat +
+             TLU + 
+             # own_land + 
+             land_size + 
+             hh_occup_cat +
+             # sh_agricultural_production + sh_unskilled_labour + sh_labour_ag_work +
+             growing_beans + growing_maize + growing_s_potato + growing_cassava + 
+             growing_i_potato + growing_sorghum + growing_banana_cooking + growing_banana_wine +
+             # pref_staple + 
+             FCS + child_meal_freq +
+             CARI_cat + 
+             # food_access_prob + 
+             months_food_access + 
+             stunted_mother + mother_education + head_education_cat + mother_mosquito_net +
+             sex + birthwt +
+             splines::bs(age_months, degree = 3, knots = 24),
+           data = ch_hh %>% filter(!is.na(isStunted))))
+
+
+summary(lm(formula = stuntingZ ~ 
+             livelihood_zone + 
+             rural_cat +
+             wealth_idx +
+             monthly_pc_expend + 
+             interview_date + 
+             diarrhea + 
+             impr_unshared_toilet + impr_water_30min +
+             health_less_60min + market_dist_cat +
+             TLU + 
+             # own_land + 
+             land_size + 
+             hh_occup_cat +
+             # sh_agricultural_production + sh_unskilled_labour + sh_labour_ag_work +
+             hh_garden + 
+             growing_beans + growing_maize + growing_s_potato + growing_cassava + 
+             growing_i_potato + growing_sorghum + growing_banana_cooking + growing_banana_wine +
+             # pref_staple + 
+             meat_days + pulse_days + veg_days + milk_days +
+             child_meal_freq +
+             # CARI_cat + 
+             # food_access_prob + 
+             months_food_access + 
+             stunted_mother + mother_education + head_education_cat + mother_mosquito_net +
+             num_antenatal_visits +
+             birthwt +
+             splines::bs(age_months, degree = 3, knots = 24) * sex,
+           data = ch_hh %>% filter(!is.na(isStunted))))
