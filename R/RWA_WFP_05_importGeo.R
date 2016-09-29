@@ -28,12 +28,16 @@ RWA_admin0 = shp2df(baseDir =  baseDir_geo,
                     folderName = 'Rwanda_Admin0',
                     layerName = 'National_Boundary_2001', 
                     getCentroids = FALSE,
+                    reproject = TRUE,
+                    projection = '+proj=utm +zone=35 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs',
                     exportData = FALSE)
 
 # import Admin1 -----------------------------------------------------------
 RWA_admin1 = shp2df(baseDir =  baseDir_geo,
                     folderName = 'Rwanda_Admin1',
                     layerName = 'Province_Boundary_2006',
+                    reproject = TRUE,
+                    projection = '+proj=utm +zone=35 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs',
                     exportData = FALSE)
 
 
@@ -42,6 +46,8 @@ RWA_admin2 = shp2df(baseDir =  baseDir_geo,
                     folderName = 'Rwanda_Admin2',
                     layerName = 'District_Boundary_2006',
                     labelVar = 'District',
+                    reproject = TRUE,
+                    projection = '+proj=utm +zone=35 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs',
                     exportData = FALSE)
 
 # import FEWS NET livelihood zones ----------------------------------------
@@ -49,6 +55,8 @@ RWA_LZ = shp2df(baseDir =  baseDir_geo,
                 folderName = 'RW_LivelihoodZones_FEWS_2012',
                 layerName = 'RW_LHZ_2012',
                 labelVar = 'LZNAMEE',
+                reproject = TRUE,
+                projection = '+proj=utm +zone=35 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs',
                 exportData = FALSE)
 
 RWA_LZ$df = RWA_LZ$df %>% 
@@ -88,6 +96,8 @@ RWA_lakes = shp2df(baseDir =  baseDir_geo,
                    folderName = 'Rwanda basemaps',
                    layerName = 'RWA_Lakes',
                    getCentroids = FALSE,
+                   reproject = TRUE,
+                   projection = '+proj=utm +zone=35 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs',
                    exportData = FALSE)
 
 
