@@ -26,7 +26,7 @@ rw_width = 7.1397 # output width
 
 # import averages ---------------------------------------------------------
 
-source('RWA_WFP_A01_calcStunting.R')
+source('RWA_WFP_runAll.R')
 
 # Plot Maps --------------------------------------------------------------------
 plot_choro = function(df, 
