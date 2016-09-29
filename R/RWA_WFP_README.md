@@ -59,6 +59,13 @@ For the CFSVA and Nutrition Survey 2012, data collection was conducted during th
 
 ### Modifications for polished products
 
+#### basemap
+* supah fade: 25 pt. white + 35 pt gaussian blur
+* terrain: 60% transparency
+* outside borders: 50% transparent white fill
+* rivers: 1 pt.
+* shadow Adm0: 75% @ 100K, 0.05" 0.05" 0.04"
+
 #### CHAIN/stunting overlay
 * Label CHAIN project
 * Label 'total'
@@ -74,4 +81,11 @@ For the CFSVA and Nutrition Survey 2012, data collection was conducted during th
 * move total over, duplicate district names
 
 #### Interpolation histogram for stunting
-* group raster slices together and group
+* remove all clipping masks
+* group raster slices together
+* join Adm0 fragments together (cmd-j)
+* clip to Adm0
+* resize to 7.12" wide; left corner at 1.6828 in, 0.5821
+
+#### Livelihood zones
+* resize to 7.1386 in.

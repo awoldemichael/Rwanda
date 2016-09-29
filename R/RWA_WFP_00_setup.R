@@ -38,7 +38,8 @@ library(forcats)
 library(modelr) # devtools::install_github('hadley/modelr')
 library(RColorBrewer)
 library(dplyr)
-
+library(extrafont)
+loadfonts()
 
 # Set aesthetics ----------------------------------------------------------
 font_light = 'Lato Light'
