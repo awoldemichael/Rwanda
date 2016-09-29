@@ -188,7 +188,7 @@ hh = hh %>%
     protein_groups, # classified
     HIron_groups, # classified
     
-           
+    
     # -- food security --
     FS_final, # Final CARI food security index; redundant with FS_final_lyr
     CSI, # reduced coping strategies index
@@ -262,7 +262,7 @@ hh = hh %>%
     treat_water = case_when(hh$S2_12 == 6 ~ 0, # no water treatment
                             hh$S2_12 %in% 1:5 ~ 1, # boil, train, filter, bleach, or sediment water
                             TRUE ~ NA_real_
-                            ),
+    ),
     
     village_VUP = case_when(hh$v_S2_03_1 == 0 ~ 0,
                             hh$v_S2_03_1 == 1 ~ 1,
@@ -280,7 +280,7 @@ hh = hh %>%
                          hh$S7_01_2 == 0 ~ 0, # asked but didn't receive (note: only 19 hh)
                          hh$S7_01_2 == 1 ~ 1, # asked & received
                          TRUE ~ NA_real_),
-
+    
     # -- regroup --
     head_literate = case_when(hh$S1_01_7 == 0 ~ 0, # illiterate
                               hh$S1_01_7 == 1 ~ 1, # can read & write
@@ -331,7 +331,7 @@ hh = hh %>%
   factorize(hh_raw, 'S7_03', 'loan_source') %>% # note: should condense
   factorize(hh_raw, 'any_food_assistance', 'food_assistance') %>% # note: should condense
   factorize(hh_raw, 'any_non_food_assistance', 'nonfood_assistance') %>% # note: should condense
-    # -- village connectivity --
+  # -- village connectivity --
   factorize(hh_raw, 'health_facility_distance', 'health_dist_cat') %>% 
   factorize(hh_raw, 'health_less_60min', 'health_less_60min') %>% 
   factorize(hh_raw, 'market_distance', 'market_dist_cat') %>%
@@ -358,7 +358,33 @@ hh = hh %>%
   # -- education --
   factorize(hh_raw, 'S1_01_8', 'head_education_cat') 
 
+# -- refactorize to be common w/ levels b/w ch and hh (to avoid losing levels in merge) --
+# -- admin1 -- rebasing to Northern; then sorting by ch incidence
+hh$admin1 = forcats::fct_relevel(hh$admin1, 'Northern', 'Western', 'Southern', 'Eastern', 'Kigali city')
 
+# -- admin2 -- rebasing to 
+hh$admin2 = forcats::fct_relevel(hh$admin2, 'Musanze')
+
+# -- livelihood zones -- rebasing to Lake Kivu
+hh$livelihood_zone = forcats::fct_relevel(hh$livelihood_zone,
+                                          "Lake Kivu Coffee Zone",
+                                          "Central Plateau Cassava and Coffee Zone",                         
+                                          "East Congo-Nile Highland Subsistence Farming Zone",               
+                                          "Southeastern Plateau Banana Zone",                                
+                                          "Northwest Volcanic Irish Potato Zone",                            
+                                          "Kigali city",                                                     
+                                          "West Congo-Nile Crest Tea Zone",                                  
+                                          "Central-Northern Highland Irish Potato, Beans and Vegetable Zone",
+                                          "Eastern Plateau Mixed Agriculture Zone",                          
+                                          "Eastern Agropastoral Zone",                                       
+                                          "Bugesera Cassava Zone",                                           
+                                          "Northern Highland Beans and Wheat Zone",                          
+                                          "Eastern Semi-Arid Agropastoral Zone")  
+# -- health_less_60min --
+hh$health_less_60min = forcats::fct_relevel(hh$health_less_60min, levels(ch$health_less_60min))
+
+# -- wealth index --
+hh$wealth_idx_cat = forcats::fct_relevel(hh$wealth_idx_cat, levels(ch$wealth_idx_cat))
 
 
 
@@ -413,7 +439,7 @@ ch_hh = left_join(ch, hh, by = c("weight",
                                  "health_dist_cat",
                                  "market_dist_cat", "road_dist_cat",
                                  "FCS_cat", "CARI_cat", "drinkingH2O_cat"
-                                 )) 
+)) 
 
 # Checking merge
 print(ch_hh %>% group_by(is.na(DDS), is.na(village)) %>% summarise(n()))
@@ -423,6 +449,9 @@ nrow(ch_hh) == 4058
 # <lgl>          <lgl> <int>
 #   1      FALSE          FALSE  4027
 # 2       TRUE          FALSE    31
+
+
+
 
 # Create some simple indices ----------------------------------------------
 ch_hh = ch_hh %>% 
