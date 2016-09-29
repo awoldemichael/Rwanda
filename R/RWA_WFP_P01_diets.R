@@ -15,8 +15,24 @@
 # Copyright 2016 by Laura Hughes via MIT License
 #
 # -------------------------------------------------------------------------
+staples_weight = 2
+oil_weight =  0.5
+pulse_weight =  3
+sugar_weight =  0.5 
+veg_weight =  1
+milk_weight =  4
+meat_weight = 4 
+fruit_weight =  1 
 
 
+staples_weight = 1
+oil_weight =  1
+pulse_weight =  1
+sugar_weight =  1 
+veg_weight =  1
+milk_weight =  1
+meat_weight = 1 
+fruit_weight =  1 
 # NOTES -------------------------------------------------------------------
 # * Includes all households, not just those with children.
 
@@ -33,7 +49,7 @@ hh_raw = hh_raw %>%
   factorize(children_raw, 'livezone', 'livelihood_zone')
 
 fcs_heat = hh_raw %>% 
-  group_by(regionName = admin2) %>% 
+  group_by(regionName = livelihood_zone) %>% 
   mutate(staples_days = Starch,
          oil_days = Oil,
          pulse_days = Pulses,
@@ -42,27 +58,27 @@ fcs_heat = hh_raw %>%
          milk_days = Milk,
          meat_days = Meat,
          fruit_days = Fruit) %>% 
-  summarise(staples = mean(staples_days) * 2,
-            oils = mean(oil_days) * 0.5,
-            pulses = mean(pulse_days) * 3,
-            sugar = mean(sugar_days) * 0.5, 
-            vegetables = mean(veg_days) * 1,
-            dairy = mean(milk_days) * 4,
-            meat = mean(meat_days) * 4, 
-            fruits  = mean(fruit_days) * 1, 
+  summarise(staples = mean(staples_days) * staples_weight,
+            oils = mean(oil_days) * oil_weight,
+            pulses = mean(pulse_days) * pulse_weight,
+            sugar = mean(sugar_days) * sugar_weight, 
+            vegetables = mean(veg_days) * veg_weight,
+            dairy = mean(milk_days) * milk_weight,
+            meat = mean(meat_days) * meat_weight, 
+            fruits  = mean(fruit_days) * fruit_weight, 
             fcs = mean(FCS)) %>% 
   arrange(desc(fcs))
 
 
 fcs_avg = hh_raw %>% 
-  summarise(staples = mean(staples_days) * 2,
-            oils = mean(oil_days) * 0.5,
-            pulses = mean(pulse_days) * 3,
-            sugar = mean(sugar_days) * 0.5, 
-            vegetables = mean(veg_days) * 1,
-            dairy = mean(milk_days) * 4,
-            meat = mean(meat_days) * 4, 
-            fruits  = mean(fruit_days) * 1, 
+  summarise(staples = mean(staples_days) * staples_weight,
+            oils = mean(oil_days) * oil_weight,
+            pulses = mean(pulse_days) * pulse_weight,
+            sugar = mean(sugar_days) * sugar_weight, 
+            vegetables = mean(veg_days) * veg_weight,
+            dairy = mean(milk_days) * milk_weight,
+            meat = mean(meat_days) * meat_weight, 
+            fruits  = mean(fruit_days) * fruit_weight, 
             fcs = mean(FCS)) %>% 
   arrange(desc(fcs))
 
