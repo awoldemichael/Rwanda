@@ -126,12 +126,66 @@ ggplot(rel_fcs_heat) +
             color = 'white', size = 1) +
   scale_fill_gradientn(colours = PlBl, 
                        limits = c(-8.2,8.2)) +
-  # geom_text(aes(y = food, x = regionName, label = round(rel_mean,1)), size = 4) +
+  
+  geom_text(aes(y = food, x = regionName, label = round(rel_mean,1)), size = 4) +
+  
+  
   ggtitle('FCS, relative to the national average') +
+  
+  # -- force plot to be square --
+  coord_fixed(ratio = 1) +
+  
+  # -- themes --
   theme_xylab() +
+  
   theme(axis.line = element_blank(),
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         title = element_text(size = 18, family = 'Segoe UI', hjust = 0, color = grey60K))
 
 
+poor_FCS = 21
+borderline_FCS =  35
+
+alpha_fill = 0.65
+
+
+hh_copy = data.frame(livelihood_zone = c(rep('West Congo-Nile Crest Tea Zone', 7500), 
+                                         rep('Lake Kivu Coffee Zone', 7500)),
+                     FCS = c(hh$FCS, hh$FCS))
+
+ggplot(hh, aes(x = FCS)) +
+  # -- total density distribution --
+  geom_density(size = 0.25, colour = grey60K,
+               fill = grey30K,
+               data = hh_copy, 
+               alpha = alpha_fill) +
+  
+  # -- gradient shading of color -- 
+  geom_histogram(aes(x = x, y = 4 *..density.., fill = ..x..),
+                 binwidth = 1,
+                 data = data.frame(x = 1:112),
+                 alpha = alpha_fill) +
+  
+  # -- reference lines of poor and borderline FCS scores --
+  geom_vline(xintercept = poor_FCS, 
+             colour = grey90K, size = 0.1) +
+  geom_vline(xintercept = borderline_FCS, 
+             colour = grey90K, size = 0.1) +
+  
+
+  
+  # -- density distribution (stroke) --
+  geom_density(size = 0.25, colour = grey90K) +
+  
+  # -- density distribution (for clipping) --
+  # **! keep as the outer most element for ease of clipping in AI.
+  # geom_density(fill = 'dodgerblue') +
+  
+  facet_wrap(~fct_reorder(livelihood_zone, FCS), ncol = 1) +
+  
+  theme_xaxis() +
+  theme(strip.text = element_text(size = 8),
+        panel.margin = unit(0, 'lines')) + 
+  
+  scale_fill_gradientn(colours = c(brewer.pal(9, 'YlGnBu'), '#081d58', '#081d58', '#081d58', '#081d58'))
