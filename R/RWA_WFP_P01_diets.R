@@ -60,8 +60,14 @@ source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
 fcs_heatmap <- function(df,
                         region_var,
                         FCS_var = 'FCS',
-                        food_vars = c('staples_days', 'pulse_days', 'meat_days', 'milk_days',
-                                      'veg_days', 'oil_days', 'fruit_days', 'sugar_days'),
+                        staples_var = 'staples_days', 
+                        pulse_var = 'pulse_days', 
+                        meat_var = 'meat_days', 
+                        milk_var = 'milk_days',
+                        veg_var = 'veg_days', 
+                        oil_var = 'oil_days', 
+                        fruit_var = 'fruit_days', 
+                        sugar_var = 'sugar_days',
                         
                         # -- averaging options --
                         na.rm = FALSE,
@@ -161,67 +167,99 @@ fcs_heatmap <- function(df,
     }
     
     # (b) -- average # of days consumed each food, nationally --
+    all_avg = df %>% 
+      summarise_(staples = paste0('mean(', staples_var, ', na.rm = ', na.rm, ') * ', staples_weight),
+                 oils    = paste0('mean(', oil_var,     ', na.rm = ', na.rm, ') * ', oil_weight),
+                 pulses  = paste0('mean(', pulse_var,   ', na.rm = ', na.rm, ') * ', pulse_weight),
+                 sugar   = paste0('mean(', sugar_var,   ', na.rm = ', na.rm, ') * ', sugar_weight),
+                 vegetables = paste0('mean(', veg_var,  ', na.rm = ', na.rm, ') * ', veg_weight),
+                 dairy   = paste0('mean(', milk_var,    ', na.rm = ', na.rm, ') * ', milk_weight),
+                 meat    = paste0('mean(', meat_var,    ', na.rm = ', na.rm, ') * ', meat_weight),
+                 fruits  = paste0('mean(', fruit_var,   ', na.rm = ', na.rm, ') * ', fruit_weight),
+                 fcs     = paste0('mean(', FCS_var,     ', na.rm = ', na.rm, ')')) %>% 
+      arrange(desc(fcs))
+    
     # (c) -- average # of days consumed each food, by region --
-    
-    
-    fcs_heat = hh_raw %>% 
-      group_by(regionName = livelihood_zone) %>% 
-      mutate(staples_days = Starch,
-             oil_days = Oil,
-             pulse_days = Pulses,
-             sugar_days = Sugar,
-             veg_days = Vegetables,
-             milk_days = Milk,
-             meat_days = Meat,
-             fruit_days = Fruit) %>% 
-      summarise(staples = mean(staples_days) * staples_weight,
-                oils = mean(oil_days) * oil_weight,
-                pulses = mean(pulse_days) * pulse_weight,
-                sugar = mean(sugar_days) * sugar_weight, 
-                vegetables = mean(veg_days) * veg_weight,
-                dairy = mean(milk_days) * milk_weight,
-                meat = mean(meat_days) * meat_weight, 
-                fruits  = mean(fruit_days) * fruit_weight, 
-                fcs = mean(FCS)) %>% 
+    region_avg = df %>% 
+      group_by_(regionName = region_var) %>% 
+      summarise_(staples = paste0('mean(', staples_var, ', na.rm = ', na.rm, ') * ', staples_weight),
+                 oils    = paste0('mean(', oil_var,     ', na.rm = ', na.rm, ') * ', oil_weight),
+                 pulses  = paste0('mean(', pulse_var,   ', na.rm = ', na.rm, ') * ', pulse_weight),
+                 sugar   = paste0('mean(', sugar_var,   ', na.rm = ', na.rm, ') * ', sugar_weight),
+                 vegetables = paste0('mean(', veg_var,  ', na.rm = ', na.rm, ') * ', veg_weight),
+                 dairy   = paste0('mean(', milk_var,    ', na.rm = ', na.rm, ') * ', milk_weight),
+                 meat    = paste0('mean(', meat_var,    ', na.rm = ', na.rm, ') * ', meat_weight),
+                 fruits  = paste0('mean(', fruit_var,   ', na.rm = ', na.rm, ') * ', fruit_weight),
+                 fcs     = paste0('mean(', FCS_var,     ', na.rm = ', na.rm, ')')) %>% 
       arrange(desc(fcs))
     
+    # (d) -- merge region and average data together and calc diff --
     
-    fcs_avg = hh_raw %>% 
-      summarise(staples = mean(staples_days) * staples_weight,
-                oils = mean(oil_days) * oil_weight,
-                pulses = mean(pulse_days) * pulse_weight,
-                sugar = mean(sugar_days) * sugar_weight, 
-                vegetables = mean(veg_days) * veg_weight,
-                dairy = mean(milk_days) * milk_weight,
-                meat = mean(meat_days) * meat_weight, 
-                fruits  = mean(fruit_days) * fruit_weight, 
-                fcs = mean(FCS)) %>% 
-      arrange(desc(fcs))
+    # wide --> long
+    all_avg = all_avg %>% 
+      gather(food, avg_mean, -fcs) %>%
+      rename(fcs_avg = fcs) %>% 
+      arrange(desc(avg_mean))
     
+    # wide --> long    
+    region_avg = region_avg %>% 
+      gather(food, region_mean, -regionName, -fcs)
     
-    rel_fcs_heat = fcs_heat %>% 
-      mutate(staples = staples - fcs_avg$staples,
-             oils = oils - fcs_avg$oils,
-             pulses = pulses - fcs_avg$pulses,
-             sugar = sugar - fcs_avg$sugar,
-             vegetables = vegetables - fcs_avg$vegetables,
-             dairy = dairy - fcs_avg$dairy,
-             meat = meat - fcs_avg$meat,
-             fruits  = fruits - fcs_avg$fruits)
+    # merge and calc diff
+    fcs_heat = full_join(region_avg, all_avg, by = 'food') %>% 
+      mutate(diff = region_mean - avg_mean) %>% 
+      rowwise() %>% 
+      mutate(avg2plot = ifelse(plot_relativeAvg == TRUE, diff, region_mean)) %>% 
+      ungroup() %>% 
+      arrange(desc(avg_mean))
+     
+    # (e) -- reorder levels --
+    # regions
+    fcs_heat$regionName = forcats::fct_reorder(fcs_heat$regionName, fcs_heat$fcs)
+    df[[region_var]] = forcats::fct_relevel(df[[region_var]], levels(fcs_heat$regionName))
+    FCS_region[[region_var]] = forcats::fct_relevel(FCS_region[[region_var]], levels(fcs_heat$regionName))
+    
+    # food groups
+    fcs_heat$food = forcats::fct_reorder(fcs_heat$food, rev(fcs_heat$avg_mean))
   }
   
   # PART 1: individual maps ----------------------------------------------
   maps = ggplot()
   
   # PART 2: heatmap of food consumption by food group + region ------------
-  FCS_heat = ggplot()
-  
+  FCS_heat = 
+      ggplot(fcs_heat) +
+      geom_tile(aes(x = food, y = regionName, fill = avg2plot), 
+                color = 'white', size = heat_stroke_size) +
+      scale_fill_gradientn(colours = avg_colour, 
+                           limits = c(-8.2,8.2)) +
+      
+      # geom_text(aes(x = food, y = regionName,
+                    # label = round(avg2plot, 1)), size = 4) +
+      
+      # -- labels --
+      ggtitle('FCS, relative to the national average') +
+      
+      # -- force plot to have square tiles --
+      coord_fixed(ratio = 1) +
+      
+      # -- themes --
+      theme_xylab() +
+      
+      theme(axis.line = element_blank(),
+            axis.ticks = element_blank(),
+            axis.title = element_blank(),
+            axis.text.x = element_text(size = 8),
+            axis.text.y = element_text(size = 10),
+            title = element_text(size = 10, family = font_light, hjust = 0, color = grey60K))
+
+      
   # PART 3: distribution of FCS scores by region --------------------------
   FCS_hist = ggplot()
   
   # PART 4: average FCS score by region -----------------------------------
   FCS_avg = 
-    ggplot(FCS_region, aes_string(y = paste0('forcats::fct_reorder(', region_var, ', FCS_avg)'), 
+    ggplot(FCS_region, aes_string(y = region_var, 
                                   x = '1',
                                   fill = 'FCS_avg')) +
     # -- heatmap --
@@ -232,13 +270,18 @@ fcs_heatmap <- function(df,
               colour = 'white',
               family = font_normal,
               size = label_size) +
+    ggtitle(' ') +
+    xlab(' ') +
     
     # -- scales --
     coord_fixed(ratio  = 1) +
     scale_fill_gradientn(colours = FCS_colour, limits = FCS_range) + 
     
     # -- themes --
-    theme_blank()
+    theme_blank() +
+    theme(title = element_text(size = 10, family = font_light, hjust = 0, color = grey60K),
+          axis.title = element_text(size = 8),
+          axis.title.y = element_blank())
   
   # MERGE, PLOT, and SAVE --------------------------------------------------
   if(plot_map == TRUE){
@@ -261,37 +304,17 @@ fcs_heatmap <- function(df,
 # NOTES -------------------------------------------------------------------
 # * Includes all households, not just those with children.
 
-hh_raw = hh_raw %>% 
-  mutate(staples_days = Starch,
-         oil_days = Oil,
-         pulse_days = Pulses,
-         sugar_days = Sugar,
-         veg_days = Vegetables,
-         milk_days = Milk,
-         meat_days = Meat,
-         fruit_days = Fruit) %>%   
-  factorize(children_raw, 'S0_D_Dist', 'admin2') %>% 
-  factorize(children_raw, 'livezone', 'livelihood_zone')
-
-
 
 
 # -- plot --
 widthDDheat = 3.25*2*1.15
 heightDDheat = 3*2
 widthDDavg = 1.85
-fcsRange = c(30, 60)
 
 fcsOrder = rev(rel_fcs_heat$regionName)
 
 View(t(hh_raw  %>% select(contains('days')) %>% summarise_each(funs(mean))))
 
-foodOrder = c('staples', 'oils', 
-              'vegetables', 'meat',
-              'sugar', 'dairy', 'fruits', 'pulses')
-
-rel_fcs_heat = rel_fcs_heat %>% 
-  gather(food, rel_mean, -regionName, -fcs)
 
 rel_fcs_heat$regionName = 
   factor(rel_fcs_heat$regionName,
@@ -300,30 +323,6 @@ rel_fcs_heat$regionName =
 rel_fcs_heat$food = 
   factor(rel_fcs_heat$food,
          foodOrder)
-
-
-# Main heatmap
-q = ggplot(rel_fcs_heat) +
-  geom_tile(aes(x = food, y = regionName, fill = rel_mean), 
-            color = 'white', size = 1) +
-  scale_fill_gradientn(colours = avg_colour, 
-                       limits = c(-8.2,8.2)) +
-  
-  geom_text(aes(y = food, x = regionName, label = round(rel_mean,1)), size = 4) +
-  
-  # -- labels --
-  ggtitle('FCS, relative to the national average') +
-  
-  # -- force plot to have square tiles --
-  coord_fixed(ratio = 1) +
-  
-  # -- themes --
-  theme_xylab() +
-  
-  theme(axis.line = element_blank(),
-        axis.ticks = element_blank(),
-        axis.title = element_blank(),
-        title = element_text(size = 18, family = 'Segoe UI', hjust = 0, color = grey60K))
 
 
 
