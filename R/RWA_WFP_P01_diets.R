@@ -216,7 +216,7 @@ fcs_heatmap <- function(df,
     # (e) -- reorder levels --
     # regions
     fcs_heat$regionName = forcats::fct_reorder(fcs_heat$regionName, fcs_heat$fcs)
-    df[[region_var]] = forcats::fct_relevel(df[[region_var]], levels(fcs_heat$regionName))
+    df[[region_var]] = forcats::fct_relevel(df[[region_var]], rev(levels(fcs_heat$regionName)))
     FCS_region[[region_var]] = forcats::fct_relevel(FCS_region[[region_var]], levels(fcs_heat$regionName))
     
     # food groups
@@ -255,7 +255,61 @@ fcs_heatmap <- function(df,
 
       
   # PART 3: distribution of FCS scores by region --------------------------
-  FCS_hist = ggplot()
+  FCS_hist = 
+    ggplot(df, aes_string(x = FCS_var)) +
+    
+    # -- total density distribution --
+    geom_density(size = 0.25, colour = grey60K,
+                 fill = grey30K,
+                 data = df_copy, 
+                 alpha = alpha_hist) +
+    
+    # -- gradient shading of color -- 
+    geom_histogram(aes(x = x, y = 4 *..density.., fill = ..x..),
+                   binwidth = 1,
+                   data = data.frame(x = 1:112),
+                   alpha = alpha_hist) +
+    
+    # -- reference lines of poor and borderline FCS scores --
+    geom_vline(xintercept = poor_FCS, 
+               colour = grey90K, size = 0.1) +
+    geom_vline(xintercept = borderline_FCS, 
+               colour = grey90K, size = 0.1) +
+    
+    # -- annotation --
+    annotate('text', x = poor_FCS, y = .05, 
+             label = 'poor',
+             hjust = 0.5, family = font_light, 
+             size = 2, colour = grey60K) +
+    ggtitle(' ') +
+    
+    # -- density distribution (stroke) --
+    geom_density(size = 0.25, colour = grey90K) +
+    
+    # -- density distribution (for clipping) --
+    # **! keep as the outer most element for ease of clipping in AI.
+    # geom_density(fill = 'dodgerblue') +
+    
+    # -- facet --
+    facet_wrap(~lz_name, ncol = 1) +
+    
+    # -- scales --
+    scale_fill_gradientn(colours = FCS_colour) +
+  
+    # -- themes --
+    theme_xylab() +
+    
+    theme(axis.line = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title = element_blank(),
+          axis.text.x = element_text(size = 8),
+          axis.text.y = element_blank(),
+          title = element_text(size = 10, family = font_light, hjust = 0, color = grey60K),
+          # strip.text = element_text(size = 8),
+          strip.text = element_blank(),
+          panel.margin = unit(0, 'lines'))
+    
+  
   
   # PART 4: average FCS score by region -----------------------------------
   FCS_avg = 
@@ -307,69 +361,12 @@ fcs_heatmap <- function(df,
 
 
 # -- plot --
-widthDDheat = 3.25*2*1.15
-heightDDheat = 3*2
-widthDDavg = 1.85
-
-fcsOrder = rev(rel_fcs_heat$regionName)
-
-View(t(hh_raw  %>% select(contains('days')) %>% summarise_each(funs(mean))))
-
-
-rel_fcs_heat$regionName = 
-  factor(rel_fcs_heat$regionName,
-         fcsOrder)
-
-rel_fcs_heat$food = 
-  factor(rel_fcs_heat$food,
-         foodOrder)
-
-
-
-
-
 
 
 hh_copy = data.frame(livelihood_zone = c(rep('West Congo-Nile Crest Tea Zone', 7500), 
                                          rep('Lake Kivu Coffee Zone', 7500)),
                      FCS = c(hh$FCS, hh$FCS))
 
-p = ggplot(hh, aes(x = FCS)) +
-  # -- total density distribution --
-  geom_density(size = 0.25, colour = grey60K,
-               fill = grey30K,
-               data = hh_copy, 
-               alpha = alpha_fill) +
-  
-  # -- gradient shading of color -- 
-  geom_histogram(aes(x = x, y = 4 *..density.., fill = ..x..),
-                 binwidth = 1,
-                 data = data.frame(x = 1:112),
-                 alpha = alpha_fill) +
-  
-  # -- reference lines of poor and borderline FCS scores --
-  geom_vline(xintercept = poor_FCS, 
-             colour = grey90K, size = 0.1) +
-  geom_vline(xintercept = borderline_FCS, 
-             colour = grey90K, size = 0.1) +
-  
-  # -- annotation --
-  annotate('text', x = poor_FCS, y = .05, 
-           label = 'poor',
-           hjust = 0.5, family = font_light, 
-           size = 2, colour = grey60K) +
-  
-  # -- density distribution (stroke) --
-  geom_density(size = 0.25, colour = grey90K) +
-  
-  # -- density distribution (for clipping) --
-  # **! keep as the outer most element for ease of clipping in AI.
-  # geom_density(fill = 'dodgerblue') +
-  
-  facet_wrap(~fct_reorder(livelihood_zone, FCS), ncol = 1) +
-  
-  theme_xaxis() +
-  theme(strip.text = element_text(size = 8),
-        panel.margin = unit(0, 'lines')) + 
-  
-  scale_fill_gradientn(colours = FCS_colour)
+
+
+rw0 = copy4facet(RWA_admin0, levels(hh$livelihood_zone))
