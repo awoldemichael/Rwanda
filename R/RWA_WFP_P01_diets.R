@@ -24,10 +24,14 @@ source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
 # create plot -------------------------------------------------------------
 #' @param df data frame containing the raw, household-level food consumption data. Assumes the individual food group consumption data will be located in separate columns (e.g. legumes, vegetables, etc.)
 #' @param region_var string containing the name of the region variable within df
+#' @param FCS_var string containing the variable name with calculated FCS
 #' @param food_vars list containing the column names containing individual food group consumption
 #' 
 #' @param na.rm T/F on whether to remove NAs from average
 #' @param use_sampleWts whether or not to apply sample weights to the average values by region and for the country
+#' @param psu_var string containing the primary sampling unit variable name
+#' @param strata_var string containing the strata variable name
+#' @param weight_var string containing the weight variable name
 #' @param use_FCSWts whether or not to weight each food group by its contribution to FCS
 #' @param plot_relativeAvg whether to use relative averages or straight averages in main heatmap
 #' 
@@ -36,6 +40,7 @@ source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
 #' 
 #' @param avg_colour colour palette for the main heatmap of the average values of food consumption
 #' @param FCS_colour colour palette for the heatmap of avg. FCS by region and distribution
+#' @param FCS_range list containing the limist of colors for FCS_colour; default is c(0, 112) -- full range of FCS scores
 #' @param alpha_hist alpha (opacity) level for the KDE histogram of the FCS scores
 #' 
 #' @param admin0 data frame containing lat/long of base of the map. see `frontier::shp2df` for help importing shapefiles.
@@ -54,16 +59,16 @@ source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
 
 fcs_heatmap <- function(df,
                         region_var,
+                        FCS_var = 'FCS',
                         food_vars = c('staples_days', 'pulse_days', 'meat_days', 'milk_days',
                                       'veg_days', 'oil_days', 'fruit_days', 'sugar_days'),
                         
                         # -- averaging options --
                         na.rm = FALSE,
-                        use_sampleWts = TRUE,
+                        use_sampleWts = FALSE,
+                        psu_var = NA, strata_var = NA, weight_var = NA,
                         use_FCSWts = TRUE,
                         plot_relativeAvg = TRUE,
-                        sample_weight = NA,
-                        sample_ = NA, 
                         
                         # -- FCS values --
                         poor_FCS = 21,
@@ -72,7 +77,12 @@ fcs_heatmap <- function(df,
                         # -- colour options --
                         avg_colour = PlBl, # diverging palette
                         FCS_colour = c(brewer.pal(9, 'YlGnBu'), '#081d58', '#081d58', '#081d58', '#081d58'),
+                        FCS_range = c(0, 112),
                         alpha_hist = 0.65,
+                        font_light = 'Lato Light',
+                        font_normal = 'Lato',
+                        label_size = 3,
+                        heat_stroke_size = 0.15,
                         
                         # -- map options --
                         plot_map = TRUE,
@@ -91,7 +101,7 @@ fcs_heatmap <- function(df,
                         units = 'in', 
                         scale = 1) {
   
-  # -- SETUP: checks and initialize vars --
+  # SETUP: checks and initialize vars --------------------------------------------
   if(plot_map == TRUE) {
     # check that the shapefiles for the maps exist
     if(is.na(admin0) | is.na(region_coords)) {
@@ -101,6 +111,9 @@ fcs_heatmap <- function(df,
   
   if(use_sampleWts == TRUE) {
     # check that sample weighting params are specified
+    if(is.na(psu_var) | is.na(weight_var) | is.na(strata_var)){
+      stop('parameters to use sample weights are not specified')
+    }
   }
   
   # Decide whether to weight main heatmap by their weight in calculating FCS score. 
@@ -125,10 +138,32 @@ fcs_heatmap <- function(df,
     fruit_weight =  1 
   }
   
-  # -- PART 0: calculate weighted averages for values --
+  # PART 0: calculate weighted averages for values ------------------------
   if(use_sampleWts == TRUE) {
+    FCS_region = llamar::calcPtEst(df, 'FCS', by_var = region_var,
+                                   psu_var = 'village', strata_var = 'admin2', weight_var = 'weight')
     
   } else { # (calculate straight averages)
+    
+    # (a) -- average FCS by region --
+    if(na.rm == TRUE) {
+      # Exclude missing values
+      FCS_region = df %>% 
+        filter_(paste0('!is.na(', FCS_var,')')) %>% 
+        group_by_(region_var) %>% 
+        summarise_(.dots = list(N = 'n()', 
+                                FCS_avg = paste0('mean(', FCS_var, ')')))
+    } else{
+      FCS_region = df %>% 
+        group_by_(region_var) %>% 
+        summarise_(.dots = list(N = 'n()', 
+                                FCS_avg = paste0('mean(', FCS_var, ')')))
+    }
+    
+    # (b) -- average # of days consumed each food, nationally --
+    # (c) -- average # of days consumed each food, by region --
+    
+    
     fcs_heat = hh_raw %>% 
       group_by(regionName = livelihood_zone) %>% 
       mutate(staples_days = Starch,
@@ -185,9 +220,26 @@ fcs_heatmap <- function(df,
   FCS_hist = ggplot()
   
   # PART 4: average FCS score by region -----------------------------------
-  FCS_avg = ggplot()
+  FCS_avg = 
+    ggplot(FCS_region, aes_string(y = paste0('forcats::fct_reorder(', region_var, ', FCS_avg)'), 
+                                  x = '1',
+                                  fill = 'FCS_avg')) +
+    # -- heatmap --
+    geom_tile(colour = 'white', size = heat_stroke_size) +
+    
+    # -- labels --
+    geom_text(aes(label = round(FCS_avg, 0)),
+              colour = 'white',
+              family = font_normal,
+              size = label_size) +
+    
+    # -- scales --
+    coord_fixed(ratio  = 1) +
+    scale_fill_gradientn(colours = FCS_colour, limits = FCS_range) + 
+    
+    # -- themes --
+    theme_blank()
   
-
   # MERGE, PLOT, and SAVE --------------------------------------------------
   if(plot_map == TRUE){
     p = gridExtra::grid.arrange(maps, FCS_heat, FCS_hist, FCS_avg, ncol = 4, widths = width_indivPlots)
