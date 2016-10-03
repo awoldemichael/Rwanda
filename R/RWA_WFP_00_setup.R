@@ -37,9 +37,10 @@ library(survey)
 library(forcats)
 library(modelr) # devtools::install_github('hadley/modelr')
 library(RColorBrewer)
-library(dplyr)
 library(extrafont)
-loadfonts()
+library(gridExtra)
+library(dplyr)
+loadfonts(quiet = TRUE)
 
 # Set aesthetics ----------------------------------------------------------
 font_light = 'Lato Light'
