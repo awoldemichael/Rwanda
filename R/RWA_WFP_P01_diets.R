@@ -18,7 +18,7 @@
 
 
 # load data ---------------------------------------------------------------
-source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
+# source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
 
 
 # create plot -------------------------------------------------------------
@@ -56,6 +56,18 @@ source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
 #' @param units (optional) units for the width/height of exported plot
 #' @param scale (optional) scaling factor for the exported plot
 #' 
+#' 
+#' 
+
+copy4facet = function(df2copy, by_var){
+  num_copies = length(by_var)
+  num_rows = nrow(df2copy)
+  
+  df = lapply(by_var, function(x) cbind(df2copy, rep(x, num_rows)))
+  
+  dplyr::bind_rows(df) %>% 
+    rename(by_var = `rep(x, num_rows)`)
+}
 
 fcs_heatmap <- function(df,
                         region_var,
@@ -80,15 +92,19 @@ fcs_heatmap <- function(df,
                         poor_FCS = 21,
                         borderline_FCS =  35,
                         
-                        # -- colour options --
+                        # -- colour/aesthetics options --
                         avg_colour = PlBl, # diverging palette
                         FCS_colour = c(brewer.pal(9, 'YlGnBu'), '#081d58', '#081d58', '#081d58', '#081d58'),
                         FCS_range = c(0, 112),
-                        alpha_hist = 0.65,
+                        alpha_hist = 1,
                         font_light = 'Lato Light',
                         font_normal = 'Lato',
                         label_size = 3,
                         heat_stroke_size = 0.15,
+                        
+                        # -- histogram options --
+                        incl_refHist = FALSE,
+                        bw = 'nrd0',
                         
                         # -- map options --
                         plot_map = TRUE,
@@ -110,9 +126,9 @@ fcs_heatmap <- function(df,
   # SETUP: checks and initialize vars --------------------------------------------
   if(plot_map == TRUE) {
     # check that the shapefiles for the maps exist
-    if(is.na(admin0) | is.na(region_coords)) {
-      stop('admin0 or region_coords not specified')
-    }
+    # if(is.na(admin0) | is.na(region_coords)) {
+    #   stop('admin0 or region_coords not specified')
+    # }
   }
   
   if(use_sampleWts == TRUE) {
@@ -212,7 +228,7 @@ fcs_heatmap <- function(df,
       mutate(avg2plot = ifelse(plot_relativeAvg == TRUE, diff, region_mean)) %>% 
       ungroup() %>% 
       arrange(desc(avg_mean))
-     
+    
     # (e) -- reorder levels --
     # regions
     fcs_heat$regionName = forcats::fct_reorder(fcs_heat$regionName, fcs_heat$fcs)
@@ -224,51 +240,95 @@ fcs_heatmap <- function(df,
   }
   
   # PART 1: individual maps ----------------------------------------------
-  maps = ggplot()
   
-  # PART 2: heatmap of food consumption by food group + region ------------
-  FCS_heat = 
-      ggplot(fcs_heat) +
-      geom_tile(aes(x = food, y = regionName, fill = avg2plot), 
-                color = 'white', size = heat_stroke_size) +
-      scale_fill_gradientn(colours = avg_colour, 
-                           limits = c(-8.2,8.2)) +
+  if(plot_map == TRUE){
+    # relevel and remove extraneous levels
+    region_coords[[region_var]] = forcats::fct_relevel(region_coords[[region_var]], 
+                                                       rev(levels(fcs_heat$regionName)))
+    
+    region_coords = region_coords %>% 
+      filter_(paste0('!is.na(', region_var, ')'))
+    
+    
+    # create copy for facetting
+    adm0_copy = copy4facet(admin0, unique(fcs_heat$regionName))
+    
+    
+    maps = 
+      ggplot(region_coords, aes(x = long, y = lat, group = group)) + 
       
-      # geom_text(aes(x = food, y = regionName,
-                    # label = round(avg2plot, 1)), size = 4) +
+      # -- base fill the country --
+      geom_polygon(fill = map_base, data = adm0_copy) +
       
-      # -- labels --
-      ggtitle('FCS, relative to the national average') +
       
-      # -- force plot to have square tiles --
-      coord_fixed(ratio = 1) +
+      # -- facet --
+      facet_wrap(as.formula(paste0('~', region_var)), ncol = 1) +
+      
+      # -- choropleth over regions --
+      geom_polygon(fill = map_accent) +
       
       # -- themes --
-      theme_xylab() +
-      
-      theme(axis.line = element_blank(),
-            axis.ticks = element_blank(),
-            axis.title = element_blank(),
-            axis.text.x = element_text(size = 8),
-            axis.text.y = element_text(size = 10),
-            title = element_text(size = 10, family = font_light, hjust = 0, color = grey60K))
-
-      
+      theme_void() + 
+      coord_equal() +
+      theme(strip.text = element_blank())
+  }
+  
+  
+  
+  # PART 2: heatmap of food consumption by food group + region ------------
+  avg_max = max(max(fcs_heat$avg2plot), abs(min(fcs_heat$avg2plot)))
+  
+  FCS_heat = 
+    ggplot(fcs_heat) +
+    geom_tile(aes(x = food, y = regionName, fill = avg2plot), 
+              color = 'white', size = heat_stroke_size) +
+    scale_fill_gradientn(colours = avg_colour, 
+                         limits = c(-1 * avg_max, avg_max)) +
+    
+    # geom_text(aes(x = food, y = regionName,
+    # label = round(avg2plot, 1)), size = 4) +
+    
+    # -- labels --
+    ggtitle('FCS, relative to the national average') +
+    
+    # -- force plot to have square tiles --
+    coord_fixed(ratio = 1) +
+    
+    # -- themes --
+    theme_xylab() +
+    
+    theme(axis.line = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title = element_blank(),
+          axis.text.x = element_text(size = 8),
+          axis.text.y = element_text(size = 10),
+          title = element_text(size = 10, family = font_light, hjust = 0, color = grey60K))
+  
+  
   # PART 3: distribution of FCS scores by region --------------------------
-  FCS_hist = 
-    ggplot(df, aes_string(x = FCS_var)) +
-    
-    # -- total density distribution --
-    geom_density(size = 0.25, colour = grey60K,
-                 fill = grey30K,
-                 data = df_copy, 
+  df_copy = copy4facet(df %>% select_(FCS_var), 
+                       levels(df[[region_var]]))
+  
+  
+  if (incl_refHist == TRUE) {
+    FCS_hist = 
+      ggplot(df, aes_string(x = FCS_var)) +
+      # -- total density distribution --
+      geom_density(size = 0.25, colour = grey60K,
+                   fill = grey30K,
+                   data = df_copy, 
+                   alpha = alpha_hist)
+  } else { 
+    FCS_hist = 
+      ggplot(df, aes_string(x = FCS_var)) 
+  }
+  
+  FCS_hist = FCS_hist +
+  # -- gradient shading of color -- 
+  geom_histogram(aes(x = x, y = 4 *..density.., fill = ..x..),
+                 binwidth = 1,
+                 data = data.frame(x = 1:112),
                  alpha = alpha_hist) +
-    
-    # -- gradient shading of color -- 
-    geom_histogram(aes(x = x, y = 4 *..density.., fill = ..x..),
-                   binwidth = 1,
-                   data = data.frame(x = 1:112),
-                   alpha = alpha_hist) +
     
     # -- reference lines of poor and borderline FCS scores --
     geom_vline(xintercept = poor_FCS, 
@@ -291,11 +351,11 @@ fcs_heatmap <- function(df,
     # geom_density(fill = 'dodgerblue') +
     
     # -- facet --
-    facet_wrap(~lz_name, ncol = 1) +
+    facet_wrap(as.formula(paste0('~', region_var)), ncol = 1) +
     
     # -- scales --
     scale_fill_gradientn(colours = FCS_colour) +
-  
+    
     # -- themes --
     theme_xylab() +
     
@@ -308,7 +368,7 @@ fcs_heatmap <- function(df,
           # strip.text = element_text(size = 8),
           strip.text = element_blank(),
           panel.margin = unit(0, 'lines'))
-    
+  
   
   
   # PART 4: average FCS score by region -----------------------------------
@@ -339,14 +399,15 @@ fcs_heatmap <- function(df,
   
   # MERGE, PLOT, and SAVE --------------------------------------------------
   if(plot_map == TRUE){
-    p = gridExtra::grid.arrange(maps, FCS_heat, FCS_hist, FCS_avg, ncol = 4, widths = width_indivPlots)
+    # note: use arrangeGrob, not arrange.grid, to produce ggsave-able object
+    p = gridExtra::arrangeGrob(maps, FCS_heat, FCS_hist, FCS_avg, ncol = 4, widths = width_indivPlots)
   } else {
-    p = gridExtra::grid.arrange(FCS_heat, FCS_hist, FCS_avg, ncol = 3, widths = width_indivPlots[1:3])
+    p = gridExtra::arrangeGrob(FCS_heat, FCS_hist, FCS_avg, ncol = 3, widths = width_indivPlots)
   }
   
   # -- calls llamar::save_plot to save the plot --
   if (!is.na(filename)){
-    save_plot(filename, width, height, units, scale)
+    save_plot(filename, plot = p, width, height, units, scale)
   }
   
   return(p)
@@ -360,13 +421,9 @@ fcs_heatmap <- function(df,
 
 
 
-# -- plot --
 
 
-hh_copy = data.frame(livelihood_zone = c(rep('West Congo-Nile Crest Tea Zone', 7500), 
-                                         rep('Lake Kivu Coffee Zone', 7500)),
-                     FCS = c(hh$FCS, hh$FCS))
-
-
-
-rw0 = copy4facet(RWA_admin0, levels(hh$livelihood_zone))
+y = fcs_heatmap(df = hh, region_var = 'lz_name', plot_map = TRUE, admin0 = RWA_admin0, region_coords = RWA_LZ$df,
+                filename = '~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/FCS_CFSVA.pdf',
+                width = 8.5, height = 4.5)
+# , width_indivPlots = c(0.7, 0.2, 0.1))
