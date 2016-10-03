@@ -1,4 +1,4 @@
-[# Rwanda stunting analysis -----------------------------------------
+# Rwanda stunting analysis -----------------------------------------
 #
 # RW_WFP_05_P_diets.R: import household-level data
 #
@@ -22,26 +22,190 @@ source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
 
 
 # create plot -------------------------------------------------------------
+#' @param df data frame containing the raw, household-level food consumption data. Assumes the individual food group consumption data will be located in separate columns (e.g. legumes, vegetables, etc.)
+#' @param region_var string containing the name of the region variable within df
+#' @param food_vars list containing the column names containing individual food group consumption
+#' 
+#' @param na.rm T/F on whether to remove NAs from average
+#' @param use_sampleWts whether or not to apply sample weights to the average values by region and for the country
+#' @param use_FCSWts whether or not to weight each food group by its contribution to FCS
+#' @param plot_relativeAvg whether to use relative averages or straight averages in main heatmap
+#' 
+#' @param poor_FCS cutoff for a 'poor' FCS score
+#' @param borderline_FCS cutoff for a 'borderline' FCS score
+#' 
+#' @param avg_colour colour palette for the main heatmap of the average values of food consumption
+#' @param FCS_colour colour palette for the heatmap of avg. FCS by region and distribution
+#' @param alpha_hist alpha (opacity) level for the KDE histogram of the FCS scores
+#' 
+#' @param admin0 data frame containing lat/long of base of the map. see `frontier::shp2df` for help importing shapefiles.
+#' @param region_coords data frame containing lat/long of the regions of interest to map. see `frontier::shp2df` for help importing shapefiles.
+#' @param map_base colour to fill the base of the map
+#' @param map_accent colour to fill the highlighted region of the map
+#' 
+#' @param width_indivPlots list contianing the fraction each panel of the plot should occupy
+#' 
+#' @param filename (optional) filename to save the plots
+#' @param width (optional) width of the exported plot
+#' @param height (optional) height of the exported plot
+#' @param units (optional) units for the width/height of exported plot
+#' @param scale (optional) scaling factor for the exported plot
+#' 
+
+fcs_heatmap <- function(df,
+                        region_var,
+                        food_vars = c('staples_days', 'pulse_days', 'meat_days', 'milk_days',
+                                      'veg_days', 'oil_days', 'fruit_days', 'sugar_days'),
+                        
+                        # -- averaging options --
+                        na.rm = FALSE,
+                        use_sampleWts = TRUE,
+                        use_FCSWts = TRUE,
+                        plot_relativeAvg = TRUE,
+                        sample_weight = NA,
+                        sample_ = NA, 
+                        
+                        # -- FCS values --
+                        poor_FCS = 21,
+                        borderline_FCS =  35,
+                        
+                        # -- colour options --
+                        avg_colour = PlBl, # diverging palette
+                        FCS_colour = c(brewer.pal(9, 'YlGnBu'), '#081d58', '#081d58', '#081d58', '#081d58'),
+                        alpha_hist = 0.65,
+                        
+                        # -- map options --
+                        plot_map = TRUE,
+                        admin0 = NA,
+                        region_coords = NA,
+                        map_base = grey15K,
+                        map_accent = '#d53e4f',
+                        
+                        # -- plot layout options --
+                        width_indivPlots = c(0.1, 0.6, 0.2, 0.1),
+                        
+                        # -- file saving options --
+                        filename = NA,
+                        width = NA, 
+                        height = NA, 
+                        units = 'in', 
+                        scale = 1) {
+  
+  # -- SETUP: checks and initialize vars --
+  if(plot_map == TRUE) {
+    # check that the shapefiles for the maps exist
+    if(is.na(admin0) | is.na(region_coords)) {
+      stop('admin0 or region_coords not specified')
+    }
+  }
+  
+  if(use_sampleWts == TRUE) {
+    # check that sample weighting params are specified
+  }
+  
+  # Decide whether to weight main heatmap by their weight in calculating FCS score. 
+  # Weights are from the World Food Programme https://www.wfp.org/content/technical-guidance-sheet-food-consumption-analysis-calculation-and-use-food-consumption-score-food-s
+  if(use_FCSWts == TRUE){
+    staples_weight = 2
+    oil_weight =  0.5
+    pulse_weight =  3
+    sugar_weight =  0.5 
+    veg_weight =  1
+    milk_weight =  4
+    meat_weight = 4 
+    fruit_weight =  1 
+  } else { # (weight equally)
+    staples_weight = 1
+    oil_weight =  1
+    pulse_weight =  1
+    sugar_weight =  1 
+    veg_weight =  1
+    milk_weight =  1
+    meat_weight = 1 
+    fruit_weight =  1 
+  }
+  
+  # -- PART 0: calculate weighted averages for values --
+  if(use_sampleWts == TRUE) {
+    
+  } else { # (calculate straight averages)
+    fcs_heat = hh_raw %>% 
+      group_by(regionName = livelihood_zone) %>% 
+      mutate(staples_days = Starch,
+             oil_days = Oil,
+             pulse_days = Pulses,
+             sugar_days = Sugar,
+             veg_days = Vegetables,
+             milk_days = Milk,
+             meat_days = Meat,
+             fruit_days = Fruit) %>% 
+      summarise(staples = mean(staples_days) * staples_weight,
+                oils = mean(oil_days) * oil_weight,
+                pulses = mean(pulse_days) * pulse_weight,
+                sugar = mean(sugar_days) * sugar_weight, 
+                vegetables = mean(veg_days) * veg_weight,
+                dairy = mean(milk_days) * milk_weight,
+                meat = mean(meat_days) * meat_weight, 
+                fruits  = mean(fruit_days) * fruit_weight, 
+                fcs = mean(FCS)) %>% 
+      arrange(desc(fcs))
+    
+    
+    fcs_avg = hh_raw %>% 
+      summarise(staples = mean(staples_days) * staples_weight,
+                oils = mean(oil_days) * oil_weight,
+                pulses = mean(pulse_days) * pulse_weight,
+                sugar = mean(sugar_days) * sugar_weight, 
+                vegetables = mean(veg_days) * veg_weight,
+                dairy = mean(milk_days) * milk_weight,
+                meat = mean(meat_days) * meat_weight, 
+                fruits  = mean(fruit_days) * fruit_weight, 
+                fcs = mean(FCS)) %>% 
+      arrange(desc(fcs))
+    
+    
+    rel_fcs_heat = fcs_heat %>% 
+      mutate(staples = staples - fcs_avg$staples,
+             oils = oils - fcs_avg$oils,
+             pulses = pulses - fcs_avg$pulses,
+             sugar = sugar - fcs_avg$sugar,
+             vegetables = vegetables - fcs_avg$vegetables,
+             dairy = dairy - fcs_avg$dairy,
+             meat = meat - fcs_avg$meat,
+             fruits  = fruits - fcs_avg$fruits)
+  }
+  
+  # PART 1: individual maps ----------------------------------------------
+  maps = ggplot()
+  
+  # PART 2: heatmap of food consumption by food group + region ------------
+  FCS_heat = ggplot()
+  
+  # PART 3: distribution of FCS scores by region --------------------------
+  FCS_hist = ggplot()
+  
+  # PART 4: average FCS score by region -----------------------------------
+  FCS_avg = ggplot()
+  
+
+  # MERGE, PLOT, and SAVE --------------------------------------------------
+  if(plot_map == TRUE){
+    p = gridExtra::grid.arrange(maps, FCS_heat, FCS_hist, FCS_avg, ncol = 4, widths = width_indivPlots)
+  } else {
+    p = gridExtra::grid.arrange(FCS_heat, FCS_hist, FCS_avg, ncol = 3, widths = width_indivPlots[1:3])
+  }
+  
+  # -- calls llamar::save_plot to save the plot --
+  if (!is.na(filename)){
+    save_plot(filename, width, height, units, scale)
+  }
+  
+  return(p)
+}
 
 
-staples_weight = 2
-oil_weight =  0.5
-pulse_weight =  3
-sugar_weight =  0.5 
-veg_weight =  1
-milk_weight =  4
-meat_weight = 4 
-fruit_weight =  1 
 
 
-staples_weight = 1
-oil_weight =  1
-pulse_weight =  1
-sugar_weight =  1 
-veg_weight =  1
-milk_weight =  1
-meat_weight = 1 
-fruit_weight =  1 
 # NOTES -------------------------------------------------------------------
 # * Includes all households, not just those with children.
 
@@ -57,50 +221,7 @@ hh_raw = hh_raw %>%
   factorize(children_raw, 'S0_D_Dist', 'admin2') %>% 
   factorize(children_raw, 'livezone', 'livelihood_zone')
 
-fcs_heat = hh_raw %>% 
-  group_by(regionName = livelihood_zone) %>% 
-  mutate(staples_days = Starch,
-         oil_days = Oil,
-         pulse_days = Pulses,
-         sugar_days = Sugar,
-         veg_days = Vegetables,
-         milk_days = Milk,
-         meat_days = Meat,
-         fruit_days = Fruit) %>% 
-  summarise(staples = mean(staples_days) * staples_weight,
-            oils = mean(oil_days) * oil_weight,
-            pulses = mean(pulse_days) * pulse_weight,
-            sugar = mean(sugar_days) * sugar_weight, 
-            vegetables = mean(veg_days) * veg_weight,
-            dairy = mean(milk_days) * milk_weight,
-            meat = mean(meat_days) * meat_weight, 
-            fruits  = mean(fruit_days) * fruit_weight, 
-            fcs = mean(FCS)) %>% 
-  arrange(desc(fcs))
 
-
-fcs_avg = hh_raw %>% 
-  summarise(staples = mean(staples_days) * staples_weight,
-            oils = mean(oil_days) * oil_weight,
-            pulses = mean(pulse_days) * pulse_weight,
-            sugar = mean(sugar_days) * sugar_weight, 
-            vegetables = mean(veg_days) * veg_weight,
-            dairy = mean(milk_days) * milk_weight,
-            meat = mean(meat_days) * meat_weight, 
-            fruits  = mean(fruit_days) * fruit_weight, 
-            fcs = mean(FCS)) %>% 
-  arrange(desc(fcs))
-
-
-rel_fcs_heat = fcs_heat %>% 
-  mutate(staples = staples - fcs_avg$staples,
-         oils = oils - fcs_avg$oils,
-         pulses = pulses - fcs_avg$pulses,
-         sugar = sugar - fcs_avg$sugar,
-         vegetables = vegetables - fcs_avg$vegetables,
-         dairy = dairy - fcs_avg$dairy,
-         meat = meat - fcs_avg$meat,
-         fruits  = fruits - fcs_avg$fruits)
 
 
 # -- plot --
@@ -133,7 +254,7 @@ rel_fcs_heat$food =
 q = ggplot(rel_fcs_heat) +
   geom_tile(aes(x = food, y = regionName, fill = rel_mean), 
             color = 'white', size = 1) +
-  scale_fill_gradientn(colours = PlBl, 
+  scale_fill_gradientn(colours = avg_colour, 
                        limits = c(-8.2,8.2)) +
   
   geom_text(aes(y = food, x = regionName, label = round(rel_mean,1)), size = 4) +
@@ -153,10 +274,9 @@ q = ggplot(rel_fcs_heat) +
         title = element_text(size = 18, family = 'Segoe UI', hjust = 0, color = grey60K))
 
 
-poor_FCS = 21
-borderline_FCS =  35
 
-alpha_fill = 0.65
+
+
 
 
 hh_copy = data.frame(livelihood_zone = c(rep('West Congo-Nile Crest Tea Zone', 7500), 
@@ -182,7 +302,7 @@ p = ggplot(hh, aes(x = FCS)) +
   geom_vline(xintercept = borderline_FCS, 
              colour = grey90K, size = 0.1) +
   
-# -- annotation --
+  # -- annotation --
   annotate('text', x = poor_FCS, y = .05, 
            label = 'poor',
            hjust = 0.5, family = font_light, 
@@ -201,4 +321,4 @@ p = ggplot(hh, aes(x = FCS)) +
   theme(strip.text = element_text(size = 8),
         panel.margin = unit(0, 'lines')) + 
   
-  scale_fill_gradientn(colours = c(brewer.pal(9, 'YlGnBu'), '#081d58', '#081d58', '#081d58', '#081d58'))
+  scale_fill_gradientn(colours = FCS_colour)
