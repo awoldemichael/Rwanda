@@ -306,7 +306,6 @@ hh = hh %>%
                         '0.50 - 0.99 ha',
                         '1.00 - 1.99 ha',
                         'more than 2.00 ha')))
-    
   ) %>% 
   # -- create factors based on the labels in original dataset -
   # -- location --
@@ -358,11 +357,28 @@ hh = hh %>%
   # -- education --
   factorize(hh_raw, 'S1_01_8', 'head_education_cat') 
 
+# -- Creating shorter names for livelihood zones --
+hh = hh %>% 
+  mutate(lz_name = case_when(hh$livelihood_zone %like% 'Tea' ~ 'W. Congo-Nile Crest Tea',
+                    hh$livelihood_zone %like% 'Wheat'            ~ 'N. Highland Beans/Wheat',                          
+                    hh$livelihood_zone %like% 'Congo-Nile'    ~ 'E. Congo-Nile Highland Subsistence',
+                    hh$livelihood_zone %like% 'Volcanic'         ~ 'N.W. Volcanic Irish Potato',                            
+                    hh$livelihood_zone %like% 'Mixed'            ~ 'E. Plateau Mixed Agriculture',
+                    hh$livelihood_zone %like% 'Eastern Ag'       ~ 'E. Agropastoral',                                       
+                    hh$livelihood_zone %like% 'Central-Northern' ~ 'C.-N. Highland Irish Potato/Beans/Veg.',
+                    hh$livelihood_zone %like% 'Kivu'             ~ 'Lake Kivu Coffee',
+                    hh$livelihood_zone %like% 'Banana'           ~ 'S.E. Plateau Banana',
+                    hh$livelihood_zone %like% 'Bugesera'         ~ 'Bugesera Cassava',                                           
+                    hh$livelihood_zone %like% 'Central Plateau'  ~ 'C. Plateau Cassava/Coffee',
+                    hh$livelihood_zone %like% 'Semi-Arid'        ~ 'E. Semi-Arid Agropastoral',                             
+                    hh$livelihood_zone %like% 'Kigali'            ~ 'Kigali City',
+                    TRUE ~ NA_character_))
+
 # -- refactorize to be common w/ levels b/w ch and hh (to avoid losing levels in merge) --
 # -- admin1 -- rebasing to Northern; then sorting by ch incidence
 hh$admin1 = forcats::fct_relevel(hh$admin1, 'Northern', 'Western', 'Southern', 'Eastern', 'Kigali city')
 
-# -- admin2 -- rebasing to 
+# -- admin2 -- rebasing to Musanze
 hh$admin2 = forcats::fct_relevel(hh$admin2, 'Musanze')
 
 # -- livelihood zones -- rebasing to Lake Kivu
