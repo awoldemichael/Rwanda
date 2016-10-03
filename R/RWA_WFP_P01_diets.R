@@ -1,4 +1,4 @@
-# Rwanda stunting analysis -----------------------------------------
+[# Rwanda stunting analysis -----------------------------------------
 #
 # RW_WFP_05_P_diets.R: import household-level data
 #
@@ -15,6 +15,15 @@
 # Copyright 2016 by Laura Hughes via MIT License
 #
 # -------------------------------------------------------------------------
+
+
+# load data ---------------------------------------------------------------
+source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
+
+
+# create plot -------------------------------------------------------------
+
+
 staples_weight = 2
 oil_weight =  0.5
 pulse_weight =  3
@@ -121,7 +130,7 @@ rel_fcs_heat$food =
 
 
 # Main heatmap
-ggplot(rel_fcs_heat) +
+q = ggplot(rel_fcs_heat) +
   geom_tile(aes(x = food, y = regionName, fill = rel_mean), 
             color = 'white', size = 1) +
   scale_fill_gradientn(colours = PlBl, 
@@ -129,10 +138,10 @@ ggplot(rel_fcs_heat) +
   
   geom_text(aes(y = food, x = regionName, label = round(rel_mean,1)), size = 4) +
   
-  
+  # -- labels --
   ggtitle('FCS, relative to the national average') +
   
-  # -- force plot to be square --
+  # -- force plot to have square tiles --
   coord_fixed(ratio = 1) +
   
   # -- themes --
@@ -154,7 +163,7 @@ hh_copy = data.frame(livelihood_zone = c(rep('West Congo-Nile Crest Tea Zone', 7
                                          rep('Lake Kivu Coffee Zone', 7500)),
                      FCS = c(hh$FCS, hh$FCS))
 
-ggplot(hh, aes(x = FCS)) +
+p = ggplot(hh, aes(x = FCS)) +
   # -- total density distribution --
   geom_density(size = 0.25, colour = grey60K,
                fill = grey30K,
@@ -173,7 +182,11 @@ ggplot(hh, aes(x = FCS)) +
   geom_vline(xintercept = borderline_FCS, 
              colour = grey90K, size = 0.1) +
   
-
+# -- annotation --
+  annotate('text', x = poor_FCS, y = .05, 
+           label = 'poor',
+           hjust = 0.5, family = font_light, 
+           size = 2, colour = grey60K) +
   
   # -- density distribution (stroke) --
   geom_density(size = 0.25, colour = grey90K) +
