@@ -268,9 +268,18 @@ fcs_heatmap <- function(df,
       geom_polygon(fill = map_accent) +
       
       # -- themes --
-      theme_void() + 
+      # theme_void() + 
       coord_equal() +
-      theme(strip.text = element_blank())
+      theme_xylab() +
+      
+      theme(axis.line = element_blank(),
+            axis.ticks = element_blank(),
+            axis.title = element_blank(),
+            axis.text.x = element_text(size = 8),
+            axis.text.y = element_blank(),
+            strip.text = element_blank(),
+            title = element_text(size = 10, family = font_light, hjust = 0, color = grey60K))
+    
   }
   
   
@@ -337,18 +346,18 @@ fcs_heatmap <- function(df,
                colour = grey90K, size = 0.1) +
     
     # -- annotation --
-    annotate('text', x = poor_FCS, y = .05, 
-             label = 'poor',
-             hjust = 0.5, family = font_light, 
-             size = 2, colour = grey60K) +
-    ggtitle(' ') +
+    # annotate('text', x = poor_FCS, y = .05, 
+    #          label = 'poor',
+    #          hjust = 0.5, family = font_light, 
+    #          size = 2, colour = grey60K) +
+    ggtitle('poor borderline acceptable diet') +
     
     # -- density distribution (stroke) --
     geom_density(size = 0.25, colour = grey90K) +
     
     # -- density distribution (for clipping) --
     # **! keep as the outer most element for ease of clipping in AI.
-    # geom_density(fill = 'dodgerblue') +
+    geom_density(fill = 'dodgerblue') +
     
     # -- facet --
     facet_wrap(as.formula(paste0('~', region_var)), ncol = 1) +
@@ -359,14 +368,15 @@ fcs_heatmap <- function(df,
     # -- themes --
     theme_xylab() +
     
-    theme(axis.line = element_blank(),
+    theme(axis.line = element_line(size = 0.1, colour = grey90K),
+          axis.line.y = element_blank(),
           axis.ticks = element_blank(),
           axis.title = element_blank(),
           axis.text.x = element_text(size = 8),
           axis.text.y = element_blank(),
+          strip.text = element_blank(),
           title = element_text(size = 10, family = font_light, hjust = 0, color = grey60K),
           # strip.text = element_text(size = 8),
-          strip.text = element_blank(),
           panel.margin = unit(0, 'lines'))
   
   
@@ -392,10 +402,15 @@ fcs_heatmap <- function(df,
     scale_fill_gradientn(colours = FCS_colour, limits = FCS_range) + 
     
     # -- themes --
-    theme_blank() +
-    theme(title = element_text(size = 10, family = font_light, hjust = 0, color = grey60K),
-          axis.title = element_text(size = 8),
-          axis.title.y = element_blank())
+    theme_xylab() +
+    
+    theme(axis.line = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title = element_blank(),
+          axis.text.x = element_text(size = 8),
+          axis.text.y = element_blank(),
+          title = element_text(size = 10, family = font_light, hjust = 0, color = grey60K))
+  
   
   # MERGE, PLOT, and SAVE --------------------------------------------------
   if(plot_map == TRUE){
@@ -410,7 +425,7 @@ fcs_heatmap <- function(df,
     save_plot(filename, plot = p, width, height, units, scale)
   }
   
-  return(p)
+  return(maps)
 }
 
 
