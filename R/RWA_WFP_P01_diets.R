@@ -255,7 +255,7 @@ fcs_heatmap <- function(df,
     
     
     maps = 
-      ggplot(region_coords, aes(x = long, y = lat, group = group)) + 
+      ggplot(region_coords, aes(x = long, y = lat, group = group, order = order)) + 
       
       # -- base fill the country --
       geom_polygon(fill = map_base, data = adm0_copy) +
@@ -270,15 +270,16 @@ fcs_heatmap <- function(df,
       # -- themes --
       # theme_void() + 
       coord_equal() +
+      coord_fixed(ratio  = 1) +
+      theme_xylab() +
+      ggtitle('FCS, relative to the national average') +
+      
       theme_xylab() +
       
       theme(axis.line = element_blank(),
-            axis.ticks = element_blank(),
-            axis.title = element_blank(),
-            axis.text.x = element_text(size = 8),
+            axis.text.x = element_text(size = 6),
             axis.text.y = element_blank(),
-            strip.text = element_blank(),
-            title = element_text(size = 10, family = font_light, hjust = 0, color = grey60K))
+            strip.text = element_blank())
     
   }
   
@@ -307,11 +308,9 @@ fcs_heatmap <- function(df,
     theme_xylab() +
     
     theme(axis.line = element_blank(),
-          axis.ticks = element_blank(),
-          axis.title = element_blank(),
-          axis.text.x = element_text(size = 8),
-          axis.text.y = element_text(size = 10),
-          title = element_text(size = 10, family = font_light, hjust = 0, color = grey60K))
+          axis.text.x = element_text(size = 6),
+          axis.text.y = element_blank())
+  
   
   
   # PART 3: distribution of FCS scores by region --------------------------
@@ -350,7 +349,7 @@ fcs_heatmap <- function(df,
     #          label = 'poor',
     #          hjust = 0.5, family = font_light, 
     #          size = 2, colour = grey60K) +
-    ggtitle('poor borderline acceptable diet') +
+    ggtitle('FCS, relative to the national average') +
     
     # -- density distribution (stroke) --
     geom_density(size = 0.25, colour = grey90K) +
@@ -367,17 +366,12 @@ fcs_heatmap <- function(df,
     
     # -- themes --
     theme_xylab() +
-    
-    theme(axis.line = element_line(size = 0.1, colour = grey90K),
+
+        theme(axis.line = element_line(size = 0.1, colour = grey90K),
           axis.line.y = element_blank(),
-          axis.ticks = element_blank(),
-          axis.title = element_blank(),
-          axis.text.x = element_text(size = 8),
           axis.text.y = element_blank(),
-          strip.text = element_blank(),
-          title = element_text(size = 10, family = font_light, hjust = 0, color = grey60K),
-          # strip.text = element_text(size = 8),
-          panel.margin = unit(0, 'lines'))
+          axis.text.x = element_text(size = 6),
+          strip.text = element_blank())
   
   
   
@@ -394,8 +388,7 @@ fcs_heatmap <- function(df,
               colour = 'white',
               family = font_normal,
               size = label_size) +
-    ggtitle(' ') +
-    xlab(' ') +
+    ggtitle('FCS, relative to the national average') +
     
     # -- scales --
     coord_fixed(ratio  = 1) +
@@ -405,17 +398,15 @@ fcs_heatmap <- function(df,
     theme_xylab() +
     
     theme(axis.line = element_blank(),
-          axis.ticks = element_blank(),
-          axis.title = element_blank(),
-          axis.text.x = element_text(size = 8),
-          axis.text.y = element_blank(),
-          title = element_text(size = 10, family = font_light, hjust = 0, color = grey60K))
+          axis.text.x = element_text(size = 6),
+          axis.text.y = element_blank())
   
   
   # MERGE, PLOT, and SAVE --------------------------------------------------
   if(plot_map == TRUE){
     # note: use arrangeGrob, not arrange.grid, to produce ggsave-able object
-    p = gridExtra::arrangeGrob(maps, FCS_heat, FCS_hist, FCS_avg, ncol = 4, widths = width_indivPlots)
+    p = gridExtra::arrangeGrob(maps, FCS_heat, FCS_hist, FCS_avg, ncol = 4, widths = width_indivPlots,
+                               padding = unit(0, "line"))
   } else {
     p = gridExtra::arrangeGrob(FCS_heat, FCS_hist, FCS_avg, ncol = 3, widths = width_indivPlots)
   }
@@ -425,7 +416,7 @@ fcs_heatmap <- function(df,
     save_plot(filename, plot = p, width, height, units, scale)
   }
   
-  return(maps)
+  return(p)
 }
 
 
@@ -441,4 +432,3 @@ fcs_heatmap <- function(df,
 y = fcs_heatmap(df = hh, region_var = 'lz_name', plot_map = TRUE, admin0 = RWA_admin0, region_coords = RWA_LZ$df,
                 filename = '~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/FCS_CFSVA.pdf',
                 width = 8.5, height = 4.5)
-# , width_indivPlots = c(0.7, 0.2, 0.1))
