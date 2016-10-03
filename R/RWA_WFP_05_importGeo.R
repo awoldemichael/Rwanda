@@ -73,7 +73,21 @@ RWA_LZ$df = RWA_LZ$df %>%
                                      RWA_LZ$df$LZNAMEE %like% 'Central Plateau' ~ 'Central Plateau Cassava and Coffee Zone',
                                      RWA_LZ$df$LZNAMEE %like% 'Semi-Arid' ~ 'Eastern Semi-Arid Agropastoral Zone',                             
                                      RWA_LZ$df$LZNAMEE %like% 'Urban' ~ 'Kigali city',
-                                     TRUE ~ NA_character_))
+                                     TRUE ~ NA_character_),
+         lz_name = case_when(RWA_LZ$df$LZNAMEE %like% 'Tea' ~ 'W. Congo-Nile Crest Tea',
+                                    RWA_LZ$df$LZNAMEE %like% 'Wheat'            ~ 'N. Highland Beans/Wheat',                          
+                                    RWA_LZ$df$LZNAMEE %like% 'Eastern Congo'    ~ 'E. Congo-Nile Highland Subsistence',
+                                    RWA_LZ$df$LZNAMEE %like% 'Volcanic'         ~ 'N.W. Volcanic Irish Potato',                            
+                                    RWA_LZ$df$LZNAMEE %like% 'Mixed'            ~ 'E. Plateau Mixed Agriculture',
+                                    RWA_LZ$df$LZNAMEE %like% 'Eastern Ag'       ~ 'E. Agropastoral',                                       
+                                    RWA_LZ$df$LZNAMEE %like% 'Central-Northern' ~ 'C.-N. Highland Irish Potato/Beans/Veg.',
+                                    RWA_LZ$df$LZNAMEE %like% 'Kivu'             ~ 'Lake Kivu Coffee',
+                                    RWA_LZ$df$LZNAMEE %like% 'Banana'           ~ 'S.E. Plateau Banana',
+                                    RWA_LZ$df$LZNAMEE %like% 'Bugesera'         ~ 'Bugesera Cassava',                                           
+                                    RWA_LZ$df$LZNAMEE %like% 'Central Plateau'  ~ 'C. Plateau Cassava/Coffee',
+                                    RWA_LZ$df$LZNAMEE %like% 'Semi-Arid'        ~ 'E. Semi-Arid Agropastoral',                             
+                                    RWA_LZ$df$LZNAMEE %like% 'Urban'            ~ 'Kigali City',
+                                    TRUE ~ NA_character_))
 
 RWA_LZ$centroids = RWA_LZ$centroids %>% 
   mutate(label = case_when(RWA_LZ$centroids$label %like% 'Tea' ~ 'West Congo-Nile Crest Tea Zone',
