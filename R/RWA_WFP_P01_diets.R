@@ -38,6 +38,25 @@ fcs_byDist = fcs_heatmap(df = hh, region_var = 'admin2', map_region_var = 'Distr
                 width_indivPlots = c(0.075, 0.65, 0.2, 0.075),
                 width = 8.5, height = 5.5)
 
+
+# by livelihood zone, divided urban/rural ---------------------------------
+fcs_rural = fcs_heatmap(df = hh %>% filter(rural_cat == 'Rural'), region_var = 'lz_name', admin0 = RWA_admin0, region_coords = RWA_LZ$df,
+                       plot_map = FALSE,
+                       width_indivPlots = c(0.65, 0.25, 0.1))
+grid.arrange(fcs_rural)
+
+# Filtering >= 80 hh
+fcs_urban = fcs_heatmap(df = hh %>% filter(rural_cat == 'Urban', 
+                                           livelihood_zone %in% c('Lake Kivu Coffee Zone',
+                                                                  'Southeastern Plateau Banana Zone',
+                                                                  'Northwest Volcanic Irish Potato Zone',
+                                                                  'Central Plateau Cassava and Coffee Zone',
+                                                                  'Kigali city'
+                                                                  )), region_var = 'lz_name', admin0 = RWA_admin0, region_coords = RWA_LZ$df,
+                        plot_map = FALSE,
+                        width_indivPlots = c(0.65, 0.25, 0.1))
+grid.arrange(fcs_urban)
+
 # dietary diversity -------------------------------------------------------
 
 x = fcs_heatmap(df = hh, region_var = 'lz_name', FCS_var = 'HDDS_24h', use_FCSWts = FALSE,
