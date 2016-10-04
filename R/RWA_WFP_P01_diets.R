@@ -31,9 +31,29 @@ fcs_byLZ = fcs_heatmap(df = hh, region_var = 'lz_name', plot_map = TRUE, admin0 
                 width_indivPlots = c(0.075, 0.65, 0.2, 0.075),
                 width = 8.5, height = 5.5)
 
-# By 
+# By district
 fcs_byDist = fcs_heatmap(df = hh, region_var = 'admin2', map_region_var = 'District',
                 plot_map = TRUE, admin0 = RWA_admin0, region_coords = RWA_admin2$df,
                 filename = '~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/FCS_CFSVA_admin2.pdf',
                 width_indivPlots = c(0.075, 0.65, 0.2, 0.075),
                 width = 8.5, height = 5.5)
+
+# dietary diversity -------------------------------------------------------
+
+x = fcs_heatmap(df = hh, region_var = 'lz_name', FCS_var = 'HDDS_24h', use_FCSWts = FALSE,
+                FCS_range = c(0, 13), poor_FCS = 4, borderline_FCS = 6,
+                       plot_map = FALSE,
+                       width_indivPlots = c(0.65, 0.25, 0.1))
+grid.arrange(x)
+
+x = fcs_heatmap(df = hh, region_var = 'lz_name', FCS_var = 'DDS', use_FCSWts = FALSE,
+                FCS_range = c(0, 8), poor_FCS = 1, borderline_FCS = 1,
+                plot_map = FALSE,
+                width_indivPlots = c(0.65, 0.25, 0.1))
+grid.arrange(x)
+
+x = fcs_heatmap(df = hh, region_var = 'lz_name', FCS_var = 'GDDS', use_FCSWts = FALSE,
+                FCS_range = c(0, 4), poor_FCS = 1, borderline_FCS = 2,
+                plot_map = FALSE,
+                width_indivPlots = c(0.65, 0.25, 0.1))
+grid.arrange(x)
