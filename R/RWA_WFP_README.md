@@ -89,3 +89,17 @@ For the CFSVA and Nutrition Survey 2012, data collection was conducted during th
 
 #### Livelihood zones
 * resize to 7.1386 in.
+
+
+#### FCS heatmap extraordinaire
+* Annoyingly, things won't perfectly align b/c the text changes the plottable area.  Therefore adding dummy text which has to be removed; removing random unnecessary text.
+* remove clipping paths
+* clip density functions to outer surface
+* create blend of distribution surfaces
+* chiclet-ize heatmaps: round corners, 0.035"
+* individual maps: drop shadow multiply 75 @ 90% K, 0.02" 0.02" 0.02"
+* individual maps: apply 0.1 pt. border + multiply 75% @ #6c191b, 0.02" 0.02" 0.02"
+* remove other urban areas from Kigali City map
+* Adjust the placements so equal horizontally
+* Adjust the vertical position of the distributions (since they're slightly misaligned)
+* add scale bars
