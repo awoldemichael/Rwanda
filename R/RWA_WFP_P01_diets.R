@@ -76,3 +76,43 @@ x = fcs_heatmap(df = hh, region_var = 'lz_name', FCS_var = 'GDDS', use_FCSWts = 
                 plot_map = FALSE,
                 width_indivPlots = c(0.65, 0.25, 0.1))
 grid.arrange(x)
+
+
+
+# FCS by wealth -----------------------------------------------------------
+
+x = hh %>% select(food_expend, monthly_expend, sh_food_expend, hh_size, 
+                  staples_days, milk_days, meat_days, veg_days, fruit_days, 
+                  pulse_days, FCS, wealth_idx_cat,
+                  # vitAfruitveg_days, protein_days, ironrich_days,
+                  sugar_days, oil_days) %>% mutate(x = (food_expend/hh_size)/monthly_expend) %>% mutate(ratio = x/sh_food_expend)
+
+x = x %>% gather(food, days, -food_expend, -wealth_idx_cat, -monthly_expend, -sh_food_expend, -hh_size, -x, -ratio, -FCS)
+
+
+ggplot(x, aes(x = FCS, y = days, colour = food)) +
+  stat_smooth(span = .75) +
+  # coord_cartesian(xlim = c(0, 1), ylim = c(0, 7)) +
+  scale_x_continuous(labels = scales::percent) +
+  xlab('percent of per capita income spent on food')
+
+
+ggplot(x, aes(x = FCS, y = days, colour = food)) +
+  geom_smooth(span = 1e6) +
+  # coord_cartesian(xlim = c(0, 1), ylim = c(0, 7)) +
+  # scale_x_continuous(labels = scales::percent) +
+  xlab('FCS')
+
+
+ggplot(ch, aes(x = age_months, y = stuntingZ, colour = sex)) +
+  geom_smooth() +
+  # coord_cartesian(xlim = c(0, 1), ylim = c(0, 7)) +
+  # scale_x_continuous(labels = scales::percent) +
+  xlab('percent of per capita income spent on food')
+
+ggplot(ch, aes(x = age_months, y = isStunted, colour = sex)) +
+  geom_smooth() +
+  # coord_cartesian(xlim = c(0, 1), ylim = c(0, 7)) +
+  # scale_x_continuous(labels = scales::percent) +
+  xlab('percent of per capita income spent on food')
+
