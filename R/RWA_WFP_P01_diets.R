@@ -25,8 +25,15 @@ source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
 # NOTES -------------------------------------------------------------------
 # * Includes all households, not just those with children.
 
-
-y = fcs_heatmap(df = hh, region_var = 'lz_name', plot_map = TRUE, admin0 = RWA_admin0, region_coords = RWA_LZ$df,
+# By livelihood zone
+fcs_byLZ = fcs_heatmap(df = hh, region_var = 'lz_name', plot_map = TRUE, admin0 = RWA_admin0, region_coords = RWA_LZ$df,
                 filename = '~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/FCS_CFSVA.pdf',
+                width_indivPlots = c(0.075, 0.65, 0.2, 0.075),
+                width = 8.5, height = 5.5)
+
+# By 
+fcs_byDist = fcs_heatmap(df = hh, region_var = 'admin2', map_region_var = 'District',
+                plot_map = TRUE, admin0 = RWA_admin0, region_coords = RWA_admin2$df,
+                filename = '~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/FCS_CFSVA_admin2.pdf',
                 width_indivPlots = c(0.075, 0.65, 0.2, 0.075),
                 width = 8.5, height = 5.5)
