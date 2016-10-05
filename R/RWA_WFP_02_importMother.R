@@ -55,6 +55,7 @@ women = women %>%
     
     # -- nutrition --
     dietDiv_W24h = WDDS, # dietary diversity from women's module; 24 h recall
+    NWDDS, # classification of women's dietary diversity
     starch_W24h = AS13_07,
     beans_W24h = BS13_07,
     nuts_W24h = CS13_07,
@@ -89,6 +90,11 @@ women  = women %>%
                'first trimester', 
                         'second trimester',
                         'third trimester'))),
+    
+    # Factorize
+    dietDiv_W24h_cat = factor(women$NWDDS, 
+                              levels = c(2, 3, 1),
+                              labels = c('medium dietary diversity', 'high dietary diversity', 'low dietary diversity')),
     
     # Grouping antenatal visits together.  Assuming 50 & 77 visits are "do not know" or something similar
     # Note: technically, this should be treated as a factor.  Treating as pseudo-continuous, with 5 vistis being 5 or more.
