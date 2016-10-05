@@ -1,7 +1,46 @@
+# Rwanda stunting analysis -----------------------------------------
+#
+# RW_WFP_A02_stuntingModels.R: script to run regressions on stunting from the CFSVA data
+#
+# Data are from the 2015 Comprehensive Food Security and Vulnerability Analysis
+# by the World Food Programme
+# Available at http://microdata.statistics.gov.rw/index.php/catalog/70
+# Report: https://www.wfp.org/content/rwanda-comprehensive-food-security-and-vulnerability-analysis-march-2016
+#
+# Laura Hughes, lhughes@usaid.gov, 5 October 2016
+# with Tim Essam (tessam@usaid.gov) and Nada Petrovic (npetrovic@usaid.gov)
+#
+# Copyright 2016 by Laura Hughes via MIT License
+
+
+
+# Outline of the models to run --------------------------------------------
+
+# Running a bunch of iterations of different models.  
+
+# -- Dependent variable variations --
+# 1. stunting z-score vs. binary stunted classification
+# 2. males vs. females
+# 3. children < 2 y. vs. children 2-5
+# 4. 2012 stunting vs. 2015 stunting_lz
+# 5. stunting by province, comparing 2 time points
+
+# -- Comparisons to other models --
+
+# * CFSVA published models
 # Variables from the CFSVA analysis taken from http://www.moh.gov.rw/fileadmin/templates/Summit3/8_Regional_VAriation.pdf
 # and the CVSFA report. Assuming linear fit for all variables (?); looks like in the interim pdf they were just running kids < 2.
 # Confusing b/c there's no slope variable in dataset, and they also reference the 2013 CFSVA (?)
 
+# * Nada's models from the DHS
+# * Tim's models from the DHS
+
+# * What I think may be interesting, based on those + lit. models
+
+
+# import data -------------------------------------------------------------
+
+source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
 
 
 # Remove NAs from stunting ------------------------------------------------
@@ -181,7 +220,7 @@ summary(lm(formula = stuntingZ ~
            data = ch_hh %>% filter(!is.na(isStunted))))
 
 
-summary(lm(formula = stuntingZ ~ 
+sink = lm(formula = stuntingZ ~ 
              livelihood_zone + 
              rural_cat +
              wealth_idx +
@@ -208,4 +247,9 @@ summary(lm(formula = stuntingZ ~
              num_antenatal_visits +
              birthwt +
              splines::bs(age_months, degree = 3, knots = 24) * sex,
-           data = ch_hh %>% filter(!is.na(isStunted))))
+           data = ch_hh %>% filter(!is.na(isStunted)))
+
+cluster = ch_hh %>% filter(!is.na(isStunted)) %>% select(admin2, village)
+
+library(multiwayvcov)
+cluster.vcov(sink, cluster)
