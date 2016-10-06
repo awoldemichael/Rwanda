@@ -85,9 +85,11 @@ stunting_fit_cfsva = lm(formula = stuntingZ ~ sex + age_months + low_birthwt +
                           wealth_idx_cat + new_ubudehe + 
                           rural_cat + livelihood_zone +
                           CARI_cat + diarrhea +
-                          road_distance + school_dist_cat+ market_dist_cat + health_dist_cat,
+                          road_dist_cat + school_dist_cat+ market_dist_cat + health_dist_cat,
                         data = all)
 summary(stunting_fit_cfsva)
+coefplot(stunting_fit_cfsva,label_margin = 1)
+plot_relationships(stunting_fit_cfsva)
 
 # stunting score
 stunted_fit_cfsva = lm(formula = isStunted ~ sex + age_months + low_birthwt +
@@ -97,10 +99,12 @@ stunted_fit_cfsva = lm(formula = isStunted ~ sex + age_months + low_birthwt +
                          wealth_idx_cat + new_ubudehe + 
                          rural_cat + livelihood_zone +
                          CARI_cat + diarrhea +
-                         road_distance + school_dist_cat+ market_dist_cat + health_dist_cat,
+                         road_dist_cat + school_dist_cat+ market_dist_cat + health_dist_cat,
                        data = all)
 
 summary(stunted_fit_cfsva)
+
+plot_relationships(stunted_fit_cfsva)
 
 # define models ------------------------------------------------------------------
 
