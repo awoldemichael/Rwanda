@@ -25,6 +25,13 @@
 # 4. 2012 stunting vs. 2015 stunting_lz
 # 5. stunting by province, comparing 2 time points
 
+# -- Independent variable variations --
+# 1. Comparisons to other published  models 
+# 2. Comparisons to models run on DHS data
+# 3. What I think may be interesting, based on those + lit. models
+# 4. models w/ and w/o hh-level variables (since merging --> loss of children)
+
+
 # -- Comparisons to other models --
 
 # * CFSVA published models
@@ -35,7 +42,13 @@
 # * Nada's models from the DHS
 # * Tim's models from the DHS
 
-# * What I think may be interesting, based on those + lit. models
+# -- Protocol --
+# * start w/ basic model and build up
+# * cluster errors at village level to take into account any non-independent behavior due to sample design (using package `multiwayvcov`)
+# * evaluate models using adjusted R^2
+# * look at stability of coefficients using coefplot
+# * look at residuals by summarizing model
+# * for better models, standardize errors
 
 
 # import data -------------------------------------------------------------
@@ -52,6 +65,15 @@ females = ch %>% filter(!is.na(isStunted),
                         sex == 'Female')
 
 all = ch %>% filter(!is.na(isStunted))
+
+
+males_hh = ch_hh %>% filter(!is.na(isStunted), 
+                      sex == 'Male')
+
+females_hh = ch_hh %>% filter(!is.na(isStunted), 
+                        sex == 'Female')
+
+all_hh = ch_hh %>% filter(!is.na(isStunted))
 
 
 # Check CFSVA lit models --------------------------------------------------
@@ -131,6 +153,7 @@ summary(lm(formula = stuntingZ ~ wealth_idx + interview_date + FS_final  + diarr
 summary(lm(formula = stuntingZ ~ wealth_idx + interview_date + FS_final  + diarrhea +
              age_months + milk_days + meat_days + impr_water + impr_toilet, data = ch_hh %>% filter(!is.na(isStunted), sex == 'Male')))
 
+coefplot()
 
 # Nada comparison ---------------------------------------------------------
 
@@ -179,7 +202,7 @@ nada_mf <- glm(isStunted ~
              # +comm_ind+ #infrastructure, WASH, communication indeces
                cookingfuel_cat + #improved cooking fuel
              TLU + own_land + #livestock+land
-             # bike+bankAccount+
+             # bike+bankAccount+ # not in CFSVA
              diarrhea +
              month.y +
              rural_cat +
@@ -188,6 +211,7 @@ nada_mf <- glm(isStunted ~
 
 summary(nada_mf)
 
+coefplot(nada_mf, negative_good = TRUE)
 # ! need to refactor post merge
 
 
