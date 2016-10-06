@@ -284,6 +284,7 @@ coefplot(sink)
 # define models ------------------------------------------------------------------
 # Variables thrown out, + rationale:
 # stock_durationA: ~1000 NAs
+# ill_fortnight | diarrhea + cough + fever
 
 stunting_models = formulas(~stuntingZ, # lhs
                            basic = 
@@ -299,7 +300,7 @@ stunting_models = formulas(~stuntingZ, # lhs
                              H2Otreatment_cat + time_drinkingH2O_cat + wash_knowl,
                            
                            # -- health (child) --
-                           health = ~ diarrhea + fever + ill_fortnight +
+                           health = ~ diarrhea + fever +
                              cough + dewormed,
                            
                            # -- mother --
