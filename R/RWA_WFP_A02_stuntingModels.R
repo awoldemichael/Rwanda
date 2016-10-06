@@ -85,11 +85,11 @@ stunting_fit_cfsva = lm(formula = stuntingZ ~ sex + age_months + low_birthwt +
                           wealth_idx_cat + new_ubudehe + 
                           rural_cat + livelihood_zone +
                           CARI_cat + diarrhea +
-                          road_dist_cat + school_dist_cat+ market_dist_cat + health_dist_cat,
+                          road_dist_cat + school_dist_cat + market_dist_cat + health_dist_cat,
                         data = all)
 summary(stunting_fit_cfsva)
-coefplot(stunting_fit_cfsva,label_margin = 1)
-plot_relationships(stunting_fit_cfsva)
+coefplot(stunting_fit_cfsva, cluster_col = all$village)
+# plot_relationships(stunting_fit_cfsva)
 
 # stunting score
 stunted_fit_cfsva = lm(formula = isStunted ~ sex + age_months + low_birthwt +
@@ -104,7 +104,7 @@ stunted_fit_cfsva = lm(formula = isStunted ~ sex + age_months + low_birthwt +
 
 summary(stunted_fit_cfsva)
 
-plot_relationships(stunted_fit_cfsva)
+# plot_relationships(stunted_fit_cfsva)
 
 # define models ------------------------------------------------------------------
 
@@ -251,8 +251,8 @@ summary(lm(formula = stuntingZ ~
 sink = lm(formula = stuntingZ ~ 
              livelihood_zone + 
              rural_cat +
-             wealth_idx +
-             monthly_pc_expend + 
+             # wealth_idx +
+             monthly_pc_expend^2 + 
              interview_date + 
              diarrhea + 
              impr_unshared_toilet + impr_water_30min +
@@ -277,7 +277,61 @@ sink = lm(formula = stuntingZ ~
              splines::bs(age_months, degree = 3, knots = 24) * sex,
            data = ch_hh %>% filter(!is.na(isStunted)))
 
-cluster = ch_hh %>% filter(!is.na(isStunted)) %>% select(admin2, village)
+coefplot(sink)
 
-library(multiwayvcov)
-cluster.vcov(sink, cluster)
+
+# stunting models ------------------------------------------------------------------
+# define models ------------------------------------------------------------------
+# Variables thrown out, + rationale:
+# stock_durationA: ~1000 NAs
+
+stunting_models = formulas(~stuntingZ, # lhs
+                           basic = 
+                             # -- child demographics --
+                             ~splines::bs(age_months, degree = 3, knots = 24) +
+                             # -- geography --
+                             village_cat + livelihood_zone +
+                             # -- wealth --
+                             splines::bs(monthly_pc_expend, degree = 2),
+                           
+                           # -- WASH (broken down) --
+                           wash = ~ impr_toilet + share_toilet + impr_water + 
+                             H2Otreatment_cat + time_drinkingH2O_cat + wash_knowl,
+                           
+                           # -- health (child) --
+                           health = ~ diarrhea + fever + ill_fortnight +
+                             cough + dewormed,
+                           
+                           # -- mother --
+                           mom = ~ stunted_mother + num_antenatal_visits + when_antenatal +
+                             mother_mosquito_net + mother_ill_2weeks + Fe_supplements,
+                           
+                           # -- ag --
+                           ag = ~ TLU + land_size + hh_garden,
+                           
+                           # -- food --
+                           food = ~ FCS + months_food_access,
+                           
+                           # -- connectivity --
+                           # -- hh demographics -- 
+                           hh_demo = ~ hh_size + crowding + pct_under7,
+                           
+                           # -- ed --
+                           ed = ~ mother_education + head_education_cat + pct_lowEd,
+                             
+                           broken_wealth = add_predictors(basic, wash, health, mom, 
+                                                          ag, food, hh_demo, ed)
+                           
+)
+
+
+# run models --------------------------------------------------------------
+
+stunting_fits_m = males_hh %>% fit_with(lm, stunting_models)
+
+stunting_fits_f = females_hh %>% fit_with(lm, stunting_models)
+
+coefplot(stunting_fits_f$broken_wealth)
+coefplot(stunting_fits_m$broken_wealth)
+
+lapply(stunting_fits_f, function(x) summary(x))
