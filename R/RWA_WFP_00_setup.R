@@ -27,20 +27,30 @@ baseDir = '~/Documents/USAID/Rwanda/rawdata/'
 
 
 # load appropriate packages -----------------------------------------------
-library(data.table)
-library(haven)
-library(ggplot2)
-library(tidyr)
-library(lubridate)
+
+# -- surveys --
 library(llamar)
 library(survey)
-library(forcats)
-library(modelr) # devtools::install_github('hadley/modelr')
+
+# -- plotting -- 
+library(ggplot2)
 library(RColorBrewer)
 library(extrafont)
 library(gridExtra)
-library(dplyr)
 loadfonts(quiet = TRUE)
+
+# -- modelling --
+library(modelr) # devtools::install_github('hadley/modelr')
+library(multiwayvcov)
+
+# -- data wrangling --
+library(data.table)
+library(haven)
+library(tidyr)
+library(lubridate)
+library(forcats)
+library(dplyr)
+
 
 # Set aesthetics ----------------------------------------------------------
 font_light = 'Lato Light'
