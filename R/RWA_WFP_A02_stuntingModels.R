@@ -284,7 +284,7 @@ coefplot(sink)
 # define models ------------------------------------------------------------------
 # Variables thrown out, + rationale:
 # stock_durationA: ~1000 NAs
-# ill_fortnight | diarrhea + cough + fever
+# ill_fortnight | diarrhea + cough + fever; choosing to 
 
 stunting_models = formulas(~stuntingZ, # lhs
                            basic = 
@@ -325,6 +325,7 @@ stunting_models = formulas(~stuntingZ, # lhs
                            
 )
 
+# VIF: look at values > 2; remove VIF > 5-10
 
 # run models --------------------------------------------------------------
 
@@ -332,7 +333,7 @@ stunting_fits_m = males_hh %>% fit_with(lm, stunting_models)
 
 stunting_fits_f = females_hh %>% fit_with(lm, stunting_models)
 
-coefplot(stunting_fits_f$broken_wealth)
-coefplot(stunting_fits_m$broken_wealth)
+coefplot(stunting_fits_f$broken_wealth, cluster_col = females_hh$village)
+coefplot(stunting_fits_m$broken_wealth, cluster_col = males_hh$village)
 
 lapply(stunting_fits_f, function(x) summary(x))
