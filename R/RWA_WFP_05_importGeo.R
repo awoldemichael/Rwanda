@@ -22,6 +22,7 @@ library(maptools)
 
 # setup file location -----------------------------------------------------
 baseDir_geo = '~/Documents/USAID/Rwanda/geodata/'
+proj_string = '+proj=utm +zone=35 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs' # projection to use in all maps
 
 # import Admin0 -----------------------------------------------------------
 RWA_admin0 = shp2df(baseDir =  baseDir_geo,
@@ -29,7 +30,7 @@ RWA_admin0 = shp2df(baseDir =  baseDir_geo,
                     layerName = 'National_Boundary_2001', 
                     getCentroids = FALSE,
                     reproject = TRUE,
-                    projection = '+proj=utm +zone=35 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs',
+                    projection = proj_string,
                     exportData = FALSE)
 
 # import Admin1 -----------------------------------------------------------
@@ -37,7 +38,7 @@ RWA_admin1 = shp2df(baseDir =  baseDir_geo,
                     folderName = 'Rwanda_Admin1',
                     layerName = 'Province_Boundary_2006',
                     reproject = TRUE,
-                    projection = '+proj=utm +zone=35 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs',
+                    projection = proj_string,
                     exportData = FALSE)
 
 
@@ -47,7 +48,16 @@ RWA_admin2 = shp2df(baseDir =  baseDir_geo,
                     layerName = 'District_Boundary_2006',
                     labelVar = 'District',
                     reproject = TRUE,
-                    projection = '+proj=utm +zone=35 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs',
+                    projection = proj_string,
+                    exportData = FALSE)
+
+# import Admin3 -----------------------------------------------------------
+RWA_admin3 = shp2df(baseDir =  baseDir_geo,
+                    folderName = 'Rwanda_Admin3',
+                    layerName = 'Sector_Boundary_2006',
+                    labelVar = 'Sector',
+                    reproject = TRUE,
+                    projection = proj_string,
                     exportData = FALSE)
 
 # import FEWS NET livelihood zones ----------------------------------------
@@ -56,7 +66,7 @@ RWA_LZ = shp2df(baseDir =  baseDir_geo,
                 layerName = 'RW_LHZ_2012',
                 labelVar = 'LZNAMEE',
                 reproject = TRUE,
-                projection = '+proj=utm +zone=35 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs',
+                projection = proj_string,
                 exportData = FALSE)
 
 RWA_LZ$df = RWA_LZ$df %>% 
@@ -111,7 +121,7 @@ RWA_lakes = shp2df(baseDir =  baseDir_geo,
                    layerName = 'RWA_Lakes',
                    getCentroids = FALSE,
                    reproject = TRUE,
-                   projection = '+proj=utm +zone=35 +south +ellps=WGS84 +datum=WGS84 +units=m +no_defs',
+                   projection = proj_string,
                    exportData = FALSE)
 
 
