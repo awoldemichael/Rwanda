@@ -66,20 +66,39 @@ sectors = left_join(sectors, interventions, c("intervention" = "icode",
 stunting_interv = sectors %>% 
   filter(techoffice %in% ta_list | intervention %in% intervention_list) %>% 
   select(techoffice, techarea, icode = intervention, intervention = intervention.y,
-         province, district, sector, partner)
+         province, district, sector, partner) %>% 
+  distinct()
 
 # Collapse down to the sector-level
-stunting_interv = stunting_interv %>% 
+stunting_interv_type = stunting_interv %>% 
   group_by(intervention, province, district, sector) %>% 
   summarise(n = n()) %>% 
   arrange(desc(n))
 
+# total # partners in each region
 stunting_interv_tot = stunting_interv %>% 
-  group_by(intervention, province, district, sector) %>% 
+  group_by(province, district, sector) %>% 
+  select(-intervention) %>% 
+  distinct() %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n))
+
+stunting_interv_IP = stunting_interv %>% 
+  group_by(partner, province, district, sector) %>% 
   summarise(n = n()) %>% 
   arrange(desc(n))
 
 
 # merge with geodata ------------------------------------------------------
+admin3_plot = left_join(RWA_admin3$df, stunting_interv_tot, by = c('Prov_ID' = "province", "Dist_ID" = "district", "Sect_ID" = "sector"))
 
+p = plot_map(admin3_plot, fill_var = 'n') + scale_fill_gradientn(colours = brewer.pal(9, 'YlGnBu'), na.value = grey15K)
 
+save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/CHAINproj_intervention.pdf')
+
+admin3_plot = left_join(RWA_admin3$df, stunting_interv_IP, by = c('Prov_ID' = "province", "Dist_ID" = "district", "Sect_ID" = "sector"))
+
+p = plot_map(admin3_plot, fill_var = 'partner') + scale_fill_brewer(palette = 'Pastel1', na.value = grey15K) + theme(legend.position = c(0.1, 0.8)) + geom_path(aes(x = long, y = lat, order = order, group = group, fill = '1'), 
+                                                                                                                                                                data = RWA_admin2$df, colour = grey70K, size= 0.2)
+
+save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/CHAINproj_IP.pdf')
