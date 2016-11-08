@@ -373,6 +373,16 @@ hh = hh %>%
                     hh$livelihood_zone %like% 'Semi-Arid'        ~ 'E. Semi-Arid Agropastoral',                             
                     hh$livelihood_zone %like% 'Kigali'            ~ 'Kigali City',
                     TRUE ~ NA_character_))
+   
+# Admin3 seems confused.
+codebk = data.frame(code = attr(hh_raw[['S0_E_Sect']], "labels"),
+                    names = names(attr(hh_raw[['S0_E_Sect']], "labels")))
+
+hh$admin3 = fct_infreq(factor(hh$S0_E_Sect, levels = codebk$code,
+                              labels = codebk$names))
+# Standardize case.
+hh = hh %>% 
+  mutate(admin3 = stringr::str_to_title(admin3))
 
 # -- refactorize to be common w/ levels b/w ch and hh (to avoid losing levels in merge) --
 # -- admin1 -- rebasing to Northern; then sorting by ch incidence
