@@ -469,7 +469,7 @@ ch_hh = left_join(ch, hh, by = c("weight",
 
 # Checking merge
 print(ch_hh %>% group_by(is.na(DDS), is.na(village)) %>% summarise(n()))
-nrow(ch_hh) == 4058
+print(paste0('correct number of rows: ', nrow(ch_hh) == 4058))
 
 # is.na(DDS) is.na(village)   n()
 # <lgl>          <lgl> <int>

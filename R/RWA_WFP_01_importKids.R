@@ -361,7 +361,16 @@ ch = ch %>%
 
 
 
+# Admin3 seems confused.
+codebk = data.frame(code = attr(children_raw[['S0_E_Sect']], "labels"),
+                    names = names(attr(children_raw[['S0_E_Sect']], "labels")))
 
+ch$admin3 = fct_infreq(factor(ch$S0_E_Sect, levels = codebk$code,
+                              labels = codebk$names))
+
+# Standardize case.
+ch = ch %>% 
+  mutate(admin3 = stringr::str_to_title(admin3))
 
 # double check there are no NA values in any of the vars ------------------
 # Assuming NA values are 88
