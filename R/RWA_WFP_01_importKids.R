@@ -387,4 +387,25 @@ ch_test = ch_test %>% summarise_each(funs(sum(., na.rm = TRUE)))
 ch_test = t(ch_test)
 
 
+# -- refactorize to be common w/ levels b/w ch and hh (to avoid losing levels in merge) --
+# -- admin1 -- rebasing to Northern; then sorting by ch incidence
+ch$admin1 = forcats::fct_relevel(ch$admin1, 'Northern', 'Western', 'Southern', 'Eastern', 'Kigali city')
 
+# -- admin2 -- rebasing to Musanze
+ch$admin2 = forcats::fct_relevel(ch$admin2, 'Musanze')
+
+# -- livelihood zones -- rebasing to Lake Kivu
+ch$livelihood_zone = forcats::fct_relevel(ch$livelihood_zone,
+                                          "Lake Kivu Coffee Zone",
+                                          "Central Plateau Cassava and Coffee Zone",                         
+                                          "East Congo-Nile Highland Subsistence Farming Zone",               
+                                          "Southeastern Plateau Banana Zone",                                
+                                          "Northwest Volcanic Irish Potato Zone",                            
+                                          "Kigali city",                                                     
+                                          "West Congo-Nile Crest Tea Zone",                                  
+                                          "Central-Northern Highland Irish Potato, Beans and Vegetable Zone",
+                                          "Eastern Plateau Mixed Agriculture Zone",                          
+                                          "Eastern Agropastoral Zone",                                       
+                                          "Bugesera Cassava Zone",                                           
+                                          "Northern Highland Beans and Wheat Zone",                          
+                                          "Eastern Semi-Arid Agropastoral Zone")  
