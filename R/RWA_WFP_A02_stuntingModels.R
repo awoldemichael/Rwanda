@@ -75,7 +75,7 @@ females_hh = ch_hh %>% filter(!is.na(isStunted),
 
 all_hh = ch_hh %>% filter(!is.na(isStunted))
 # standardize coefficients
-all_hh = all_hh %>% stdize4regr(center = TRUE, scale = TRUE, na.rm = TRUE)
+all_hh = all_hh %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'village'))
 
 
 # Check CFSVA lit models --------------------------------------------------
@@ -166,11 +166,11 @@ summary(lm(formula = stuntingZ ~ wealth_idx + interview_date + FS_final  + diarr
 tim_models = formulas(~stuntingZ, # lhs
                       basic = 
                         # maternal characteristics
-                        ~mother_BMI + mother_education + fem_head +
+                        ~ fem_head +  
                         # !not available: mother's birthweight, mother's age at first pregnancy
                         
                         # hh characterstics
-                        wealth_idx + impr_toilet + impr_water + mother_mosquito_net +
+                        wealth_idx + impr_toilet + impr_water + 
                         
                         # hh ag
                         TLU +  
@@ -180,7 +180,7 @@ tim_models = formulas(~stuntingZ, # lhs
                         # !not available: numWomen15-25, numWomen26-65. Options: 15-17, 15-49, 18-59, 60+, 18+
                         
                         # child characteristics
-                        sex + age_months + age_months^2  + birthwt + 
+                        sex + age_months + age_months^2  +  
                         # !not available: birthOrder, wantedChild
                         
                         # child health
@@ -194,6 +194,10 @@ tim_models = formulas(~stuntingZ, # lhs
                         # interview date (month)
                         month.y,
                       
+                      # Lots more NAs, since unclear how mothers match with kids in all cases.
+                      mother = ~mother_BMI + mother_education + mother_mosquito_net,
+                      birthweight = ~birthwt,
+                        
                       # throwing in other variables similar to what Tim was trying to run.
                       extra = ~ mother_age + land_size, 
                       
@@ -201,14 +205,20 @@ tim_models = formulas(~stuntingZ, # lhs
                       connectivity = ~ road_dist_cat + school_dist_cat + market_dist_cat + health_dist_cat,
                       health = ~ num_antenatal_visits + when_antenatal,
                       
-                      combined_tim = add_predictors(basic, extra),
-                      combined = add_predictors(basic, extra, food, connectivity, health))
+                      tim = add_predictors(basic, mother, birthweight),
+                      combined_tim = add_predictors(basic, extra, mother, birthweight),
+                      combined = add_predictors(basic, extra, food, connectivity, health),
+                      combined_plus = add_predictors(basic, extra, mother, birthweight, food, connectivity, health))
 
 stunting_tim = all_hh %>% fit_with(lm, tim_models)
 
 coefplot(stunting_tim$basic, cluster_col = all_hh$village)
+# plot_relationships(stunting_tim$tim)
+
+coefplot(stunting_tim$tim, cluster_col = all_hh$village)
 coefplot(stunting_tim$combined_tim, cluster_col = all_hh$village)
 coefplot(stunting_tim$combined, cluster_col = all_hh$village)
+coefplot(stunting_tim$combined_plus, cluster_col = all_hh$village)
 
 # Nada comparison ---------------------------------------------------------
 
