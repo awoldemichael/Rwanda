@@ -398,3 +398,26 @@ coefplot(stunting_fits_f$broken_wealth, cluster_col = females_hh$village)
 coefplot(stunting_fits_m$broken_wealth, cluster_col = males_hh$village)
 
 lapply(stunting_fits_f, function(x) summary(x))
+
+
+# models by province ------------------------------------------------------
+library(data.table)
+df = all_hh %>% filter(admin1 %like% 'North')
+stunting_fits_north = df %>% fit_with(lm, stunting_models)
+coefplot(stunting_fits_north$broken_wealth, cluster_col = df$village)
+
+df = all_hh %>% filter(admin1 %like% 'Kigali')
+stunting_fits_kigali = df %>% fit_with(lm, stunting_models)
+coefplot(stunting_fits_kigali$broken_wealth, cluster_col = df$village)
+
+df = all_hh %>% filter(admin1 %like% 'East')
+stunting_fits_east = df %>% fit_with(lm, stunting_models)
+coefplot(stunting_fits_east$broken_wealth, cluster_col = df$village)
+
+df = all_hh %>% filter(admin1 %like% 'South')
+stunting_fits_south = df %>% fit_with(lm, stunting_models)
+coefplot(stunting_fits_south$broken_wealth, cluster_col = df$village)
+
+df = all_hh %>% filter(admin1 %like% 'West')
+stunting_fits_west = df %>% fit_with(lm, stunting_models)
+coefplot(stunting_fits_west$broken_wealth, cluster_col = df$village)
