@@ -57,7 +57,12 @@ hh = hh %>%
     # -- demographics --
     hh_size = S1_01, # hh size
     S1_01_3, # female headed
+    S1_01_4, # hh head age
     pct_under7 = S1_01_7_HC88_S, # percent < 7 yrs old
+    numWomen_15_17 = FS1_01_4_2, # number of women b/w 15-17 in hh
+    numWomen_18_59 = GS1_01_4_2, # number of women b/w 18-59 in hh
+    numWomen_60plus = HS1_01_4_2, # number of women b/w 18-59 in hh
+    
     # S1_01_11_C, # polygamous -- too few hh
     
     # -- education --
@@ -246,6 +251,10 @@ hh = hh %>%
     
     loan_value = ifelse((asked_loan == 0 | S7_01_2 == 0), 0, S7_04), # value of loan; setting to 0 if didn't get a loan
     
+    rooms_PC = 1/crowding, # assuming crowding variable is calculated correctly, flipping crowding index from #ppl/sleeping room to rooms/ppl
+    
+    head_age = ifelse(S1_01_4 < 90, S1_01_4, 90), # assuming anyone 90 or above is the equivalent of being 90.
+    
     # -- convert shares to ratios --
     sh_food_grown = sh_food_grown / 100,
     sh_labour_ag_work = sh_labour_ag_work / 100,
@@ -282,6 +291,8 @@ hh = hh %>%
                          TRUE ~ NA_real_),
     
     # -- regroup --
+    numWomen_18plus = numWomen_18_59 + numWomen_60plus,
+    
     head_literate = case_when(hh$S1_01_7 == 0 ~ 0, # illiterate
                               hh$S1_01_7 == 1 ~ 1, # can read & write
                               hh$S1_01_7 == 2 ~ 1, # can read but not write

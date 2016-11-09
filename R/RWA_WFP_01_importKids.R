@@ -155,6 +155,7 @@ ch = ch %>%
     age_months = S14_02_7, # age
     S14_02_8, # sex
     S14_01, # # kids < 5 y in household
+    numWomen_15_49 = S13_01, # # women 15-49 y old in hh
     
     # -- village aid profile --
     v_S2_03_1, # VUP (schemes applied in the village)
@@ -207,6 +208,7 @@ ch = ch %>%
     
     # -- supplements --
     # most kids (3963) got vit A drops
+    AS14_04,
     
     # -- birth weight --
     birthweight_cat,
@@ -323,7 +325,8 @@ ch = ch %>%
     fever = na_if(S14_05_2, 88),
     cough = na_if(S14_05_3, 88),
     diarrhea = na_if(S14_05_4, 88),
-    dewormed = na_if(S14_05_6, 88)) %>% 
+    dewormed = na_if(S14_05_6, 88), 
+    vitaminA = na_if(AS14_04, 88)) %>% 
   # -- create factors based on the labels in original dataset --
   # -- location --
   factorize(children_raw, 'Urban', 'rural_cat') %>% 

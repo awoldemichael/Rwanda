@@ -68,12 +68,14 @@ all = ch %>% filter(!is.na(isStunted))
 
 
 males_hh = ch_hh %>% filter(!is.na(isStunted), 
-                      sex == 'Male')
+                            sex == 'Male')
 
 females_hh = ch_hh %>% filter(!is.na(isStunted), 
-                        sex == 'Female')
+                              sex == 'Female')
 
 all_hh = ch_hh %>% filter(!is.na(isStunted))
+# standardize coefficients
+all_hh = all_hh %>% stdize4regr(center = TRUE, scale = TRUE, na.rm = TRUE)
 
 
 # Check CFSVA lit models --------------------------------------------------
@@ -103,6 +105,7 @@ stunted_fit_cfsva = lm(formula = isStunted ~ sex + age_months + low_birthwt +
                        data = all)
 
 summary(stunted_fit_cfsva)
+coefplot(stunted_fit_cfsva, cluster_col = all$village, negative_good = TRUE)
 
 # plot_relationships(stunted_fit_cfsva)
 
@@ -157,25 +160,73 @@ summary(lm(formula = stuntingZ ~ wealth_idx + interview_date + FS_final  + diarr
 summary(lm(formula = stuntingZ ~ wealth_idx + interview_date + FS_final  + diarrhea +
              age_months + milk_days + meat_days + impr_water + impr_toilet, data = ch_hh %>% filter(!is.na(isStunted), sex == 'Male')))
 
-coefplot()
+
+
+# Tim comparison ----------------------------------------------------------
+tim_models = formulas(~stuntingZ, # lhs
+                      basic = 
+                        # maternal characteristics
+                        ~mother_BMI + mother_education + fem_head +
+                        # !not available: mother's birthweight, mother's age at first pregnancy
+                        
+                        # hh characterstics
+                        wealth_idx + impr_toilet + impr_water + mother_mosquito_net +
+                        
+                        # hh ag
+                        TLU +  
+                        
+                        # demographics
+                        rooms_PC + head_age + hh_size + kids_under5 + numWomen_18plus +
+                        # !not available: numWomen15-25, numWomen26-65. Options: 15-17, 15-49, 18-59, 60+, 18+
+                        
+                        # child characteristics
+                        sex + age_months + age_months^2  + birthwt + 
+                        # !not available: birthOrder, wantedChild
+                        
+                        # child health
+                        # note: most kids received vitamin A drops.
+                        dewormed + vitaminA + diarrhea +
+                        
+                        # geography
+                        rural_cat + livelihood_zone +
+                        # !unavailable: altitude
+                        
+                        # interview date (month)
+                        month.y,
+                      
+                      # throwing in other variables similar to what Tim was trying to run.
+                      extra = ~ mother_age + land_size, 
+                      
+                      food = ~ FCS + months_food_access,
+                      connectivity = ~ road_dist_cat + school_dist_cat + market_dist_cat + health_dist_cat,
+                      health = ~ num_antenatal_visits + when_antenatal,
+                      
+                      combined_tim = add_predictors(basic, extra),
+                      combined = add_predictors(basic, extra, food, connectivity, health))
+
+stunting_tim = all_hh %>% fit_with(lm, tim_models)
+
+coefplot(stunting_tim$basic, cluster_col = all_hh$village)
+coefplot(stunting_tim$combined_tim, cluster_col = all_hh$village)
+coefplot(stunting_tim$combined, cluster_col = all_hh$village)
 
 # Nada comparison ---------------------------------------------------------
 
 # Modeling age as a third order spline with knot at 24 months (2 years) 
 nada_f_model = lm(stuntingZ ~ splines::bs(age_months, degree = 3, knots = 24) + #use for male/female only
-                  # birth_order+birth_interval_preceding*firstborn+ # demographics; not in CFSVA
-                  stunted_mother + mother_education + # mother
-                  ever_breastfed + # nutrition
-                  infrastruct_idx + wash_idx + # infrastructure, WASH indices
-                  # comm_ind + # communication index; asked in CFSVA but not given to me :(
-                  cookingfuel_cat + # improved cooking fuel; 
-                  TLU + land_size + # livestock + land
-                  # bike + bankAccount + # Not in CFSVA
-                  diarrhea +
-                  month.y +
-                  rural_cat +
-                  livelihood_zone, #other
-                data = ch_hh %>% filter(sex == 'Female')) 
+                    # birth_order+birth_interval_preceding*firstborn+ # demographics; not in CFSVA
+                    stunted_mother + mother_education + # mother
+                    ever_breastfed + # nutrition
+                    infrastruct_idx + wash_idx + # infrastructure, WASH indices
+                    # comm_ind + # communication index; asked in CFSVA but not given to me :(
+                    cookingfuel_cat + # improved cooking fuel; 
+                    TLU + land_size + # livestock + land
+                    # bike + bankAccount + # Not in CFSVA
+                    diarrhea +
+                    month.y +
+                    rural_cat +
+                    livelihood_zone, #other
+                  data = ch_hh %>% filter(sex == 'Female')) 
 
 nada_m_model = lm(stuntingZ ~ splines::bs(age_months, degree = 3, knots = 24) + #use for male/female only
                     # birth_order+birth_interval_preceding*firstborn+ # demographics; not in CFSVA
@@ -196,22 +247,22 @@ summary(nada_m_model)
 summary(nada_f_model)
 
 nada_mf <- glm(isStunted ~
-             #Modeling age as a third order spline with knot at 24 months (2 years) 
-             #bs(age_calc_months,degree=3,knots=24)+ #use for male/female only
-             splines::bs(age_months, degree = 3, knots = 24) * sex + #use for entire data set    
-             # birth_order+birth_interval_preceding*firstborn+ #demographics
-             stunted_mother + mother_education + # mother
-             ever_breastfed + # nutrition
-             infrastruct_idx + wash_idx +
-             # +comm_ind+ #infrastructure, WASH, communication indeces
-               cookingfuel_cat + #improved cooking fuel
-             TLU + own_land + #livestock+land
-             # bike+bankAccount+ # not in CFSVA
-             diarrhea +
-             month.y +
-             rural_cat +
-             livelihood_zone, 
-           data = ch_hh, family = binomial(link = 'logit')) 
+                 #Modeling age as a third order spline with knot at 24 months (2 years) 
+                 #bs(age_calc_months,degree=3,knots=24)+ #use for male/female only
+                 splines::bs(age_months, degree = 3, knots = 24) * sex + #use for entire data set    
+                 # birth_order+birth_interval_preceding*firstborn+ #demographics
+                 stunted_mother + mother_education + # mother
+                 ever_breastfed + # nutrition
+                 infrastruct_idx + wash_idx +
+                 # +comm_ind+ #infrastructure, WASH, communication indeces
+                 cookingfuel_cat + #improved cooking fuel
+                 TLU + own_land + #livestock+land
+                 # bike+bankAccount+ # not in CFSVA
+                 diarrhea +
+                 month.y +
+                 rural_cat +
+                 livelihood_zone, 
+               data = ch_hh, family = binomial(link = 'logit')) 
 
 summary(nada_mf)
 
@@ -249,33 +300,33 @@ summary(lm(formula = stuntingZ ~
 
 
 sink = lm(formula = stuntingZ ~ 
-             livelihood_zone + 
-             rural_cat +
-             # wealth_idx +
-             monthly_pc_expend^2 + 
-             interview_date + 
-             diarrhea + 
-             impr_unshared_toilet + impr_water_30min +
-             health_less_60min + market_dist_cat +
-             TLU + 
-             # own_land + 
-             land_size + 
-             hh_occup_cat +
-             # sh_agricultural_production + sh_unskilled_labour + sh_labour_ag_work +
-             hh_garden + 
-             growing_beans + growing_maize + growing_s_potato + growing_cassava + 
-             growing_i_potato + growing_sorghum + growing_banana_cooking + growing_banana_wine +
-             # pref_staple + 
-             meat_days + pulse_days + veg_days + milk_days +
-             child_meal_freq +
-             # CARI_cat + 
-             # food_access_prob + 
-             months_food_access + 
-             stunted_mother + mother_education + head_education_cat + mother_mosquito_net +
-             num_antenatal_visits +
-             birthwt +
-             splines::bs(age_months, degree = 3, knots = 24) * sex,
-           data = ch_hh %>% filter(!is.na(isStunted)))
+            livelihood_zone + 
+            rural_cat +
+            # wealth_idx +
+            monthly_pc_expend^2 + 
+            interview_date + 
+            diarrhea + 
+            impr_unshared_toilet + impr_water_30min +
+            health_less_60min + market_dist_cat +
+            TLU + 
+            # own_land + 
+            land_size + 
+            hh_occup_cat +
+            # sh_agricultural_production + sh_unskilled_labour + sh_labour_ag_work +
+            hh_garden + 
+            growing_beans + growing_maize + growing_s_potato + growing_cassava + 
+            growing_i_potato + growing_sorghum + growing_banana_cooking + growing_banana_wine +
+            # pref_staple + 
+            meat_days + pulse_days + veg_days + milk_days +
+            child_meal_freq +
+            # CARI_cat + 
+            # food_access_prob + 
+            months_food_access + 
+            stunted_mother + mother_education + head_education_cat + mother_mosquito_net +
+            num_antenatal_visits +
+            birthwt +
+            splines::bs(age_months, degree = 3, knots = 24) * sex,
+          data = ch_hh %>% filter(!is.na(isStunted)))
 
 coefplot(sink)
 
@@ -284,7 +335,7 @@ coefplot(sink)
 # define models ------------------------------------------------------------------
 # Variables thrown out, + rationale:
 # stock_durationA: ~1000 NAs
-# ill_fortnight | diarrhea + cough + fever; choosing to 
+# ill_fortnight | diarrhea + cough + fever; choosing to run separately
 
 stunting_models = formulas(~stuntingZ, # lhs
                            basic = 
@@ -319,7 +370,7 @@ stunting_models = formulas(~stuntingZ, # lhs
                            
                            # -- ed --
                            ed = ~ mother_education + head_education_cat + pct_lowEd,
-                             
+                           
                            broken_wealth = add_predictors(basic, wash, health, mom, 
                                                           ag, food, hh_demo, ed)
                            
