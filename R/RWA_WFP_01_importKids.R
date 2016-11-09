@@ -409,3 +409,6 @@ ch$livelihood_zone = forcats::fct_relevel(ch$livelihood_zone,
                                           "Bugesera Cassava Zone",                                           
                                           "Northern Highland Beans and Wheat Zone",                          
                                           "Eastern Semi-Arid Agropastoral Zone")  
+
+# -- education -- basing to none.
+ch$mother_education = forcats::fct_relevel(ch$mother_education, 'No school')

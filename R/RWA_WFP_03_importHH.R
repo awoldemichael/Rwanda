@@ -417,6 +417,7 @@ hh$livelihood_zone = forcats::fct_relevel(hh$livelihood_zone,
                                           "Bugesera Cassava Zone",                                           
                                           "Northern Highland Beans and Wheat Zone",                          
                                           "Eastern Semi-Arid Agropastoral Zone")  
+
 # -- health_less_60min --
 hh$health_less_60min = forcats::fct_relevel(hh$health_less_60min, levels(ch$health_less_60min))
 
