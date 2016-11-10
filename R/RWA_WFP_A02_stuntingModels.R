@@ -144,10 +144,13 @@ stunting_fits_m = males %>% fit_with(lm, stunting_models)
 stunting_fits_f = females %>% fit_with(lm, stunting_models)
 stunting_fits_all = all %>% fit_with(lm, stunting_models)
 
-lapply(stunting_fits_f, function(x) summary(x))
+# lapply(stunting_fits_f, function(x) summary(x))
 
 summary(stunting_fits_m$comb)
 summary(stunting_fits_f$comb)
+coefplot(stunting_fits_f$comb, females$village) + xlim(c(-10, 10))
+coefplot(stunting_fits_m$comb, males$village) 
+coefplot(stunting_fits_all$comb, all$village)
 
 
 # basic fit ---------------------------------------------------------------
@@ -276,8 +279,8 @@ nada_mf <- glm(isStunted ~
 
 summary(nada_mf)
 
-coefplot(nada_mf, negative_good = TRUE)
-# ! need to refactor post merge
+coefplot(nada_m_model)
+coefplot(nada_f_model)
 
 
 # prelim fit ---------------------------------------------------------------
