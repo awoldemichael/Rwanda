@@ -43,7 +43,7 @@ plot_corr(ch %>% select(diarrhea, impr_toilet, impr_water, impr_unshared_toilet,
 
 wash = ch %>% select(diarrhea, impr_toilet, impr_water, impr_unshared_toilet, 
               wash_beforecook, wash_kidtoilet, wash_beforeeat,  
-              wash_ifdirty, wash_aftertoilet, wash_knowl)
+              wash_ifdirty, wash_aftertoilet, wash_knowl, mother_literate, education_groups, wealth_idx)
 
 # Consistently lower numbers for the ~12% kids w/ diarrhea in past 2 weeks.
 View(wash %>% group_by(diarrhea) %>% summarise_each(funs(mean(., na.rm = TRUE), n())))
@@ -63,3 +63,10 @@ for(i in colnames(wash0)) {
 # So even though they aren't *that* correlated, people w/ diarrhea have worse WASH behavior.
 # Comes in the form of having lower access to water/sanitation as well as lower WASH knowledge.
 # More lags in (unshared) toilet coverage.
+
+# Just for fun... throwing in education:
+# AND literacy, education lower.
+# AND wealth index lower.
+# Not surprising.  Generally poorer, less educated.
+
+
