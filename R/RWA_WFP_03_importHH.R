@@ -327,7 +327,7 @@ hh = hh %>%
   factorize(hh_raw, 'S0_E_Sect', 'admin3') %>% 
   factorize(hh_raw, 'livezone', 'livelihood_zone') %>% 
   # -- demographics --
-  factorize(hh_raw, 'month', 'month') %>% 
+  # factorize(hh_raw, 'month', 'month') %>% 
   factorize(hh_raw, 'WI_cat', 'wealth_idx_cat') %>% 
   factorize(hh_raw, 'livelihood_group_2', 'hh_occup_cat') %>% 
   factorize(hh_raw, 'S12_01', 'old_ubudehe') %>%

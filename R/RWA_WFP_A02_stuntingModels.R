@@ -236,6 +236,33 @@ coefplot(nada_f_model)
 # stock_durationA: ~1000 NAs
 # ill_fortnight | diarrhea + cough + fever; choosing to run separately
 
+# -- Check where have huge #s of NAs --
+View(ch_hh %>% 
+  select(sex, age_months, interview_date, month.x, 
+         hh_size, crowding, kids_under5, pct_under7, numWomen_15_49, numWomen_18plus, fem_head, prim_caregiver, head_age,
+         mother_literate, mother_education, head_literate, head_education_cat, pct_lowEd, pct_highEd, pct_illiterate,
+         health_dist_cat, health_less_60min, market_less_60min, market_dist_cat, road_dist_cat, school_dist_cat,
+         shock_drought, shock_illness,
+         wealth_idx, monthly_pc_expend, new_ubudehe, old_ubudehe, got_loan, asked_loan, infrastruct_idx, impr_roof, impr_floor, impr_wall, own_house_cat,
+         cookingfuel_cat, food_assistance, financial_assistance, ag_assistance,
+         diarrhea, fever, cough, dewormed, vitaminA, birthwt, birthweight_cat, ever_breastfed, fed_nonbreastmilk, still_breastfed, breastfed_afterbirth,
+         antenatal_care, num_antenatal_visits, when_antenatal, stunted_mother,  mother_age, mother_BMI, mother_mosquito_net, mother_ill_2weeks, Fe_supplements,
+         impr_toilet, share_toilet, impr_unshared_toilet, impr_water, impr_water_30min, time_water_source, time_drinkingH2O_cat, H2Otreatment_cat, drinkingH2O_cat, wash_knowl, wash_beforecook, wash_kidtoilet, wash_beforeeat, wash_aftertoilet, wash_ifdirty,
+         TLU, own_livestock, own_cattle, manage_livestock, own_land, land_size, hh_garden,
+         FCS, DDS, dietDiv_W24h, dietDiv_W24h_cat, HDDS_24h, contains('day'), pref_staple, child_meal_freq, CARI_cat, food_access_prob, food_access_year_cat,
+         months_food_access, CSI_cat, CSI.x, protein_days, ironrich_days, vitAfruitveg_days, sh_food_grown, sh_food_purchased, sh_food_expend, 
+         contains('growing'), hh_occup_cat, sh_agricultural_production, sh_labour_ag_work, sh_unskilled_labour, num_jobs, mostly_selling, mostly_consuming,
+         village_VUP, village_noSchemes, village_IDPmodel, village_landConsolid, village_structUmudugudu, 
+         admin2, admin1, village_cat, rural_cat, livelihood_zone
+  ) %>% 
+  ungroup() %>% 
+  summarise_each(funs(sum(is.na(.)))) %>% 
+  gather(var, num_NA) %>% 
+  filter(num_NA > 10) %>% 
+  arrange(desc(num_NA)))
+
+  
+
 stunting_models = formulas(~stuntingZ, # lhs
                            basic = 
                              # -- child demographics --
@@ -275,6 +302,8 @@ stunting_models = formulas(~stuntingZ, # lhs
                            
 )
 
+
+splines::bs(age_months, degree = 3, knots = 24) * sex +
 # VIF: look at values > 2; remove VIF > 5-10
 
 # run models --------------------------------------------------------------
@@ -287,6 +316,13 @@ coefplot(stunting_fits_f$broken_wealth, cluster_col = females_hh$village)
 coefplot(stunting_fits_m$broken_wealth, cluster_col = males_hh$village)
 
 lapply(stunting_fits_f, function(x) summary(x))
+
+
+# model evaluation -------------------------------------------------------
+# http://www.statmethods.net/stats/rdiagnostics.html
+library(car)
+vif(model)
+sqrt(vif(fit)) > 2 
 
 
 # models by province ------------------------------------------------------
