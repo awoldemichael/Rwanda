@@ -109,61 +109,7 @@ coefplot(stunted_fit_cfsva, cluster_col = all$village, negative_good = TRUE)
 
 # plot_relationships(stunted_fit_cfsva)
 
-# define models ------------------------------------------------------------------
-
-stunting_models = formulas(~stuntingZ, # lhs
-                           cfsva = ~ age_months + low_birthwt +
-                             beans_W24h + milk_W24h + 
-                             stunted_mother + mother_age + mother_education +
-                             wealth_idx_cat + new_ubudehe + 
-                             rural_cat + livelihood_zone +
-                             CARI_cat + diarrhea +
-                             market_distance + school_dist_cat+ market_dist_cat + health_dist_cat,
-                           
-                           demo_child = 
-                             # -- demographic variables --
-                             ~ splines::bs(age_months, degree = 3, knots = 24) +
-                             interview_date,
-                           
-                           wealth = ~wealth_idx,
-                           geo = ~livelihood_zone + rural_cat,
-                           wash = ~impr_unshared_toilet + impr_water + diarrhea,
-                           nutrition = ~FCS + CARI_cat + ever_breastfed,
-                           health = ~fever + birthwt, 
-                           ed = ~mother_literate + mother_education,
-                           
-                           comb = add_predictors(geo, demo_child, wealth, wash, nutrition, ed)
-                           
-                           
-)
-
-
-# run models --------------------------------------------------------------
-
-stunting_fits_m = males %>% fit_with(lm, stunting_models)
-stunting_fits_f = females %>% fit_with(lm, stunting_models)
-stunting_fits_all = all %>% fit_with(lm, stunting_models)
-
-# lapply(stunting_fits_f, function(x) summary(x))
-
-summary(stunting_fits_m$comb)
-summary(stunting_fits_f$comb)
-coefplot(stunting_fits_f$comb, females$village) + xlim(c(-10, 10))
-coefplot(stunting_fits_m$comb, males$village) 
-coefplot(stunting_fits_all$comb, all$village)
-
-
-# basic fit ---------------------------------------------------------------
-
-summary(lm(formula = stuntingZ ~ wealth_idx + interview_date + FS_final  + diarrhea + 
-             splines::bs(age_months, degree = 3, knots = 24) + 
-             milk_days + meat_days + impr_water + impr_toilet, 
-           data = ch_hh %>% filter(!is.na(isStunted), sex == 'Male')))
-
-summary(lm(formula = stuntingZ ~ wealth_idx + interview_date + FS_final  + diarrhea +
-             age_months + milk_days + meat_days + impr_water + impr_toilet, data = ch_hh %>% filter(!is.na(isStunted), sex == 'Male')))
-
-
+# Overall: fairly poor relationship: r^2= 0.128; 936 obs. removed
 
 # Tim comparison ----------------------------------------------------------
 tim_models = formulas(~stuntingZ, # lhs
@@ -282,66 +228,6 @@ summary(nada_mf)
 coefplot(nada_m_model)
 coefplot(nada_f_model)
 
-
-# prelim fit ---------------------------------------------------------------
-
-summary(lm(formula = stuntingZ ~ 
-             livelihood_zone + 
-             rural_cat +
-             # wealth_idx + 
-             monthly_pc_expend + 
-             interview_date + 
-             diarrhea + 
-             impr_unshared_toilet + impr_water_30min +
-             health_less_60min + market_dist_cat +
-             TLU + 
-             # own_land + 
-             land_size + 
-             hh_occup_cat +
-             # sh_agricultural_production + sh_unskilled_labour + sh_labour_ag_work +
-             growing_beans + growing_maize + growing_s_potato + growing_cassava + 
-             growing_i_potato + growing_sorghum + growing_banana_cooking + growing_banana_wine +
-             # pref_staple + 
-             FCS + child_meal_freq +
-             CARI_cat + 
-             # food_access_prob + 
-             months_food_access + 
-             stunted_mother + mother_education + head_education_cat + mother_mosquito_net +
-             sex + birthwt +
-             splines::bs(age_months, degree = 3, knots = 24),
-           data = ch_hh %>% filter(!is.na(isStunted))))
-
-
-sink = lm(formula = stuntingZ ~ 
-            livelihood_zone + 
-            rural_cat +
-            # wealth_idx +
-            monthly_pc_expend^2 + 
-            interview_date + 
-            diarrhea + 
-            impr_unshared_toilet + impr_water_30min +
-            health_less_60min + market_dist_cat +
-            TLU + 
-            # own_land + 
-            land_size + 
-            hh_occup_cat +
-            # sh_agricultural_production + sh_unskilled_labour + sh_labour_ag_work +
-            hh_garden + 
-            growing_beans + growing_maize + growing_s_potato + growing_cassava + 
-            growing_i_potato + growing_sorghum + growing_banana_cooking + growing_banana_wine +
-            # pref_staple + 
-            meat_days + pulse_days + veg_days + milk_days +
-            child_meal_freq +
-            # CARI_cat + 
-            # food_access_prob + 
-            months_food_access + 
-            stunted_mother + mother_education + head_education_cat + mother_mosquito_net +
-            num_antenatal_visits +
-            birthwt +
-            splines::bs(age_months, degree = 3, knots = 24) * sex,
-          data = ch_hh %>% filter(!is.na(isStunted)))
-
-coefplot(sink)
 
 
 # stunting models ------------------------------------------------------------------
