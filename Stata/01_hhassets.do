@@ -164,12 +164,53 @@ recode hv237 (8 = .)(0 = 0 "no")(1 = 1 "yes"), gen(treatwater)
 recode hv242 (0 = 0 "no")(1 = 1 "yes")(. = .), gen(kitchen)
 clonevar bednet = hv227 
 
+g byte bnetITNuse = inlist(hml12_01, 1) & bednet == 1
+la var bnetITNuse "own ITN mosquito bednet"
+
 * Wash variables (http://www.wssinfo.org/definitions-methods/watsan-categories/)
+/* IMPROVED WATER
+	Piped water into dwelling - 10, 11
+	Piped water to yard/plot - 12
+	Public tap or standpipe - 13
+	Tubewell or borehole - 20, 21
+	Protected dug well - 30, 31
+	Protected spring - 41
+	Rainwater - 51
+*/
+g byte Water = inlist(hv201, 10, 11, 12, 13, 20, 21, 30, 31, 41, 51)
 
-g byte improvedWater = inlist(hv201, 10, 11, 12, 13, 20, 21, 30, 31, 41, 51)
-g byte unimprovedWater = inlist(hv201, 41, 42, 43, 61, 62)
+/* UNIMPROVED WATER
+	Unprotected spring - 42
+	Unprotected dug well - 32
+	Cart with small tank/drum - 62
+	Tanker-truck - 61
+	Surface water - 43
+	Bottled water - 71
+*/
+g byte unimprovedWater = inlist(hv201, 32, 42, 43, 61, 62, 71)
+g byte waterLake = inlist(hv201, 43)
 
-g byte improvedSanit = inlist(hv205, 10, 11, 12, 13, 20, 41, 22, 41)
+/* IMPROVED SANITATION
+	Flush toilet - 10
+	Piped sewer system - 11
+	Septic tank - 12
+	Flush/pour flush to pit latrine - 13
+	Ventilated improved pit latrine (VIP) - 21
+	Pit latrine with slab - 20
+	Composting toilet - 41
+	Special case 
+	*/
+g byte improvedSanit = inlist(hv205, 10, 11, 12, 13, 20, 21, 41, 22)
+
+/* UNIMPROVED SANITATION  
+	Flush/pour flush to elsewhere - 14, 15
+	Pit latrine without slab - 23
+	Bucket - 42
+	Hanging toilet or hanging latrine - 43
+	Shared sanitation - 
+	No facilities or bush or field - 30, 31, 96
+	*/
+
 g byte unimprovedSanit = inlist(hv205, 14, 15, 23, 30, 31, 42, 43, 96)
 
 

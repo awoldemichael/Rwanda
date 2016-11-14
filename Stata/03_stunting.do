@@ -50,8 +50,8 @@ egen ageMonGroup = cut(ageChild), at(0, 6, 9, 12, 18, 24, 36, 48, 60) label
 recode b4 (1 = 0 "male")(2 = 1 "female"), gen(female)
 
 * Stunting averages grouping
-egen ageg_stunting = mean(stunting), by(age_group)
-egen age_stunting = mean(stunting), by(ageChild)
+egen ageg_stunting = mean(stunting2), by(age_group)
+egen age_stunting = mean(stunting2), by(ageChild)
 la var ageg_stunting "age group average for stunting"
 la var age_stunting "age chunk average for stunting"
 
@@ -63,6 +63,8 @@ la values religion rel
 
 * health outcomes
 g byte diarrhea = (h11 == 2)
+g byte orsKnowledge = inlist(v416, 1, 2)
+la var orsKnowledge "used ORS or heard of it"
 
 * Birth order and breastfeeding
 clonevar precedBI 	= b11
@@ -73,6 +75,15 @@ clonevar ageFirstBirth = v212
 clonevar bfDuration	= m4
 clonevar bfMonths	= m5
 clonevar breastfeeding = v404
+clonevar anemia = v457
+
+* Antenatal care visits (missing for about 25% of sample)
+recode m14 (3 = 2 "2-3 visits") (4/11 = 3 "4+ ANC visit")(. = 5 "missing"), gen(anc)
+clonevar anc_Visits = m14
+
+* Birth size
+recode m18 (1 = 5 "very above")(2 = 4 "above ave")(3 = 3 "ave")(4 = 2 "below ave")/*
+*/(5 = 1 "very below")(8 = .), gen(birthSize)
 
 *Place of delivery
 g byte birthAtHome = inlist(m15, 11, 12)
@@ -174,8 +185,8 @@ ds(stunting stunting2 stunted stunted2 ageChild
 	othFruit organ meat eggs legumes milk
 	dietdiv bmitmp motherBMI motherBWeight 
 	motherEd breastfeeding birthAtHome
-	motherEdYears DHSCLUST cweight wantedChild
-	vitaminA intParasites);
+	motherEdYears DHSCLUST cweight wantedChild anemia
+	vitaminA intParasites extstunted* orsKnowledge);
 #delimit cr
 keep `r(varlist)'
 
@@ -188,173 +199,4 @@ ren DHSCLUST, lower
 
 merge m:1 dhsclust using "$pathout/RWA_DHS_Livelihoods.dta", gen(_dhs_FEWS)
 
-
 save "$pathout/stunting.dta", replace
-
-
-* Label the cmc codes (di 12*(2014 - 1900)+1)
-recode intdate (1371 1369 = 1378)
-la def cmc 1378 "Oct. 2014" 1379 "Nov. 2014" 1380 "Dec. 2014" 1381 "Jan. 2015" /*
-*/ 1382 "Feb. 2015" 1383 "Mar. 2015" 1384 "Apr. 2015"
-la val intdate cmc
-
-* Survey set the data to account for complex sampling design
-svyset psu [pw = cweight], strata(strata)
-
-twoway (kdensity stunting2), xline(-2, lwidth(thin) /*
-*/ lpattern(dash) lcolor("199 199 199")) by(lvdzone)
-
-* Show the distribituion of education on z-scores
-twoway (kdensity stunting2 if motherEd ==0)(kdensity stunting2 if motherEd ==1) /*
-*/ (kdensity stunting2 if motherEd ==2)(kdensity stunting2 if motherEd ==3) /*
-*/ , xline(-2, lwidth(thin) lpattern(dash) lcolor("199 199 199"))
-
-* Check stunting over standard covariates
-svy:mean stunting2, over(district)
-svy:mean stunted2, over(district)
-matrix smean = r(table)
-matrix district = smean'
-mat2txt, matrix(district) saving("$pathxls/stunting_dist") replace
-
-* Create locals for reference lines in coefplot
-local stuntmean = smean[1,1]
-local lb = smean[5, 1]
-local ub = smean[6, 1]
-
-matrix plot = r(table)'
-matsort plot 1 "down"
-matrix plot = plot'
-coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,])) xline(`stuntmean' `lb' `ub')
-
-* Create a table for export
-matrix district = e(_N)'
-matrix stunt = smean'
-matrix gis = district, stunt
-mat2txt, matrix(gis) saving("$pathxls/district_stunting.csv") replace
-matrix drop _all
-
-* Check stunting over livelihood zones
-svy:mean stunting2, over(lvdzone)
-svy:mean stunted2, over(lvdzone)
-matrix smean = r(table)
-matrix lvdzone = smean'
-mat2txt, matrix(lvdzone) saving("$pathxls/stunting_lvd") replace
-
-
-
-
-
-
-
-
-
-
-
-
-* running a few other statistics
-svy:mean stunted2, over(female)
-svy:mean stunted2, over(wealthGroup)
-svy:mean stunted2, over(motherBMI female)
-svy:mean stunted2, over(religion)
-svy:mean stunted2, over(diarrhea)
-
-
-preserve
-collapse (mean) stunted2 (count) n = stunted2, by(lvdzone)
-ren lvdzone LZNAMEE
-export delimited "$pathxls/Stunting_livelihoodzones.csv", replace
-restore
-
-preserve
-keep if eligChild == 1
-keep v001 v002 stunted2 stunting2 latnum longnum urban_rura lznum lznamef lvdzone alt_gps dhsclust ageChild religion
-export delimited "$pathxls\RWA_2014_DHS_stunting.csv", replace
-restore
-
-* Consider stunting over the livelihood zones.
-mean stunted2, over(lvdzone)
-cap matrix drop plot smean
-matrix smean = r(table)
-local stuntmean = smean[1,1]
-local lb = smean[5, 1]
-local ub = smean[6, 1]
-matrix plot = r(table)'
-matsort plot 1 "down"
-matrix plot = plot'
-coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,])) xline(`stuntmean' `lb' `ub')
-
-set matsize 1000
-pwmean stunting2, over(district) pveffects mcompare(tukey)
-pwmean stunted2, over(district) pveffects mcompare(tukey)
-
-* calculate moving average
-preserve
-collapse (sum) stunted2 (count) stuntN = stunted2, by(ageChild female)
-drop if ageChild == .
-sort female ageChild
-xtset  female ageChild
-
-bys female: g smoothStunt = (l2.stunted2 + l1.stunted2 + stunted2 + f1.stunted2 + f2.stunted2)/ /*
-*/		(l2.stuntN + l1.stuntN + stuntN + f1.stuntN + f2.stuntN) 
-
-tssmooth ma stuntedMA = (stunted2/stuntN), window(2 1 2)
-xtline(stuntedMA smoothStunt)
-restore
-bob
-
-* Appears to be a weak negative relationship w/ altitude
-twoway(scatter stunted altitude)(lpoly stunted altitude)
-
-* How does stunting look by cluster?
-twoway(scatter stunting dhsclust)(scatter clust_stunting dhsclust) 
-
-* How does stunting against age cohorts
-twoway(lpolyci stunting age)(scatter age_stunting age), by(female)
-twoway(scatter stunting wealth)(lpolyci stunting wealth), by(diarrhea)
-
-twoway(scatter stunting_bin age)(lpoly stunting_bin age if female == 1)/*
-*/ (lpoly stunting_bin age if female == 0), by(province) 
-
-* Geography?
-twoway(scatter stunting alt_clust)(lpolyci stunting alt_clust), by(province rural)
-
-export delimited "$pathout/stuntingAnalysis.csv", replace
-saveold "$pathout/stuntingAnalysis.dta", replace
-
-* Stunting regression analysis using various models; 
-g agechildsq = ageChild^2
-* First, try replicated the model Nada created in R
-global hhchar "female ageChild agechildsq birthOrder birthWgt motherBWeight ib(1).motherBMI agehead hhsize hhchildUnd5 numWomen15_25 numWomen26_65"
-global assets "roomPC mobile landless bankAcount improvedSanit improvedWater"
-global assets2 "wealth"
-global health "diarrhea bednet toiletShare intParasites vitaminA wantedChild"
-global livestock "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
-global geog "altitude ib(37).district rural"
-global geog2 "altitude ib(1).lvdzone rural"
-global cluster "cluster(dhsclust)"
-
-
-est clear
-eststo sted2_1, title("Stunted 1"): logit stunted2 $hhchar $health $geog2 ib(1381).intdate, $cluster or
-eststo sted2_2, title("Stunted 2"): logit stunted2 $hhchar $health $geog2 ib(1381).intdate $assets2, $cluster or 
-eststo sted2_3, title("Stunted 3"): logit stunted2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate, $cluster or
-eststo sted2_4, title("Stunted 4"): logit stunted2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate, $cluster or
-eststo sted2_5, title("Stunted 4"): reg stunting2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate, beta
-*esttab sted2_*, se star(* 0.10 ** 0.05 *** 0.01) label
-
-* Sort the coefficients before plotting
-matrix smean = r(table)
-matrix district = smean'
-matrix plot = r(table)'
-matsort plot 1 "down"
-matrix plot = plot'
-coefplot (matrix(plot[1,])) , ci((plot[5,] plot[6,]))  xline(0, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) xlabel(, labsize(small))
-
-coefplot sted2_4 , xline(0, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) /*
-*/ msize(small) /*mc(black) mlsty(black) mcolor(red) mlstyle(p1)*/ xlabel(, labsize(small)) cismooth norecycle/*
-*/ scale(1) drop(_cons) keep() base
-
-*Run separate models for sex
-eststo stM, title("Stunted 4"): logit stunted2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate if female == 0,  robust or
-eststo stF, title("Stunted 4"): logit stunted2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate if female == 1,  robust or
-coefplot stM stF, xline(1, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) xlabel(, labsize(small)) drop(_cons)

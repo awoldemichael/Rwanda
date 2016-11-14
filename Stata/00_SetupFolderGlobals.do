@@ -32,8 +32,8 @@ foreach x of local required_ados {
 
 * Determine path for the study 
 *global projectpath "U:/"
-global projectpath "C:/Users/t/Documents/"
-*global projectpath "C:/Users/Tim/Documents/"
+*global projectpath "C:/Users/t/Documents/"
+global projectpath "C:/Users/Tim/Documents/"
 cd "$projectpath"
 
 * Run a macro to set up study folder (needs to be modified)
@@ -79,7 +79,7 @@ global pathwomen "`dir'/Datain/RW_2014-15_DHS/rwir70dt"
 global pathmen "`dir'/Datain/RW_2014-15_DHS/rwmr70dt"
 global pathroster "`dir'/Datain/RW_2014-15_DHS/rwpr70dt"
 global pathhh "`dir'/Datain/RW_2014-15_DHS/rwhr70dt"
-
+global path2010 "`dir'/Datain/RW_2010_DHS/"
 
 global pathlog  "`dir'\Log"
 global pathin "`dir'\Datain"
