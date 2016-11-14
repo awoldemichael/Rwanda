@@ -65,7 +65,7 @@ females = ch %>% filter(!is.na(isStunted),
                         sex == 'Female')
 
 all = ch %>% filter(!is.na(isStunted))
-
+all = all %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'village'))
 
 males_hh = ch_hh %>% filter(!is.na(isStunted), 
                             sex == 'Male')
@@ -146,7 +146,7 @@ tim_models = formulas(~stuntingZ, # lhs
                       # Lots more NAs, since unclear how mothers match with kids in all cases.
                       mother = ~mother_BMI + mother_education + mother_mosquito_net,
                       birthweight = ~birthwt,
-                        
+                      
                       # throwing in other variables similar to what Tim was trying to run.
                       extra = ~ mother_age + land_size, 
                       
@@ -230,99 +230,250 @@ coefplot(nada_f_model)
 
 
 
-# stunting models ------------------------------------------------------------------
+# stunting models: just children's data ------------------------------------------------------------------
 # define models ------------------------------------------------------------------
 # Variables thrown out, + rationale:
 # stock_durationA: ~1000 NAs
 # ill_fortnight | diarrhea + cough + fever; choosing to run separately
+# re-grouping primary caregiver into +/- mother; too few obs.
+# ever_breastfed: only 100 kids never were. Redundancy w/ breastfed_afterbirth
+# CARI index: mixture of FCS + sh_food_exp + livelihood coping to food issues (sell assets, etc.)
+# CSI index: reduced coping index-- weighted measure of whether rely
 
 # -- Check where have huge #s of NAs --
 View(ch_hh %>% 
-  select(sex, age_months, interview_date, month.x, 
-         hh_size, crowding, kids_under5, pct_under7, numWomen_15_49, numWomen_18plus, fem_head, prim_caregiver, head_age,
-         mother_literate, mother_education, head_literate, head_education_cat, pct_lowEd, pct_highEd, pct_illiterate,
-         health_dist_cat, health_less_60min, market_less_60min, market_dist_cat, road_dist_cat, school_dist_cat,
-         shock_drought, shock_illness,
-         wealth_idx, monthly_pc_expend, new_ubudehe, old_ubudehe, got_loan, asked_loan, infrastruct_idx, impr_roof, impr_floor, impr_wall, own_house_cat,
-         cookingfuel_cat, food_assistance, financial_assistance, ag_assistance,
-         diarrhea, fever, cough, dewormed, vitaminA, birthwt, birthweight_cat, ever_breastfed, fed_nonbreastmilk, still_breastfed, breastfed_afterbirth,
-         antenatal_care, num_antenatal_visits, when_antenatal, stunted_mother,  mother_age, mother_BMI, mother_mosquito_net, mother_ill_2weeks, Fe_supplements,
-         impr_toilet, share_toilet, impr_unshared_toilet, impr_water, impr_water_30min, time_water_source, time_drinkingH2O_cat, H2Otreatment_cat, drinkingH2O_cat, wash_knowl, wash_beforecook, wash_kidtoilet, wash_beforeeat, wash_aftertoilet, wash_ifdirty,
-         TLU, own_livestock, own_cattle, manage_livestock, own_land, land_size, hh_garden,
-         FCS, DDS, dietDiv_W24h, dietDiv_W24h_cat, HDDS_24h, contains('day'), pref_staple, child_meal_freq, CARI_cat, food_access_prob, food_access_year_cat,
-         months_food_access, CSI_cat, CSI.x, protein_days, ironrich_days, vitAfruitveg_days, sh_food_grown, sh_food_purchased, sh_food_expend, 
-         contains('growing'), hh_occup_cat, sh_agricultural_production, sh_labour_ag_work, sh_unskilled_labour, num_jobs, mostly_selling, mostly_consuming,
-         village_VUP, village_noSchemes, village_IDPmodel, village_landConsolid, village_structUmudugudu, 
-         admin2, admin1, village_cat, rural_cat, livelihood_zone
-  ) %>% 
-  ungroup() %>% 
-  summarise_each(funs(sum(is.na(.)))) %>% 
-  gather(var, num_NA) %>% 
-  filter(num_NA > 10) %>% 
-  arrange(desc(num_NA)))
+       select(sex, age_months, interview_date, month.x, 
+              hh_size, crowding, kids_under5, pct_under7, numWomen_15_49, numWomen_18plus, fem_head, prim_caregiver, head_age,
+              mother_literate, mother_education, head_literate, head_education_cat, pct_lowEd, pct_highEd, pct_illiterate,
+              health_dist_cat, health_less_60min, market_less_60min, market_dist_cat, road_dist_cat, school_dist_cat,
+              shock_drought, shock_illness,
+              wealth_idx, monthly_pc_expend, new_ubudehe, old_ubudehe, got_loan, asked_loan, infrastruct_idx, impr_roof, impr_floor, impr_wall, own_house_cat,
+              cookingfuel_cat, food_assistance, financial_assistance, ag_assistance,
+              diarrhea, fever, cough, dewormed, vitaminA, birthwt, birthweight_cat, ever_breastfed, fed_nonbreastmilk, still_breastfed, breastfed_afterbirth,
+              antenatal_care, num_antenatal_visits, when_antenatal, stunted_mother,  mother_age, mother_BMI, mother_mosquito_net, mother_ill_2weeks, Fe_supplements,
+              impr_toilet, share_toilet, impr_unshared_toilet, impr_water, impr_water_30min, time_water_source, time_drinkingH2O_cat, H2Otreatment_cat, drinkingH2O_cat, wash_knowl, wash_beforecook, wash_kidtoilet, wash_beforeeat, wash_aftertoilet, wash_ifdirty,
+              TLU, own_livestock, own_cattle, manage_livestock, own_land, land_size, hh_garden,
+              FCS, DDS, dietDiv_W24h, dietDiv_W24h_cat, HDDS_24h, contains('day'), pref_staple, child_meal_freq, CARI_cat, food_access_prob, food_access_year_cat,
+              months_food_access, CSI_cat, CSI.x, protein_days, ironrich_days, vitAfruitveg_days, sh_food_grown, sh_food_purchased, sh_food_expend, 
+              contains('growing'), hh_occup_cat, sh_agricultural_production, sh_labour_ag_work, sh_unskilled_labour, num_jobs, mostly_selling, mostly_consuming,
+              village_VUP, village_noSchemes, village_IDPmodel, village_landConsolid, village_structUmudugudu, 
+              admin2, admin1, village_cat, rural_cat, livelihood_zone
+       ) %>% 
+       ungroup() %>% 
+       summarise_each(funs(sum(is.na(.)))) %>% 
+       gather(var, num_NA) %>% 
+       filter(num_NA > 10) %>% 
+       arrange(desc(num_NA)))
 
-  
 
-stunting_models = formulas(~stuntingZ, # lhs
-                           basic = 
-                             # -- child demographics --
-                             ~splines::bs(age_months, degree = 3, knots = 24) +
-                             # -- geography --
-                             village_cat + livelihood_zone +
-                             # -- wealth --
-                             splines::bs(monthly_pc_expend, degree = 2),
-                           
-                           # -- WASH (broken down) --
-                           wash = ~ impr_toilet + share_toilet + impr_water + 
-                             H2Otreatment_cat + time_drinkingH2O_cat + wash_knowl,
-                           
-                           # -- health (child) --
-                           health = ~ diarrhea + fever +
-                             cough + dewormed,
-                           
-                           # -- mother --
-                           mom = ~ stunted_mother + num_antenatal_visits + when_antenatal +
-                             mother_mosquito_net + mother_ill_2weeks + Fe_supplements,
-                           
-                           # -- ag --
-                           ag = ~ TLU + land_size + hh_garden,
-                           
-                           # -- food --
-                           food = ~ FCS + months_food_access,
-                           
-                           # -- connectivity --
-                           # -- hh demographics -- 
-                           hh_demo = ~ hh_size + crowding + pct_under7,
-                           
-                           # -- ed --
-                           ed = ~ mother_education + head_education_cat + pct_lowEd,
-                           
-                           broken_wealth = add_predictors(basic, wash, health, mom, 
-                                                          ag, food, hh_demo, ed)
-                           
+# Basically: anything from the mother module will have ~ 400 NAs as a result (from mothers not being interviewed.)
+# Everything else throwing away < 100 observations, with the exception of baby birthweight (which is maybe impt. enough to incl. anyway.) and share_toilet
+
+
+ch_models = formulas(~stuntingZ, # lhs
+                     # -- child demographics --
+                     child_demo1 = ~splines::bs(age_months, degree = 3, knots = 24) * sex +
+                       numWomen_15_49 + caregiver_mom + interview_date,
+                     child_demo2 = ~splines::bs(age_months, degree = 3, knots = 24) + sex + interview_date, 
+                     
+                     basic = 
+                       # -- geography --
+                       ~ livelihood_zone +
+                       
+                       # -- wealth --
+                       # splines::bs(monthly_pc_expend, degree = 2),
+                       wealth_idx +
+                       
+                       # -- hh demographics -- 
+                       kids_under5,
+                     
+                     
+                     # hh_size + crowding + pct_under7,
+                     
+                     # -- WASH (broken down) --
+                     wash1 = ~ impr_toilet + drinkingH2O_cat,
+                     wash2 = ~ impr_toilet + impr_water, 
+                     
+                     # impr_toilet + share_toilet + impr_water + 
+                     # H2Otreatment_cat + time_drinkingH2O_cat + wash_knowl
+                     
+                     # -- rural --
+                     rural1 = ~village_cat,
+                     rural2 = ~rural_cat,
+                     
+                     # -- health (child) --
+                     health1 = ~ diarrhea + fever + cough + dewormed + vitaminA,
+                     health2 = ~ diarrhea, 
+                     
+                     # -- breastfeeding habits --
+                     breast1 = ~ breastfed_afterbirth + fed_nonbreastmilk,
+                     breast2 = ~ breastfed_afterbirth,
+                     breast3 = ~ fed_nonbreastmilk,
+                     
+                     # -- food --
+                     food1 = ~ FCS + CARI_cat + CSI, 
+                     food2 = ~ FCS + CSI, # CARI contains FCS.
+                     # months_food_access,
+                     
+                     # -- connectivity --
+                     connectivity1 = ~  health_less_60min + market_less_60min + road_dist_cat + school_less_30min,
+                     connectivity2 = ~  health_less_60min,
+                     connectivity3 = ~  health_less_60min + road_dist_cat,
+                     
+                     # -- village -- 
+                     village1 = ~ village_VUP + village_IDPmodel + village_structUmudugudu + village_landConsolid,
+                     
+                     
+                     # -- mother --
+                     # mom = ~ stunted_mother + num_antenatal_visits + when_antenatal +
+                     # mother_mosquito_net + mother_ill_2weeks + Fe_supplements,
+                     
+                     # -- ag --
+                     # ag = ~ TLU + land_size + hh_garden,
+                     
+                     
+                     
+                     # -- ed --
+                     # ed = ~ mother_education + head_education_cat + pct_lowEd,
+                     
+                     simple = add_predictors(basic, child_demo2, wash2, connectivity2, health2, food2, breast2, rural2),
+                     cmplx = add_predictors(basic, child_demo1, wash1, connectivity1, health1, food1, breast1, rural1),
+                     breastfeeding = add_predictors(basic, child_demo2, wash2, connectivity2, health2, food2, breast3, rural2),
+                     village =  add_predictors(basic, child_demo2, wash2, connectivity3, health1, food2, breast2, rural1, village1),
+                     final =  add_predictors(basic, child_demo2, wash2, connectivity3, health1, food2, breast2, rural1)
 )
 
 
-splines::bs(age_months, degree = 3, knots = 24) * sex +
-# VIF: look at values > 2; remove VIF > 5-10
+
 
 # run models --------------------------------------------------------------
 
-stunting_fits_m = males_hh %>% fit_with(lm, stunting_models)
+ch_fits = all %>% fit_with(lm, ch_models)
 
-stunting_fits_f = females_hh %>% fit_with(lm, stunting_models)
+# lapply(ch_fits, function(x) summary(x))
 
-coefplot(stunting_fits_f$broken_wealth, cluster_col = females_hh$village)
-coefplot(stunting_fits_m$broken_wealth, cluster_col = males_hh$village)
+# Plot and evaluate variations
+coefplot(ch_fits$village, cluster_col = all$village)
+coefplot(ch_fits$simple, cluster_col = all$village)
+coefplot(ch_fits$cmplx, cluster_col = all$village)
+coefplot(ch_fits$breastfeeding, cluster_col = all$village)
 
-lapply(stunting_fits_f, function(x) summary(x))
+compare_models(ch_fits$final, ch_fits$cmplx, cluster_col = all$village) 
+compare_models(ch_fits$simple, ch_fits$cmplx, cluster_col = all$village) 
+compare_models(ch_fits$breastfeeding, ch_fits$simple, cluster_col = all$village) +theme_xylab()
 
+# So: it looks like:
+# * interacting sex + age doesn't seem to help.
+# * village_cat is probably more useful/discerning than rural; rural+wealth index seem to compensate.
+# * connectivity: health most important; keeping road distance as a proxy for isolation.
+# * breastfeeding: sometimes never breastfed is important, but nothing for within 1 h of birth
+# * WASH: water treatment doesn't really seem to add anything.
+# * health: cough/fever, etc. don't add or subtract
+# * CARI index seems redundant w/ FCS.
 
 # model evaluation -------------------------------------------------------
 # http://www.statmethods.net/stats/rdiagnostics.html
+
+# to get rid of duplicate data:
+alias(lm(stuntingZ ~ splines::bs(age_months, degree = 3, 
+                                 knots = 24) * sex + village_cat + livelihood_zone + wealth_idx + 
+           old_ubudehe + (impr_toilet + drinkingH2O_cat) + (diarrhea + 
+                                                              fever + cough + dewormed + vitaminA + breastfed_afterbirth) + 
+           (FCS + CARI_cat + CSI) + (kids_under5 + numWomen_15_49 + 
+                                       caregiver_mom) + (health_less_60min + market_less_60min + 
+                                                           road_dist_cat + school_less_30min), data = all))
+
+# VIF: look at values > 2; remove VIF > 5-10 (too much co-linearity)
 library(car)
-vif(model)
-sqrt(vif(fit)) > 2 
+vif(ch_fits$final)
+sqrt(vif(stunting_fits$total)) > 2 
+
+
+# ch-hh models ------------------------------------------------------------
+
+ch_hh_models = formulas(~stuntingZ, # lhs
+                        # -- child demographics --
+                        basic = ~splines::bs(age_months, degree = 3, knots = 24) + 
+                          sex + 
+                          interview_date +
+                          
+                          # -- geography --
+                          livelihood_zone + 
+                          village_cat +
+                          
+                          # -- wealth --
+                          # splines::bs(monthly_pc_expend, degree = 2),
+                          wealth_idx +
+                          
+                          # -- hh demographics -- 
+                          kids_under5 + 
+                          
+                          # -- WASH (broken down) --
+                          impr_toilet + 
+                          impr_water +
+                          
+                          # -- health (child) --
+                          diarrhea + fever + cough + dewormed + vitaminA +
+                          
+                          # -- breastfeeding habits --
+                          breastfed_afterbirth +
+                          
+                          # -- food --
+                          FCS + CSI_cat + # CARI contains FCS.
+                          # months_food_access,
+                          
+                          # -- connectivity --
+                          health_less_60min + road_dist_cat,
+                        
+                        demo_hh = ~hh_size + crowding + fem_head + numWomen_18plus + head_age, 
+                        
+                        
+                        # -- mother --
+                        mom = ~ stunted_mother + mother_age + mother_BMI +
+                          antenatal_care + num_antenatal_visits + when_antenatal +
+                          mother_mosquito_net + mother_ill_2weeks + Fe_supplements,
+                        
+                        # -- ag --
+                        ag = ~ own_livestock + TLU + land_size + hh_garden,
+                        
+                        # -- ed --
+                        ed = ~ mother_education + head_education_cat + pct_lowEd + pct_highEd + pct_illiterate,
+                        # mother_literate + head_literate +
+                        
+                        shk = ~ shock_drought + shock_illness,
+                        
+                        wealth2 = ~ monthly_pc_expend + new_ubudehe + old_ubudehe + got_loan + asked_loan + infrastruct_idx + impr_roof + impr_floor + impr_wall + own_house_cat + cookingfuel_cat + food_assistance + financial_assistance + ag_assistance,
+                        
+                        health_kid = ~ birthwt + birthweight_cat,
+                        
+                        wash2 = ~ share_toilet + time_water_source + time_drinkingH2O_cat + H2Otreatment_cat + wash_knowl + wash_beforecook + wash_kidtoilet + wash_beforeeat + wash_aftertoilet + wash_ifdirty,
+                        
+                        food2 = ~ pref_staple + child_meal_freq + CARI_cat + food_access_prob + food_access_year_cat + 
+                          months_food_access + protein_days + ironrich_days + vitAfruitveg_days + sh_food_grown + sh_food_purchased + sh_food_expend,
+                        # DDS + dietDiv_W24h + dietDiv_W24h_cat + HDDS_24h + 
+                        # milk_days + 
+                        
+                        livelihood = ~ growing_beans + hh_occup_cat + sh_agricultural_production + sh_labour_ag_work + sh_unskilled_labour + num_jobs + mostly_selling + mostly_consuming,
+                        
+                        village = ~village_VUP + village_noSchemes + village_IDPmodel + village_landConsolid + village_structUmudugudu,
+                        
+                        
+                        simple = add_predictors(basic),
+                        educ = add_predictors(basic, ed),
+                        all = add_predictors(basic, mom, ag, ed, demo_hh, shk, wealth2, health_kid, wash2, food2, livelihood, village)
+)
+
+stunting_fits = all_hh %>% fit_with(lm, ch_hh_models)
+
+# lapply(ch_fits, function(x) summary(x))
+
+# Plot model comparison
+compare_models(stunting_fits, cluster_col = all$village) 
+
+# Plot and evaluate variations
+coefplot(stunting_fits$all, cluster_col = all_hh$village)
+
+
 
 
 # models by province ------------------------------------------------------
