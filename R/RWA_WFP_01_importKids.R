@@ -260,6 +260,12 @@ ch = ch %>%
                                 (ch$v_S3_02_2 <= 60 & ch$v_S3_02_2 > 30) ~ 3, # school 30-60 min. of village
                                 ch$v_S3_02_2  > 60 ~ 4, # school > 60 min. of village
                                 TRUE ~ NA_real_),
+    school_less_30min = forcats::fct_infreq( # sort by frequency
+      factor(school_dist_cat <= 2,
+             levels = c(FALSE, TRUE),
+             labels = c('school > 30 min. from village',
+                        'school within 30 min. of village'))),
+    
     school_dist_cat = forcats::fct_infreq( # sort by frequency
       factor(school_dist_cat,
              levels = 1:4,
@@ -272,7 +278,17 @@ ch = ch %>%
     low_birthwt = case_when(ch$birthweight_cat == 1 ~ 1,
                             ch$birthweight_cat == 2 ~ 0,
                             TRUE ~ NA_real_),
+
+    caregiver_mom = case_when(ch$S14_02_2 == 1 ~ 1,
+                              ch$S14_02_2 > 1 ~ 0,
+                              TRUE ~ NA_real_),
+    caregiver_mom = forcats::fct_infreq( # sort by frequency
+      factor(caregiver_mom,
+             levels = c(0, 1),
+             labels = c('mother not primary caregiver',
+                        'mother primary caregiver'))),
     
+        
     village_VUP = case_when(ch$v_S2_03_1 == 0 ~ 0,
                             ch$v_S2_03_1 == 1 ~ 1,
                             TRUE ~ NA_real_), 
@@ -291,15 +307,13 @@ ch = ch %>%
     
     # -- regroup --
     kids_under5 = case_when(ch$S14_01 == 1 ~ 1, # one child < 5 years old in hh
-                            ch$S14_01 == 2 ~ 2, # 2 children < 5 years old in hh
-                            ch$S14_01 > 2 ~ 3, # 3+ children < 5 years old in hh
+                            ch$S14_01 > 1 ~ 2, # > 2 children < 5 years old in hh # Note: only 150 kids w/ 3+ children < 5 in hh
                             TRUE ~ NA_real_),
     kids_under5 = forcats::fct_infreq( # sort by frequency
       factor(kids_under5,
-             levels = 1:3,
+             levels = 1:2,
              labels = c('1 child < 5 years old in hh', 
-                        '2 children < 5 years old in hh',
-                        '3+ children < 5 years old in hh'))),
+                        '2+ children < 5 years old in hh'))),
     
     mother_literate = case_when(ch$S13_02_3 == 0 ~ 0, # illiterate
                                 ch$S13_02_3 == 1 ~ 1, # can read & write
@@ -374,6 +388,9 @@ ch$admin3 = fct_infreq(factor(ch$S0_E_Sect, levels = codebk$code,
 # Standardize case.
 ch = ch %>% 
   mutate(admin3 = stringr::str_to_title(admin3))
+
+# collapse road_dist_cat
+ch$road_dist_cat = forcats::fct_lump(ch$road_dist_cat, n = 2)
 
 # double check there are no NA values in any of the vars ------------------
 # Assuming NA values are 88
