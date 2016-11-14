@@ -116,3 +116,30 @@ ggplot(ch, aes(x = age_months, y = isStunted, colour = sex)) +
   # scale_x_continuous(labels = scales::percent) +
   xlab('percent of per capita income spent on food')
 
+
+# 2012 --------------------------------------------------------------------
+hh2012_plot = removeAttributes(hh2012)
+hh2012_plot = factorize(hh2012_plot, hh2012, 'fews_code', 'lz')
+
+x = fcs_heatmap(df = hh2012_plot, region_var = 'lz', FCS_var = 'FCS', na.rm = TRUE,low_FCS_top = F,
+                use_FCSWts = TRUE,
+                plot_map = FALSE, 
+                staples_var = 'Starches',
+                fruit_var = 'Fruits',
+                pulse_var = 'Pulses',
+                veg_var = 'Vegs',
+                sugar_var = 'Sugar',
+                milk_var = 'Milk',
+                meat_var = 'Protein',
+                oil_var = 'Oil',
+                width_indivPlots = c(0.65, 0.25, 0.1))
+grid.arrange(x)
+
+
+ggplot(hh2012, aes(FCS)) +
+  geom_density() + 
+  facet_wrap(~fews_code)
+fcs_byLZ = fcs_heatmap(df = hh, region_var = 'lz_name', plot_map = TRUE, admin0 = RWA_admin0, region_coords = RWA_LZ$df,
+                       filename = '~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/FCS_CFSVA.pdf',
+                       width_indivPlots = c(0.075, 0.65, 0.2, 0.075),
+                       width = 8.5, height = 5.5)
