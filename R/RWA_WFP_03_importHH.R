@@ -366,7 +366,7 @@ hh = hh %>%
   factorize(hh_raw, 'water_source_treatment', 'drinkingH2O_cat') %>%  # whether improved source water + treatment
   factorize(hh_raw, 'time_water_source', 'time_drinkingH2O_cat') %>%  
   # -- education --
-  factorize(hh_raw, 'S1_01_8', 'head_education_cat') 
+  factorize(hh_raw, 'S1_01_8', 'head_education_cat_all') 
 
 # -- Creating shorter names for livelihood zones --
 hh = hh %>% 
@@ -421,10 +421,21 @@ hh$livelihood_zone = forcats::fct_relevel(hh$livelihood_zone,
 # -- health_less_60min --
 hh$health_less_60min = forcats::fct_relevel(hh$health_less_60min, levels(ch$health_less_60min))
 
+# -- road_dist_cat --
+hh$road_dist_cat = forcats::fct_lump(hh$road_dist_cat, n = 2)
+
 # -- wealth index --
 hh$wealth_idx_cat = forcats::fct_relevel(hh$wealth_idx_cat, levels(ch$wealth_idx_cat))
 
+# -- head education --
+hh$head_education_cat = forcats::fct_collapse(hh$head_education_cat_all,
+                                              no_school = ' No school',
+                                              some_prim = ' Some/still primary',
+                                              prim_vocational = c(' Vocational school', ' Completed primary'),
+                                              sec_plus = c(' Some/still secondary', ' Completed secondary', ' Completed university', ' Some/still university'),
+                                              missing = "Don't know")
 
+hh$head_education_cat = na_if(hh$head_education_cat, 'missing')
 
 # double check there are no NA values in any of the vars ------------------
 # Assuming NA values are 88
