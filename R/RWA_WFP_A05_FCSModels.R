@@ -33,30 +33,34 @@ source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
 # Remove NAs from FCS ------------------------------------------------
 # NOTE: CSI_category lumps together those w/ a coping score of 0 with those w/o food security situations.
 # CSI_cat and food_access_problem (last week) should be highly correlated. 
+# Removing CSI from fit reduces the fit and makes fem_head pop up.  everything else is pretty consistent.
 
-fcs = hh %>% filter(!is.na(FCS))
+fcs = hh %>% 
+  filter(!is.na(FCS)) %>% 
+  mutate(head_age_sq = head_age^2,
+         head_edu_num = as.numeric(head_education_cat))
 
 # standardize variables for regression. binaries, categoricals ignored; continuous scaled.
 fcs = fcs %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'FCS'))
 
 # -- For children's data --
-fcs_ch = ch_hh %>% filter(!is.na(FCS)) %>% 
+fcs_ch = ch_hh %>% 
+  filter(!is.na(FCS)) %>% 
   mutate(WI_cat = WI_cat_lyr_lyr,
-         month = month.x)
+         month = month.x,
+         head_age_sq = head_age^2,
+         head_edu_num = as.numeric(head_education_cat),
+         mother_edu_num = as.numeric(mother_education)
+  )
 
 # standardize variables for regression. binaries, categoricals ignored; continuous scaled.
 fcs_ch = fcs_ch %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'FCS', 'village'))
 
-# model evaluation -------------------------------------------------------
-# http://www.statmethods.net/stats/rdiagnostics.html
-
-# VIF: look at values > 2; remove VIF > 5-10 (too much co-linearity)
-library(car)
-vif(ch_fits$final)
-sqrt(vif(stunting_fits$total)) > 2 
 
 
 # FCS models ------------------------------------------------------------
+# Running head education as a number doesn't seem to add much value; fits not better.
+# Age^2 added to take into account behavior of young + old is usually not good.
 
 fcs_models = formulas(~FCS, # lhs
                       # -- child demographics --
@@ -71,7 +75,7 @@ fcs_models = formulas(~FCS, # lhs
                         WI_cat +
                         
                         # -- hh demographics -- 
-                        hh_size + crowding + fem_head +  head_age +  
+                        hh_size + crowding + fem_head +  head_age + head_age_sq + 
                         
                         # -- food --
                         CSI_cat + # CARI contains FCS.
@@ -124,7 +128,7 @@ fcs_models = formulas(~FCS, # lhs
                         WI_cat +
                         
                         # -- hh demographics -- 
-                        hh_size + crowding + fem_head +  head_age +  
+                        hh_size + dep_ratio + fem_head +  head_age + head_age_sq +
                         
                         # -- food --
                         months_food_access +  CSI_cat + sh_food_grown + # CARI contains FCS.  
@@ -170,6 +174,14 @@ coefplot(fcs_fits$sh, cluster_col = NA)
 coefplot(fcs_fits$min_lit, cluster_col = NA)
 coefplot(fcs_fits$min_edu, cluster_col = NA)
 coefplot(fcs_fits$all, cluster_col = NA)
+
+# model evaluation -------------------------------------------------------
+# http://www.statmethods.net/stats/rdiagnostics.html
+
+# VIF: look at values > 2; remove VIF > 5-10 (too much co-linearity)
+library(car)
+vif(ch_fits$final)
+sqrt(vif(stunting_fits$total)) > 2 
 
 # children (to look at mother’s education) --------------------------------
 
