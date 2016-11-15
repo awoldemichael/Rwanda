@@ -45,9 +45,7 @@ ch2012_raw = read_sav(paste0(baseDir, 'RW_2012_CFSVA/cfsvans-2012- children-v01.
 
 # select variables --------------------------------------------------------
 # Majority of household explanatory variables will be pulled from the household-level data.
-ch2012 = ch2012_raw %>% 
- select(
-  )
+ch2012 = ch2012_raw 
 
 
 # clean vars --------------------------------------------------------------
@@ -56,5 +54,66 @@ ch2012 = ch2012_raw %>%
 
 # old stuff ---------------------------------------------------------------
 cfsva2012 = svydesign(id = ~v_code, strata = ~d_code, weights = ~FINAL_PopWeight, data = ch2012)
-svyby(~G_Stunted, design = cfsva2012, by = ~fews_code, svymean, na.rm = TRUE)
+stunting_lz_2012 = svyby(~G_Stunted, design = cfsva2012, by = ~fews_code, svymean, na.rm = TRUE)
 svyby(~G_Stunted, design = cfsva2012, by = ~d_code, svymean, na.rm = TRUE)
+
+# strata_ID has 495 missing values (?)
+stunting_lz_2012 = calcPtEst(df = ch2012, var = 'G_Stunted', by_var = 'fews_code', 
+                             psu_var = 'v_code', 
+          strata_var = 'd_code', weight_var = 'FINAL_norm_weight')
+
+stunting_lz_2012 = factorize(stunting_lz_2012, ch2012_raw, 'fews_code', 'livelihood_zone')
+stunting_lz_2012 = stunting_lz_2012 %>% 
+  mutate(livelihood_zone = ifelse(livelihood_zone %like% 'Kigali', 'Kigali city',
+                                  as.character(livelihood_zone)))
+
+# merge w/ 2015 -----------------------------------------------------------
+stunting_comb = full_join(stunting_lz_2012, stunting_lz_cfsva, by = 'livelihood_zone')
+
+
+stunting_comb = stunting_comb %>% 
+  select(`2012` = G_Stunted, `2015` = isStunted, livelihood_zone) %>% 
+  gather(year, stunting, -livelihood_zone)
+
+stunting2015 = stunting_comb %>% 
+  filter(year == '2015') %>% 
+  arrange((stunting))
+
+# Reorder factors
+stunting_comb$livelihood_zone = factor(stunting_comb$livelihood_zone, 
+                                       levels = stunting2015$livelihood_zone)
+arrow_adj = 0.05
+stunting_tidy = stunting_comb %>% 
+  spread(year, stunting) %>% 
+  mutate(y2 = ifelse(`2015` < `2012`, 
+                     `2015` * (1 + arrow_adj),
+                     `2015` * (1 - arrow_adj)))
+  
+ggplot(stunting_comb) +
+  geom_segment(aes(x = `2012`, xend  = y2, 
+                   y = livelihood_zone, yend = livelihood_zone),
+               size = 0.5, 
+               arrow = arrow(length = unit(0.03, "npc")),
+               colour = grey60K, 
+               data = stunting_tidy) +
+  geom_point(aes(x = stunting, y = livelihood_zone,
+                 color = year, shape = year, fill = year),
+             size = 8, colour = grey90K) +
+  geom_point(aes(x = b, y = livelihood_zone),
+             # width = 0,
+             size = 8, colour = grey90K,
+             fill = brewer.pal(9, 'Spectral')[9],
+             shape = 23,
+             data = stunting_lz_dhs) +
+  # geom_text(aes(x = stunting, y = livelihood_zone,
+  #                color = year, shape = year, fill = year,
+  #                label = percent(stunting, 0)),
+  #           colour = grey75K,
+  #           size = 3) +
+  theme_xgrid() +
+  scale_shape_manual(values = c(21, 23)) +
+  scale_x_continuous(labels = percent, limits = c(0.2, 0.62),
+                     breaks = seq(0.2, 0.6, by = 0.2)) +
+  scale_fill_manual(values = c('2012' = 'white', '2015' = brewer.pal(9, 'Spectral')[1])) +
+  theme(axis.text.y = element_text(size = 10),
+        axis.title.x = element_blank())
