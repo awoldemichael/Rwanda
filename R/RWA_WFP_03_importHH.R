@@ -59,10 +59,9 @@ hh = hh %>%
     S1_01_3, # female headed
     S1_01_4, # hh head age
     pct_under7 = S1_01_7_HC88_S, # percent < 7 yrs old
-    numWomen_15_17 = FS1_01_4_2, # number of women b/w 15-17 in hh
-    numWomen_18_59 = GS1_01_4_2, # number of women b/w 18-59 in hh
-    numWomen_60plus = HS1_01_4_2, # number of women b/w 18-59 in hh
     
+    contains('S1_01_4'), # number of hh members at age brackets
+    # contains('S1_01_4_2'), # number of female hh members at age brackets
     # S1_01_11_C, # polygamous -- too few hh
     
     # -- education --
@@ -254,6 +253,27 @@ hh = hh %>%
     rooms_PC = 1/crowding, # assuming crowding variable is calculated correctly, flipping crowding index from #ppl/sleeping room to rooms/ppl
     
     head_age = ifelse(S1_01_4 < 90, S1_01_4, 90), # assuming anyone 90 or above is the equivalent of being 90.
+    
+    
+    numWomen_15_17 = FS1_01_4_2, # number of women b/w 15-17 in hh
+    numWomen_18_59 = GS1_01_4_2, # number of women b/w 18-59 in hh
+    numWomen_60plus = HS1_01_4_2, # number of women b/w 18-59 in hh
+    
+    # HH Dependecy Ratio = [(# people 0-14 + those 60+) / # people aged 15-59 ] * 100 # 
+    # Note: normally the dependency ratio is defined as the ratio of the number of members in the age groups 
+    # of 14 years and above 65 years to the number of members of working age (15-64 years). Unfortunately, the age groups are 60+ for CFSVA.
+    num_under7 = AS1_01_4 + AS1_01_4_2 + BS1_01_4 + BS1_01_4_2 + CS1_01_4 + CS1_01_4_2 + DS1_01_4 + DS1_01_4_2,
+    num_under14 = AS1_01_4 + AS1_01_4_2 + BS1_01_4 + BS1_01_4_2 + CS1_01_4 + CS1_01_4_2 + DS1_01_4 + DS1_01_4_2 + ES1_01_4 + ES1_01_4_2, 
+    
+    num_15_59 = FS1_01_4 + FS1_01_4_2 + GS1_01_4 + GS1_01_4_2, # M/F 15 - 59 y old
+    num_over60 = HS1_01_4 + HS1_01_4_2, # M/F over 60
+    pct_under7_calc = num_under7 / hh_size, # Strangely, doesn't *exactly* match, but only 18/7500 observations, so ignoring it.
+    
+    dep_ratio = (num_over60 + num_under14) / num_15_59,
+    dep_ratio = ifelse(is.infinite(dep_ratio), 10, dep_ratio), # fixing infinite dependency ratios by setting to 10. Max ratio is 6.
+    pct_dep = (num_over60 + num_under14) / hh_size,
+  
+    hh_size_agree = hh_size - num_over60 - num_15_59 - num_under14,  # Strangely, doesn't *exactly* match, but only 28/7500 observations, so ignoring it.
     
     # -- convert shares to ratios --
     sh_food_grown = sh_food_grown / 100,
