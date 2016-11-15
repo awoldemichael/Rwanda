@@ -108,14 +108,16 @@ replace eligChild2 =1 if (hw5 < 9996 & hw6 < 9996 & hw7 < 9996)
 bys caseid: g numChild = _N if eligChild == 1
 
 * Mother's bmi
+replace v445 = . if v445 == 9999
 g bmitmp = (v445/100)
 egen motherBMI = cut(bmitmp), at(0, 18.5, 25.0, 50) label
 la def bmi 0 "undernourished" 1 "normal" 2 "overweight"
 la val motherBMI bmi
 
 clonevar motherBWeight = v440 
-replace motherBWeight = (motherBWeight / 100)
 
+replace motherBWeight = (motherBWeight / 100)
+replace motherBweight = . if inlist(motherBweight, 9998, 9999)
 clonevar wantedChild = v367
 recode h43 (0 8 = 0 "No")(1 = 1 "Yes"), gen(intParasites)
 
