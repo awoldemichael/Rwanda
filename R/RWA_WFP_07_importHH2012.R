@@ -191,7 +191,7 @@ wb_map %>% filter(is.na(wb_site))
 wb_map %>% filter(is.na(lat))
 
 # Only missing Shyrongi, and I'm too lazy to fix since it isn't a site anyway.
-
+# Note: village names do not merge w/ Cell names.
 
 wb_map = full_join(RWA_admin3$df, wb, by = c('Sector' = 'admin3'))
 
