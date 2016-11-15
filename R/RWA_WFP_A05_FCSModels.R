@@ -132,7 +132,7 @@ fcs_models = formulas(~FCS, # lhs
                         crowding + dep_ratio + fem_head +  head_age + head_age_sq +
                         
                         # -- food --
-                        months_food_access +  CSI_cat + sh_food_grown + # CARI contains FCS.  
+                        months_food_access + sh_food_grown + # CARI contains FCS.  
                         #mostly_selling has large # NAs, --> poorer fit.
                         
                         # -- connectivity --
@@ -150,13 +150,17 @@ fcs_models = formulas(~FCS, # lhs
                       ed_lit = ~ head_literate,
                       ed_all = ~ pct_lowEd, #pct_literate
                       
-                      # -- combined models --
-                      min_edu = add_predictors(minimal, ed_cat, livelihood_occup),
-                      min_lit = add_predictors(minimal, ed_lit, livelihood_occup),
+                      # -- coping strategies to food shortages --
+                      csi = ~CSI_cat,
                       
-                      all = add_predictors(basic,  ag, ed, shk, wealth2, food2, livelihood_occup),
-                      occup = add_predictors(minimal, ed_all, livelihood_occup),
-                      sh = add_predictors(minimal, ed_all, livelihood_sh)
+                      # -- combined models --
+                      min_edu = add_predictors(minimal, ed_cat, livelihood_occup, csi),
+                      min_lit = add_predictors(minimal, ed_lit, livelihood_occup, csi),
+                      
+                      all = add_predictors(basic,  ag, ed, shk, wealth2, food2, livelihood_occup, csi),
+                      occup = add_predictors(minimal, ed_all, livelihood_occup, csi),
+                      noCSI = add_predictors(minimal, ed_all, livelihood_occup),
+                      sh = add_predictors(minimal, ed_all, livelihood_sh, csi)
 )
 
 fcs_fits = fcs %>% fit_with(lm, fcs_models)
@@ -171,6 +175,7 @@ compare_models(list('occup' = fcs_fits$occup, 'sh' = fcs_fits$sh,
 
 # Plot and evaluate variations
 coefplot(fcs_fits$occup, cluster_col = NA)
+coefplot(fcs_fits$noCSI, cluster_col = NA)
 coefplot(fcs_fits$sh, cluster_col = NA)
 coefplot(fcs_fits$min_lit, cluster_col = NA)
 coefplot(fcs_fits$min_edu, cluster_col = NA)
@@ -261,10 +266,24 @@ vif(fcs_ch_fits$minimal)
 
 compare_models(list('(all hh)  share_work ' = fcs_fits$sh,
                     '(all hh) occup/lowEd' = fcs_fits$occup,
+                    '(all hh) no CSI' = fcs_fits$noCSI,
                     '(kids) occup/lowEd ' = fcs_ch_fits$occup,
                     '(kids) occup/ed' = fcs_ch_fits$min_edu,
                     '(kids) occup/lit' = fcs_ch_fits$min_lit),
-               filter_insignificant = TRUE)  +
+               filter_insignificant = FALSE,
+               sort_by_est  = FALSE)  +
+  theme_ygrid() + theme(axis.text.x = element_text(size= 11),
+                        axis.text.y = element_text(size= 11))
+
+
+compare_models(list('(all hh)  share_work ' = fcs_fits$sh,
+                    '(all hh) occup/lowEd' = fcs_fits$occup,
+                    '(all hh) no CSI' = fcs_fits$noCSI,
+                    '(kids) occup/lowEd ' = fcs_ch_fits$occup,
+                    '(kids) occup/ed' = fcs_ch_fits$min_edu,
+                    '(kids) occup/lit' = fcs_ch_fits$min_lit),
+               filter_insignificant = TRUE,
+               sort_by_est = TRUE)  +
   theme_ygrid() + theme(axis.text.x = element_text(size= 11),
                         axis.text.y = element_text(size= 11))
 
