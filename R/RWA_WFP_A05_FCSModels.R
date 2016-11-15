@@ -82,7 +82,7 @@ fcs_models = formulas(~FCS, # lhs
                       
                       
                       # -- ag --
-                      ag = ~ own_livestock + TLU + land_size + hh_garden,
+                      ag = ~ TLU + land_size + hh_garden,
                       
                       # -- ed --
                       ed = ~ pct_illiterate + pct_lowEd,
@@ -127,13 +127,14 @@ fcs_models = formulas(~FCS, # lhs
                         hh_size + crowding + fem_head +  head_age +  
                         
                         # -- food --
-                        months_food_access +  CSI_cat + mostly_selling + # CARI contains FCS.  
+                        months_food_access +  CSI_cat + sh_food_grown + # CARI contains FCS.  
+                        #mostly_selling has large # NAs, --> poorer fit.
                         
                         # -- connectivity --
                         health_less_60min + road_dist_cat + market_dist_cat +
                         
                         # -- ag --
-                        own_livestock + TLU + land_size + hh_garden +
+                        TLU + land_size + hh_garden +
                         
                         
                         # -- finances --
@@ -196,7 +197,7 @@ fcs_models = formulas(~FCS, # lhs
                       
                       
                       # -- ag --
-                      ag = ~ own_livestock + TLU + land_size + hh_garden,
+                      ag = ~ TLU + land_size + hh_garden,
                       
                       # -- ed --
                       ed = ~ head_education_cat + pct_illiterate + pct_lowEd + mother_education + mother_literate,
@@ -243,13 +244,13 @@ fcs_models = formulas(~FCS, # lhs
                         hh_size + crowding + fem_head +  head_age +  
                         
                         # -- food --
-                        months_food_access + CSI_cat + mostly_selling + # CARI contains FCS.  
+                        months_food_access + CSI_cat + sh_food_grown + # CARI contains FCS.  
                         
                         # -- connectivity --
                         health_less_60min + road_dist_cat + market_dist_cat +
                         
                         # -- ag --
-                        own_livestock + TLU + land_size + hh_garden +
+                        TLU + land_size + hh_garden +
                         
                         # -- finances --
                         food_assistance + financial_assistance + ag_assistance,
@@ -294,7 +295,8 @@ compare_models(list('(all hh)  share_work ' = fcs_fits$sh,
                     '(all hh) occup/lowEd' = fcs_fits$occup,
                     '(kids) occup/lowEd ' = fcs_ch_fits$occup,
                     '(kids) occup/ed' = fcs_ch_fits$min_edu,
-                    '(kids) occup/lit' = fcs_ch_fits$min_lit))  +
+                    '(kids) occup/lit' = fcs_ch_fits$min_lit),
+               filter_insignificant = TRUE)  +
   theme_ygrid() + theme(axis.text.x = element_text(size= 11),
                         axis.text.y = element_text(size= 11))
 
