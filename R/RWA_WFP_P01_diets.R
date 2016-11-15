@@ -143,3 +143,33 @@ fcs_byLZ = fcs_heatmap(df = hh, region_var = 'lz_name', plot_map = TRUE, admin0 
                        filename = '~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/FCS_CFSVA.pdf',
                        width_indivPlots = c(0.075, 0.65, 0.2, 0.075),
                        width = 8.5, height = 5.5)
+
+
+
+# choropleth --------------------------------------------------------------
+fcs_byLZ = hh %>% 
+  filter(!is.na(FCS)) %>% 
+  group_by(livelihood_zone) %>% 
+  summarise(fcs = mean(FCS), n = n())
+
+fcs_map = full_join(RWA_LZ$df, fcs_byLZ, by = "livelihood_zone")
+fcs_label = full_join(RWA_LZ$centroids, fcs_byLZ, by = c("label" = "livelihood_zone"))
+
+ggplot(fcs_map, aes(x = long, y = lat)) +
+  geom_polygon(aes(fill = fcs, group = group, order = order)) +
+  geom_path(aes(group = group, order = order),
+            colour = 'white', size = 0.1) +
+  geom_text(aes(label = round(fcs, 0)),
+            size = 5,
+            colour = 'white', 
+            family = 'Lato', 
+            data = fcs_label) +
+  scale_fill_gradientn(colours = c(brewer.pal(9, 
+                                    "YlGnBu"), 
+                                   "#081d58", "#081d58", "#081d58", "#081d58"),
+                       limits = c(0, 112)) +
+  coord_equal() +
+  theme_blank()
+
+save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/FCS_LZmap_CFSVA.pdf',
+          height = 6, width = 6)
