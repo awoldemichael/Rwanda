@@ -1,6 +1,6 @@
 # Rwanda stunting analysis -----------------------------------------
 #
-# RW_WFP_04_importKids2012.R: import children's data from 2012 dataset
+# RW_WFP_06_importHH2012.R: import household-level data from 2012 dataset
 #
 # Script to pull stunting data and associated household- or
 # child-level data for Rwanda from the CFSVA dataset
@@ -10,7 +10,7 @@
 # Available at http://microdata.statistics.gov.rw/index.php/catalog/70
 # Report: https://www.wfp.org/content/rwanda-comprehensive-food-security-and-vulnerability-analysis-march-2016
 #
-# Laura Hughes, lhughes@usaid.gov, 14 September 2016
+# Laura Hughes, lhughes@usaid.gov, 14 November 2016
 # with Tim Essam (tessam@usaid.gov) and Nada Petrovic (npetrovic@usaid.gov)
 #
 # Copyright 2016 by Laura Hughes via MIT License
