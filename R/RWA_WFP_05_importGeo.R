@@ -60,6 +60,15 @@ RWA_admin3 = shp2df(baseDir =  baseDir_geo,
                     projection = proj_string,
                     exportData = FALSE)
 
+# import Admin4 -----------------------------------------------------------
+RWA_admin4 = shp2df(baseDir =  baseDir_geo,
+                    folderName = 'Rwanda_Admin4',
+                    layerName = 'Cell_Boundary_2006',
+                    labelVar = 'Cell',
+                    reproject = TRUE,
+                    projection = proj_string,
+                    exportData = FALSE)
+
 # import FEWS NET livelihood zones ----------------------------------------
 RWA_LZ = shp2df(baseDir =  baseDir_geo,
                 folderName = 'RW_LivelihoodZones_FEWS_2012',
