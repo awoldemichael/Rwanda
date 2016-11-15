@@ -196,9 +196,11 @@ compress
 saveold "$pathout/DHS_child.dta", replace
 
 * Merge in household information and livelihood information
-merge m:1 v001 v002 using "$pathout/DHS_hhvar.dta"
-ren DHSCLUST, lower
+saveold "$pathout/stunting.dta", replace
+use "$pathout/RWA_DHS_Livelihoods.dta", clear 
 
-merge m:1 dhsclust using "$pathout/RWA_DHS_Livelihoods.dta", gen(_dhs_FEWS)
+merge 1:m v001 v002 using "$pathout/stunting.dta", gen(_stunt)
+*ren DHSCLUST, lower
 
-save "$pathout/stunting.dta", replace
+g year = 2014
+save "$pathout/DHS_2015_analysis.dta", replace

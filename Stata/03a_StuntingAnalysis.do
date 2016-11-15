@@ -11,7 +11,7 @@
 clear
 capture log close
 log using "$pathlog/03a_StuntingAnalysis", replace
-use "$pathout/stunting.dta", clear
+use "$pathout/DHS_2015_analysis.dta", clear
 
 * Label the cmc codes (di 12*(2014 - 1900)+1)
 recode intdate (1371 1369 = 1378)
@@ -146,22 +146,6 @@ xtline(stuntedMA smoothStunt)
 restore
 
 
-* Appears to be a weak negative relationship w/ altitude
-twoway(scatter stunted altitude)(lpoly stunted altitude)
-
-* How does stunting look by cluster?
-twoway(scatter stunting dhsclust)(scatter clust_stunt dhsclust) 
-
-* How does stunting against age cohorts
-twoway(lpolyci stunting age)(scatter age_stunting age), by(female)
-twoway(scatter stunting wealth)(lpolyci stunting wealth), by(diarrhea)
-
-twoway(scatter stunting_bin age)(lpoly stunting_bin age if female == 1)/*
-*/ (lpoly stunting_bin age if female == 0), by(province) 
-
-* Geography?
-twoway(scatter stunting alt_clust)(lpolyci stunting alt_clust), by(province rural)
-
 export delimited "$pathout/stuntingAnalysis.csv", replace
 saveold "$pathout/stuntingAnalysis.dta", replace
 
@@ -171,7 +155,7 @@ la var rural "rural household"
 g altitude2 = altitude/1000
 la var altitude2 "altitude divided by 1000"
 egen hhgroup = group(v001 v002) if eligChild == 1
-g year = 2015
+save "$pathout/DHS_2015_stunting.dta", replace
 
 * Create groups for covariates as they map into conceptual framework for stunting
 global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
@@ -223,7 +207,7 @@ esttab stunt_*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 beta
 coefplot stunt_East || stunt_North || stunt_South || stunt_West, drop(_cons ) /*
 */ xline(0) /*mlabel format(%9.2f) mlabposition(11) mlabgap(*2)*/ byopts(row(1)) 
 
-save "DHS_2015_stunting.dta", replace
+
 
 
 /*

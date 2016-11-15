@@ -11,7 +11,7 @@
 clear
 capture log close
 log using "$pathlog/03a_StuntingAnalysis2010", replace
-use "$pathout/stunting2010.dta", clear
+use "$pathout/DHS_2010_analysis.dta", clear
 
 * Label the cmc codes di 12*(2015 - 1900)+1) --> Jan 2015 (last digit is month)
 
@@ -145,23 +145,6 @@ tssmooth ma stuntedMA = (stunted2/stuntN), window(2 1 2)
 xtline(stuntedMA smoothStunt)
 restore
 
-
-* Appears to be a weak negative relationship w/ altitude
-twoway(scatter stunted altitude)(lpoly stunted altitude)
-
-* How does stunting look by cluster?
-twoway(scatter stunting dhsclust)(scatter clust_stunt dhsclust) 
-
-* How does stunting against age cohorts
-*twoway(lpolyci stunting age)(scatter age_stunting age), by(female)
-twoway(scatter stunting wealth)(lpolyci stunting wealth), by(diarrhea)
-
-twoway(scatter stunting_bin age)(lpoly stunting_bin age if female == 1)/*
-*/ (lpoly stunting_bin age if female == 0), by(province) 
-
-* Geography?
-twoway(scatter stunting alt_clust)(lpolyci stunting alt_clust), by(province rural)
-
 export delimited "$pathout/stuntingAnalysis2010.csv", replace
 saveold "$pathout/stuntingAnalysis2010.dta", replace
 
@@ -174,7 +157,6 @@ egen hhgroup = group(v001 v002) if eligChild == 1
 
 *Fix anemia
 replace anemia = . if anemia == 9
-g byte year = 2010
 save "$pathout/DHS_2010_Stunting.dta", replace
 
 * Create groups for covariates as they map into conceptual framework for stunting
@@ -205,8 +187,6 @@ eststo sted2_6: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar
 esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
 * export results to .csv
 esttab sted* using "$pathout/`x'Wide2010.csv", wide mlabels(none) ar2 pr2 beta label replace not
-
-
 
 * by gender
 est clear
