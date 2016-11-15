@@ -146,12 +146,34 @@ fcs_byLZ = fcs_heatmap(df = hh, region_var = 'lz_name', plot_map = TRUE, admin0 
 
 
 
-# choropleth --------------------------------------------------------------
+# choropleth: FCS, food security --------------------------------------------------------------
 fcs_byLZ = hh %>% 
   filter(!is.na(FCS)) %>% 
   group_by(livelihood_zone) %>% 
-  summarise(fcs = mean(FCS), n = n())
+  summarise(fcs = mean(FCS), 
+            months_FA = mean(months_food_access),
+            n = n())
 
+food_access_byLZ = hh %>% 
+  filter(!is.na(FCS)) %>% 
+  group_by(livelihood_zone, food_access_year_cat) %>% 
+  summarise(n = n()) %>% 
+  ungroup() %>% 
+  group_by(livelihood_zone) %>% 
+  mutate(pct = n/sum(n))
+
+# Flip "No food access issues" to "Any Food Access Issues"
+library(data.table)
+food_access_byLZ = food_access_byLZ %>% 
+  mutate(pct = ifelse(food_access_year_cat %like% 'No food', 
+                      1 - pct, 
+                      pct), 
+         food_access_year_cat = ifelse(food_access_year_cat %like% 'No food', 
+                                       'Any food access issue', 
+                                       as.character(food_access_year_cat)))
+
+
+# FCS choropleth ----------------------------------------------------------
 fcs_map = full_join(RWA_LZ$df, fcs_byLZ, by = "livelihood_zone")
 fcs_label = full_join(RWA_LZ$centroids, fcs_byLZ, by = c("label" = "livelihood_zone"))
 
@@ -172,4 +194,64 @@ ggplot(fcs_map, aes(x = long, y = lat)) +
   theme_blank()
 
 save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/FCS_LZmap_CFSVA.pdf',
+          height = 6, width = 6)
+
+
+# Num Months Food Access choropleth ----------------------------------------------------------
+
+ggplot(fcs_map, aes(x = long, y = lat)) +
+  geom_polygon(aes(fill = months_FA, group = group, order = order)) +
+  geom_path(aes(group = group, order = order),
+            colour = 'white', size = 0.1) +
+  geom_text(aes(label = round(months_FA, 1)),
+            size = 5,
+            colour = 'white', 
+            family = 'Lato', 
+            data = fcs_label) +
+  scale_fill_gradientn(colours = brewer.pal(9, 'OrRd'),
+                                   limits = c(0, 3)) +
+  coord_equal() +
+  theme_blank()
+
+save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/FoodAccessMonth_LZmap_CFSVA.pdf',
+          height = 6, width = 6)
+
+
+# Food Access choropleth ----------------------------------------------------------
+food_access_map = full_join(RWA_LZ$df, food_access_byLZ, by = "livelihood_zone")
+food_access_label = full_join(RWA_LZ$centroids, food_access_byLZ, by = c("label" = "livelihood_zone"))
+
+food_access_map$food_access_year_cat = 
+  fct_relevel(food_access_map$food_access_year_cat, 
+              "Any food access issue", "Seasonal food access issues",
+              "Acute food access issues",   
+              "Chronic food access issues")
+
+food_access_label$food_access_year_cat = fct_relevel(food_access_label$food_access_year_cat, 
+            "Any food access issue", "Seasonal food access issues",
+            "Acute food access issues",   
+            "Chronic food access issues")
+
+food_access_label = food_access_label %>% filter(!is.na(food_access_year_cat))
+food_access_map = food_access_map %>% filter(!is.na(food_access_year_cat))
+
+ggplot(food_access_map, aes(x = long, y = lat)) +
+  geom_polygon(aes(fill = pct, group = group, order = order)) +
+  geom_path(aes(group = group, order = order),
+            colour = 'white', size = 0.1) +
+  geom_text(aes(label = percent(pct, 0),
+                colour = pct),
+            size = 4,
+            family = 'Lato', 
+            data = food_access_label) +
+  scale_fill_gradientn(colours = brewer.pal(9, 'OrRd'),
+                       limits = c(0, 0.7)) +
+  scale_colour_text(food_access_label$pct) +
+  coord_equal() +
+  facet_wrap(~food_access_year_cat) +
+  theme_blank() +
+  theme(strip.background = element_blank(),
+        strip.text = element_text(family = 'Lato Light', colour = grey75K, size = 16, hjust = 0))
+
+save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/FoodAccessCat_LZmap_CFSVA.pdf',
           height = 6, width = 6)
