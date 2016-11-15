@@ -329,7 +329,7 @@ hh = hh %>%
   # -- demographics --
   # factorize(hh_raw, 'month', 'month') %>% 
   factorize(hh_raw, 'WI_cat', 'wealth_idx_cat') %>% 
-  factorize(hh_raw, 'livelihood_group_2', 'hh_occup_cat') %>% 
+  factorize(hh_raw, 'livelihood_group_2', 'hh_occup_cat_all') %>% 
   factorize(hh_raw, 'S12_01', 'old_ubudehe') %>%
   factorize(hh_raw, 'S12_02', 'new_ubudehe') %>%
   factorize(hh_raw, 'v_S2_02', 'village_cat') %>%
@@ -434,6 +434,17 @@ hh$head_education_cat = forcats::fct_collapse(hh$head_education_cat_all,
                                               prim_vocational = c(' Vocational school', ' Completed primary'),
                                               sec_plus = c(' Some/still secondary', ' Completed secondary', ' Completed university', ' Some/still university'),
                                               missing = "Don't know")
+
+hh$head_education_cat = na_if(hh$head_education_cat, 'missing')
+
+# -- occupation --
+# Grouped into classes based on similarity in FCS and natural connections
+hh$hh_occup_cat = forcats::fct_collapse(hh$hh_occup_cat_all,
+                                        # Agriculturalists = c('Low-income agriculturalists', 'Medium/high income agriculturalists'),
+                                        Skilled = c('Salaried work/own business', 'Skilled labour', 'Artisanal work/other', 'Trade/petty trade'),
+                                        Unskilled = c('Unskilled daily labour', 'External support/transfers/begging')
+                                        
+)
 
 hh$head_education_cat = na_if(hh$head_education_cat, 'missing')
 
