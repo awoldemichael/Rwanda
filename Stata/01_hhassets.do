@@ -187,10 +187,10 @@ g byte Water = inlist(hv201, 10, 11, 12, 13, 20, 21, 30, 31, 41, 51)
 	Surface water - 43
 	Bottled water - 71
 */
-g byte unimprovedWater = inlist(hv201, 32, 42, 43, 61, 62, 71)
+g byte unimprovedWater = inlist(hv201, 32, 42, 43, 61, 62, 71) 
 g byte waterLake = inlist(hv201, 43)
 
-/* IMPROVED SANITATION
+/* IMPROVED SANITATION & not shared [ & (hv225 == 0)]
 	Flush toilet - 10
 	Piped sewer system - 11
 	Septic tank - 12
@@ -200,7 +200,7 @@ g byte waterLake = inlist(hv201, 43)
 	Composting toilet - 41
 	Special case 
 	*/
-g byte improvedSanit = inlist(hv205, 10, 11, 12, 13, 20, 21, 41, 22)
+g byte improvedSanit = inlist(hv205, 10, 11, 12, 13, 20, 21, 41, 22) & hv225 == 0
 
 /* UNIMPROVED SANITATION  
 	Flush/pour flush to elsewhere - 14, 15
@@ -211,7 +211,7 @@ g byte improvedSanit = inlist(hv205, 10, 11, 12, 13, 20, 21, 41, 22)
 	No facilities or bush or field - 30, 31, 96
 	*/
 
-g byte unimprovedSanit = inlist(hv205, 14, 15, 23, 30, 31, 42, 43, 96)
+g byte unimprovedSanit = inlist(hv205, 14, 15, 23, 30, 31, 42, 43, 96)  | hv225 == 1
 
 
 
@@ -345,8 +345,4 @@ merge 1:1 v001 v002 using "$pathout/hhdemog.dta", gen(_demog)
 compress
 saveold "$pathout/DHS_hhvar.dta", replace
 log close
-
-
-
-
 
