@@ -61,6 +61,7 @@ fcs_ch = fcs_ch %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('we
 # FCS models ------------------------------------------------------------
 # Running head education as a number doesn't seem to add much value; fits not better.
 # Age^2 added to take into account behavior of young + old is usually not good.
+# Robust to pct_dep or dep_ratio
 
 fcs_models = formulas(~FCS, # lhs
                       # -- child demographics --
@@ -128,7 +129,7 @@ fcs_models = formulas(~FCS, # lhs
                         WI_cat +
                         
                         # -- hh demographics -- 
-                        hh_size + dep_ratio + fem_head +  head_age + head_age_sq +
+                        crowding + dep_ratio + fem_head +  head_age + head_age_sq +
                         
                         # -- food --
                         months_food_access +  CSI_cat + sh_food_grown + # CARI contains FCS.  
@@ -198,7 +199,7 @@ fcs_models = formulas(~FCS, # lhs
                         WI_cat +
                         
                         # -- hh demographics -- 
-                        crowding + fem_head +  head_age + head_age_sq + 
+                        crowding + dep_ratio + fem_head +  head_age + head_age_sq +
                         
                         # -- food --
                         months_food_access + CSI_cat + sh_food_grown + # CARI contains FCS.  
