@@ -182,8 +182,9 @@ coefplot(fcs_fits$min_edu, cluster_col = NA)
 coefplot(fcs_fits$all, cluster_col = NA)
 
 
-# testing rebasing LZ -----------------------------------------------------
+# testing rebasing LZ, land ownership -----------------------------------------------------
 fcs$lz_centralPlateau = fct_relevel(fcs$livelihood_zone, "Central Plateau Cassava and Coffee Zone")
+# fcs$land_cat = fct_relevel(fcs$land_size, "0.00 - 0.10 ha")
 
 fcs_rebase = lm(FCS ~   month +
                   # -- geography --
@@ -220,7 +221,45 @@ fcs_rebase = lm(FCS ~   month +
                   hh_occup_cat + num_jobs, 
                 data = fcs)
 
+
+fcs_rebase_land = lm(FCS ~   month +
+                  # -- geography --
+                  livelihood_zone + 
+                  village_cat +
+                  
+                  # -- wealth --
+                  WI_cat +
+                  
+                  # -- hh demographics -- 
+                  crowding + dep_ratio + fem_head +  head_age + head_age_sq +
+                  
+                  # -- food --
+                  months_food_access + sh_food_grown + # CARI contains FCS.  
+                  #mostly_selling has large # NAs, --> poorer fit.
+                  
+                  # -- connectivity --
+                  health_less_60min + road_dist_cat + market_dist_cat +
+                  
+                  # -- ag --
+                  TLU + land_cat + hh_garden +
+                  
+                  
+                  # -- finances --
+                  food_assistance + financial_assistance + ag_assistance +
+                  
+                  # -- ed --
+                  pct_lowEd +
+                  
+                  # -- coping strategies to food shortages --
+                  CSI_cat +
+                  growing_beans + growing_maize + growing_s_potato +
+                  growing_cassava + growing_i_potato + growing_sorghum +
+                  hh_occup_cat + num_jobs, 
+                data = fcs)
+
+
 coefplot(fcs_rebase)
+# coefplot(fcs_rebase_land)
 
 # model evaluation -------------------------------------------------------
 # http://www.statmethods.net/stats/rdiagnostics.html

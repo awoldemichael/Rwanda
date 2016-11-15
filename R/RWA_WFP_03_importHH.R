@@ -438,6 +438,9 @@ hh$livelihood_zone = forcats::fct_relevel(hh$livelihood_zone,
                                           "Northern Highland Beans and Wheat Zone",                          
                                           "Eastern Semi-Arid Agropastoral Zone")  
 
+# -- land: rebasing to small land plots 0-0.1ha --
+hh$land_size = fct_relevel(hh$land_size, "0.00 - 0.10 ha")
+
 # -- health_less_60min --
 hh$health_less_60min = forcats::fct_relevel(hh$health_less_60min, levels(ch$health_less_60min))
 
