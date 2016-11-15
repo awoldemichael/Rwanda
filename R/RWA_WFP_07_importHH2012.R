@@ -193,11 +193,11 @@ wb_map %>% filter(is.na(lat))
 # Only missing Shyrongi, and I'm too lazy to fix since it isn't a site anyway.
 
 
-wb_map = full_join(RWA_admin3$df, wb, by = c('label' = 'admin3'))
+wb_map = full_join(RWA_admin3$df, wb, by = c('Sector' = 'admin3'))
 
 ggplot(wb_map, aes(fill = factor(wb_site), x = long, y = lat,
                    group = group, order = order)) +
   geom_polygon() +
   coord_equal() +
-  # scale_fill_manual(values = c('0' = grey15K, '1' = brewer.pal(9, 'Spectral')[1])) +
+  scale_fill_manual(values = c('0' = grey15K, '1' = brewer.pal(9, 'Spectral')[1])) +
   theme_blank()
