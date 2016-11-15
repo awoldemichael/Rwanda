@@ -437,23 +437,28 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                         ag = ~ own_livestock + TLU + land_size + hh_garden,
                         
                         # -- ed --
-                        ed = ~ mother_education + head_education_cat + pct_lowEd + pct_highEd + pct_illiterate,
+                        ed = ~ mother_education + head_education_cat +
+                        #+ pct_lowEd + pct_highEd + pct_illiterate,
                         # mother_literate + head_literate +
                         
                         shk = ~ shock_drought + shock_illness,
                         
-                        wealth2 = ~ monthly_pc_expend + new_ubudehe + old_ubudehe + got_loan + asked_loan + infrastruct_idx + impr_roof + impr_floor + impr_wall + own_house_cat + cookingfuel_cat + food_assistance + financial_assistance + ag_assistance,
+                        wealth2 = ~ food_assistance + financial_assistance + ag_assistance,
+                        # monthly_pc_expend + new_ubudehe + old_ubudehe + got_loan + asked_loan + infrastruct_idx + impr_roof + impr_floor + impr_wall + own_house_cat + cookingfuel_cat +
                         
-                        health_kid = ~ birthwt + birthweight_cat,
+                        health_kid = ~ birthwt,
+                        # + birthweight_cat,
                         
                         wash2 = ~ share_toilet + time_water_source + time_drinkingH2O_cat + H2Otreatment_cat + wash_knowl + wash_beforecook + wash_kidtoilet + wash_beforeeat + wash_aftertoilet + wash_ifdirty,
                         
-                        food2 = ~ pref_staple + child_meal_freq + CARI_cat + food_access_prob + food_access_year_cat + 
-                          months_food_access + protein_days + ironrich_days + vitAfruitveg_days + sh_food_grown + sh_food_purchased + sh_food_expend,
+                        food2 = ~ months_food_access + protein_days + ironrich_days + vitAfruitveg_days + sh_food_grown +
+                          # pref_staple + child_meal_freq + CARI_cat + food_access_prob + food_access_year_cat + 
+                           # sh_food_purchased + sh_food_expend,
                         # DDS + dietDiv_W24h + dietDiv_W24h_cat + HDDS_24h + 
                         # milk_days + 
                         
-                        livelihood = ~ growing_beans + hh_occup_cat + sh_agricultural_production + sh_labour_ag_work + sh_unskilled_labour + num_jobs + mostly_selling + mostly_consuming,
+                        livelihood = ~ hh_occup_cat +
+                          growing_beans + hh_occup_cat + sh_agricultural_production + sh_labour_ag_work + sh_unskilled_labour + num_jobs + mostly_selling + mostly_consuming,
                         
                         village = ~village_VUP + village_noSchemes + village_IDPmodel + village_landConsolid + village_structUmudugudu,
                         
