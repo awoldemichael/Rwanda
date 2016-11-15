@@ -174,61 +174,6 @@ coefplot(fcs_fits$all, cluster_col = NA)
 # children (to look at mother’s education) --------------------------------
 
 fcs_models = formulas(~FCS, # lhs
-                      # -- child demographics --
-                      basic = ~ month +
-                        
-                        # -- geography --
-                        livelihood_zone + 
-                        village_cat +
-                        
-                        # -- wealth --
-                        # splines::bs(monthly_pc_expend, degree = 2),
-                        WI_cat +
-                        
-                        # -- hh demographics -- 
-                        hh_size + crowding + fem_head +  head_age +  
-                        
-                        # -- food --
-                        CSI_cat + # CARI contains FCS.
-                        # months_food_access,
-                        
-                        # -- connectivity --
-                        health_less_60min + road_dist_cat + market_dist_cat,
-                      
-                      
-                      # -- ag --
-                      ag = ~ TLU + land_size + hh_garden,
-                      
-                      # -- ed --
-                      ed = ~ head_education_cat + pct_illiterate + pct_lowEd + mother_education + mother_literate,
-                      # mother_literate + head_literate +pct_lowEd + pct_highEd 
-                      
-                      shk = ~ shock_drought + shock_illness,
-                      
-                      wealth2 = ~ asked_loan + food_assistance + 
-                        financial_assistance + ag_assistance,
-                      # monthly_pc_expend + new_ubudehe + old_ubudehe + cookingfuel_cat+ infrastruct_idx + impr_roof + impr_floor + impr_wall + own_house_cat + got_loan + 
-                      
-                      food2 = ~ 
-                        months_food_access + mostly_selling,
-                      # + sh_food_grown,
-                      # + sh_food_purchased + sh_food_expend,
-                      # food_access_prob + food_access_year_cat + 
-                      
-                      livelihood_occup = 
-                        ~ growing_beans + growing_maize + growing_s_potato +
-                        growing_cassava + growing_i_potato + growing_sorghum +
-                        hh_occup_cat + num_jobs,
-                      
-                      livelihood_sh = ~ growing_beans + growing_maize + growing_s_potato +
-                        growing_cassava + growing_i_potato + growing_sorghum +
-                        sh_agricultural_production + sh_labour_ag_work + 
-                        sh_unskilled_labour + num_jobs,
-                      # + mostly_consuming,
-                      
-                      village = ~village_VUP + village_IDPmodel + village_landConsolid + village_structUmudugudu,
-                      
-                      
                       # -- REMOVING EVERYTHING THAT SEEMS IRRELEVANT --
                       minimal = 
                         ~ month +
@@ -241,7 +186,7 @@ fcs_models = formulas(~FCS, # lhs
                         WI_cat +
                         
                         # -- hh demographics -- 
-                        hh_size + crowding + fem_head +  head_age +  
+                        crowding + fem_head +  head_age + head_age_sq + 
                         
                         # -- food --
                         months_food_access + CSI_cat + sh_food_grown + # CARI contains FCS.  
@@ -255,6 +200,17 @@ fcs_models = formulas(~FCS, # lhs
                         # -- finances --
                         food_assistance + financial_assistance + ag_assistance,
                       
+                      # -- livelihoods --
+                      livelihood_occup = 
+                        ~ growing_beans + growing_maize + growing_s_potato +
+                        growing_cassava + growing_i_potato + growing_sorghum +
+                        hh_occup_cat + num_jobs,
+                      
+                      livelihood_sh = ~ growing_beans + growing_maize + growing_s_potato +
+                        growing_cassava + growing_i_potato + growing_sorghum +
+                        sh_agricultural_production + sh_labour_ag_work + 
+                        sh_unskilled_labour + num_jobs,
+                      
                       # -- ed --
                       ed_cat = ~ head_education_cat + mother_education,
                       ed_lit = ~ head_literate + mother_literate,
@@ -264,7 +220,6 @@ fcs_models = formulas(~FCS, # lhs
                       min_edu = add_predictors(minimal, ed_cat, livelihood_occup),
                       min_lit = add_predictors(minimal, ed_lit, livelihood_occup),
                       
-                      all = add_predictors(basic,  ag, ed, shk, wealth2, food2, livelihood_occup),
                       occup = add_predictors(minimal, ed_all, livelihood_occup),
                       sh = add_predictors(minimal, ed_all, livelihood_sh)
 )
