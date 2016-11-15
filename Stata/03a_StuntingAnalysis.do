@@ -171,7 +171,7 @@ la var rural "rural household"
 g altitude2 = altitude/1000
 la var altitude2 "altitude divided by 1000"
 egen hhgroup = group(v001 v002) if eligChild == 1
-
+g year = 2015
 
 * Create groups for covariates as they map into conceptual framework for stunting
 global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
@@ -223,6 +223,8 @@ esttab stunt_*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 beta
 coefplot stunt_East || stunt_North || stunt_South || stunt_West, drop(_cons ) /*
 */ xline(0) /*mlabel format(%9.2f) mlabposition(11) mlabgap(*2)*/ byopts(row(1)) 
 
+save "DHS_2015_stunting.dta", replace
+
 
 /*
 * Quantile regression 
@@ -244,31 +246,3 @@ qui reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth
 estat hettest $matchar $hhchar $hhag $demog female $chldchar $chealth, iid
 */
 
-
-
-
-
-eststo sted2_1, title("Stunted 1"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
-eststo sted2_2, title("Stunted 2"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog2 ib(1381).intdate, $cluster 
-eststo sted2_3, title("Stunted 3"): reg stunting2 $matchar $hhchar $hhag2 $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
-eststo sted2_4, title("Stunted 4"): reg stunting2 $matchar $hhchar2 $hhag $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
-eststo sted2_5, title("Stunted 5"): reg stunting2 $matchar $hhchar2 $hhag2 $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
-eststo sted2_6, title("Stunted 6"): reg stunting2 $matchar $hhchar2 $hhag2 $demog $chldchar $chealth $geog2 ib(1381).intdate, $cluster 
-esttab sted2_*, se star(* 0.10 ** 0.05 *** 0.01) label wide ar2
-
-* Sort the coefficients before plotting
-matrix smean = r(table)
-matrix district = smean'
-matrix plot = r(table)'
-matsort plot 1 "down"
-matrix plot = plot'
-coefplot (matrix(plot[1,])) , ci((plot[5,] plot[6,]))  xline(0, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) xlabel(, labsize(small))
-
-coefplot sted2_4 , xline(0, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) /*
-*/ msize(small) /*mc(black) mlsty(black) mcolor(red) mlstyle(p1)*/ xlabel(, labsize(small)) cismooth norecycle/*
-*/ scale(1) drop(_cons) keep() base
-
-*Run separate models for sex
-eststo stM, title("Stunted 4"): logit stunted2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate if female == 0,  robust or
-eststo stF, title("Stunted 4"): logit stunted2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate if female == 1,  robust or
-coefplot stM stF, xline(1, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) xlabel(, labsize(small)) drop(_cons)

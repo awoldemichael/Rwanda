@@ -188,7 +188,8 @@ g byte improvedWater = inlist(hv201, 10, 11, 12, 13, 20, 21, 30, 31, 41, 51)
 	Surface water - 43
 	Bottled water - 71
 */
-g byte unimprovedWater = inlist(hv201, 32, 42, 43, 61, 62, 71)
+g byte unimprovedWater = inlist(hv201, 32, 42, 43, 61, 62, 71) 
+
 g byte waterLake = inlist(hv201, 43)
 
 /* IMPROVED SANITATION
@@ -201,7 +202,7 @@ g byte waterLake = inlist(hv201, 43)
 	Composting toilet - 41
 	Special case 
 	*/
-g byte improvedSanit = inlist(hv205, 10, 11, 12, 13, 20, 21, 41, 22)
+g byte improvedSanit = inlist(hv205, 10, 11, 12, 13, 20, 21, 41, 22) & hv225 == 0
 
 /* UNIMPROVED SANITATION  
 	Flush/pour flush to elsewhere - 14, 15
@@ -212,7 +213,7 @@ g byte improvedSanit = inlist(hv205, 10, 11, 12, 13, 20, 21, 41, 22)
 	No facilities or bush or field - 30, 31, 96
 	*/
 
-g byte unimprovedSanit = inlist(hv205, 14, 15, 23, 30, 31, 42, 43, 96)
+g byte unimprovedSanit = inlist(hv205, 14, 15, 23, 30, 31, 42, 43, 96) | hv225 == 1
 
 **********************************************
 * HH Landholding for agricultural production *
@@ -294,7 +295,7 @@ ds(ha0* ha1* ha2* ha3* ha4* ha5* ha6* ha7* hb* hc*
 	shml* sh03* idxh*), not;
 keep `r(varlist)';
 #delimit cr
-bob
+
 * Check for value labels and clean up ones that do not make sense
 local labCheck agehead bankAcount bednet bike car dirtfloor /*
 		*/ district electricity femhead handwash landless /*
@@ -343,6 +344,7 @@ foreach x of local xValues {
 *end
 
 merge 1:1 v001 v002 using "$pathout/hhdemog2010.dta", gen(_demog)
+clonevar dhsclust = v001
 compress
 saveold "$pathout/DHS_hhvar2010.dta", replace
 log close

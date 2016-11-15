@@ -177,7 +177,7 @@ la var bnetITNuse "own ITN mosquito bednet"
 	Protected spring - 41
 	Rainwater - 51
 */
-g byte Water = inlist(hv201, 10, 11, 12, 13, 20, 21, 30, 31, 41, 51)
+g byte improvedWater = inlist(hv201, 10, 11, 12, 13, 20, 21, 30, 31, 41, 51)
 
 /* UNIMPROVED WATER
 	Unprotected spring - 42
@@ -342,6 +342,7 @@ foreach x of local xValues {
 *end
 
 merge 1:1 v001 v002 using "$pathout/hhdemog.dta", gen(_demog)
+clonevar dhsclust = v001 
 compress
 saveold "$pathout/DHS_hhvar.dta", replace
 log close

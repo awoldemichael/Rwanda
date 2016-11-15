@@ -117,7 +117,7 @@ la val motherBMI bmi
 clonevar motherBWeight = v440 
 
 replace motherBWeight = (motherBWeight / 100)
-replace motherBweight = . if inlist(motherBweight, 9998, 9999)
+replace motherBWeight = . if inlist(motherBWeight, 9998, 9999)
 clonevar wantedChild = v367
 recode h43 (0 8 = 0 "No")(1 = 1 "Yes"), gen(intParasites)
 

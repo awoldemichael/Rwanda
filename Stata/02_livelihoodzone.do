@@ -47,6 +47,7 @@ recode lvhood_zone (15 = 0 "Urban Area")
 drop lvhood_zone				   
 la var lvdzone "livelihood zones (from FEWSNET)"
 
+merge 1:m dhsclust using "$pathout/DHS_hhvar.dta", gen(_lvd)
 saveold "$pathout/RWA_DHS_Livelihoods.dta", replace
 
 * Import 2010 data and perform similar jooin
@@ -75,10 +76,12 @@ recode lvhood_zone2010 (14 = 0 "Urban Area")
 				   (13 = 10 "Southeastern Plateau Banana")
 				   (4 = 11 "Eastern Agropastoral")
 				   (7 = 12 "Eastern Semi-Arid Agropastoral"),
-				   gen(lvdzone2010);
+				   gen(lvdzone);
 #delimit cr
 drop lvhood_zone2010				   
 la var lvdzone "livelihood zones (from FEWSNET)"
+
+merge 1:m dhsclust using "$pathout/DHS_hhvar2010.dta", gen(_lvd2010)
 
 saveold "$pathout/RWA_DHS2010_Livelihoods.dta", replace
 

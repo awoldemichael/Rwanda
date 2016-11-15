@@ -153,7 +153,7 @@ twoway(scatter stunted altitude)(lpoly stunted altitude)
 twoway(scatter stunting dhsclust)(scatter clust_stunt dhsclust) 
 
 * How does stunting against age cohorts
-twoway(lpolyci stunting age)(scatter age_stunting age), by(female)
+*twoway(lpolyci stunting age)(scatter age_stunting age), by(female)
 twoway(scatter stunting wealth)(lpolyci stunting wealth), by(diarrhea)
 
 twoway(scatter stunting_bin age)(lpoly stunting_bin age if female == 1)/*
@@ -162,8 +162,8 @@ twoway(scatter stunting_bin age)(lpoly stunting_bin age if female == 1)/*
 * Geography?
 twoway(scatter stunting alt_clust)(lpolyci stunting alt_clust), by(province rural)
 
-export delimited "$pathout/stuntingAnalysis.csv", replace
-saveold "$pathout/stuntingAnalysis.dta", replace
+export delimited "$pathout/stuntingAnalysis2010.csv", replace
+saveold "$pathout/stuntingAnalysis2010.dta", replace
 
 * Stunting regression analysis using various models; 
 g agechildsq = ageChild^2
@@ -172,6 +172,10 @@ g altitude2 = altitude/1000
 la var altitude2 "altitude divided by 1000"
 egen hhgroup = group(v001 v002) if eligChild == 1
 
+*Fix anemia
+replace anemia = . if anemia == 9
+g byte year = 2010
+save "$pathout/DHS_2010_Stunting.dta", replace
 
 * Create groups for covariates as they map into conceptual framework for stunting
 global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
@@ -192,21 +196,23 @@ sum $matchar $hhchar $hhag $demog female $chldchar $chealth
 
 * Be continuous versus binary
 est clear
-eststo sted1_0: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1381).intdate, $cluster 
-eststo sted1_1: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1381).intdate, $cluster 
-eststo sted2_3: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1381).intdate, $cluster or 
-eststo sted2_4: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1381).intdate, $cluster or
-eststo sted2_5: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1381).intdate, $cluster or 
-eststo sted2_6: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1381).intdate, $cluster or 
+eststo sted1_0: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate, $cluster 
+eststo sted1_1: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate, $cluster 
+eststo sted2_3: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate, $cluster or 
+eststo sted2_4: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate, $cluster or
+eststo sted2_5: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate, $cluster or 
+eststo sted2_6: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate, $cluster or 
 esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
 * export results to .csv
-esttab sted* using "$pathout/`x'Wide.csv", wide mlabels(none) ar2 beta label replace not
+esttab sted* using "$pathout/`x'Wide2010.csv", wide mlabels(none) ar2 pr2 beta label replace not
+
 
 
 * by gender
 est clear
-eststo sted2_1, title("Stunted 1"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog2 ib(1381).intdate if female == 1, $cluster 
-eststo sted2_2, title("Stunted 2"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog2 ib(1381).intdate if female == 0, $cluster2 
+eststo sted2_1, title("Stunted 1"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog2 ib(1333).intdate if female == 1, $cluster 
+eststo sted2_2, title("Stunted 2"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog2 ib(1333).intdate if female == 0, $cluster 
+esttab sted*
 
 * Regional variations
 est clear
@@ -245,9 +251,6 @@ estat hettest $matchar $hhchar $hhag $demog female $chldchar $chealth, iid
 */
 
 
-
-
-
 eststo sted2_1, title("Stunted 1"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
 eststo sted2_2, title("Stunted 2"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog2 ib(1381).intdate, $cluster 
 eststo sted2_3, title("Stunted 3"): reg stunting2 $matchar $hhchar $hhag2 $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
@@ -264,11 +267,5 @@ matsort plot 1 "down"
 matrix plot = plot'
 coefplot (matrix(plot[1,])) , ci((plot[5,] plot[6,]))  xline(0, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) xlabel(, labsize(small))
 
-coefplot sted2_4 , xline(0, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) /*
-*/ msize(small) /*mc(black) mlsty(black) mcolor(red) mlstyle(p1)*/ xlabel(, labsize(small)) cismooth norecycle/*
-*/ scale(1) drop(_cons) keep() base
 
-*Run separate models for sex
-eststo stM, title("Stunted 4"): logit stunted2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate if female == 0,  robust or
-eststo stF, title("Stunted 4"): logit stunted2 $hhchar $health $assets $livestock $geog2 ib(1381).intdate if female == 1,  robust or
-coefplot stM stF, xline(1, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) xlabel(, labsize(small)) drop(_cons)
+
