@@ -414,3 +414,6 @@ compare_models(list(
                         axis.text.y = element_text(size= 11))
 
 
+# model without geographic stuff ------------------------------------------
+
+coefplot(fcs_fits$min_edu, exclude_terms = 'livelihood_zone')
