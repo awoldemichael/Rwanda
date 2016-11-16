@@ -137,21 +137,68 @@ hh2012 =  hh2012_raw %>%
     market_dist_cat = Q_market
   )
 
-# -- ag --
-own_livestock + TLU +  + hh_garden +
-  
-  mostly_selling + # CARI contains FCS.  
-  
-  hh_occup_cat + num_jobs,
-sh_agricultural_production + sh_labour_ag_work + 
-  sh_unskilled_labour 
-!village_cat,
-# -- ed --
-ed_cat = ~ head_education_cat + mother_education,
-ed_lit = ~ head_literate + mother_literate,
-ed_all = ~ pct_lowEd, #pct_literate
 
-)
+
+# merge everything together -----------------------------------------------
+# checking everything is unqiue
+length(unique(hh2012$hh_id)) == nrow(hh2012)
+length(unique(females2012$hh_id)) == nrow(females2012) # duplicative, but maybe okay.
+
+# canary column for children: sex of child sum(is.na(ch2012$Q202_09))
+# canary column for women: sum(is.na(females2012$moth_ID))
+# canary column for men: sum(is.na(hh2012$Q_altitude))
+
+# test merge:
+k = left_join(ch2012, females2012, 
+              by = c("hh_id", "weight", "mother_id", "p_code", 
+                     "d_code", "s_code", "v_code", "t_code", "final_urban", "fews_code"))
+
+if(nrow(k) != nrow(ch2012)) {
+  print('ch2012 / females2012 merge fail. Redundant/nondescript ids')
+} else if (sum(is.na(k$moth_ID)) > 0){
+  print('ch2012 / females2012 merge fail: mother NAs')
+} else if (sum(is.na(k$Q202_09)) > 0){
+  print('ch2012 / females2012 merge fail: mother NAs')
+}
+
+# Lots of mothers that don't merge.  Porque?  Motherless children, or something else?
+# 875 problems initially.
+# So there are 282 children, all in Kigali, with hh_id = 0, and no 
+# 349 children have missing info from their mom (code 88), or mother is dead (code 99) :(. Assuming code 77 is also a no-go.
+# strata_id is missing in hh and children's, but set to 0 in females.
+# rest seem to be code mismatches.  Not sure I can fix.
+
+
+k = left_join(ch2012, hh2012, 
+              by = c("hh_id", "weight", "strata_ID", "p_code", "d_code", "s_code", 
+                     "v_code", "final_urban", "hh_size", 
+                     # "fews_code",
+                     "livelihood", "Q102", "Q105", "Q215_1", "impr_toilet", "FCS"))
+# 308 total.
+# 19 fews code mis-match.
+# 282 children with hhid==0 (wtf?)
+# 7 children w/ hh_id 1 but different sampling weights and interview dates, neither of which matches the one in hh.
+# Not sure there's anything to be done...
+
+# nrow(k) == nrow(ch2012)
+# sum(is.na(k$Q202_09)) # kids remain intact.
+# sum(is.na(k$Q_altitude))
+# glimpse(k %>% filter(hh_id !=0, is.na(Q_altitude)))
+# # 
+# t(hh2012 %>% filter(hh_id == 7899) %>% select(one_of(c("hh_id", "weight", "strata_ID", "p_code", "d_code", "s_code", 
+#   "v_code", "final_urban", "fews_code", "hh_size", 
+#   "livelihood", "Q102", "Q105", "Q215_1", "impr_toilet", "FCS"))))
+
+# merge for real. ---------------------------------------------------------
+ch_hh2012 = left_join(ch2012, hh2012, 
+          by = c("hh_id", "weight", "strata_ID", "p_code", "d_code", "s_code", 
+                 "v_code", "final_urban", "hh_size", 
+                 "livelihood", "Q102", "Q105", "Q215_1", "impr_toilet", "FCS"))
+
+
+ch_hh2012 = left_join(ch_hh2012, females2012, by = c("hh_id", "weight", "mother_id", "p_code", 
+                     "d_code", "s_code", "v_code", "t_code", "final_urban"))
+
 # clean vars --------------------------------------------------------------
 
 hh2012 = hh2012 %>% 
