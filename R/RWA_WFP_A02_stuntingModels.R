@@ -46,7 +46,7 @@
 # * start w/ basic model and build up
 # * cluster errors at village level to take into account any non-independent behavior due to sample design (using package `multiwayvcov`)
 # * evaluate models using adjusted R^2
-# * look at stability of coefficients using coefplot
+# * look at stability of coefficients using plot_coef
 # * look at residuals by summarizing model
 # * for better models, standardize errors
 
@@ -73,7 +73,11 @@ males_hh = ch_hh %>% filter(!is.na(isStunted),
 females_hh = ch_hh %>% filter(!is.na(isStunted), 
                               sex == 'Female')
 
-all_hh = ch_hh %>% filter(!is.na(isStunted))
+all_hh = ch_hh %>% 
+  filter(!is.na(isStunted)) %>% 
+  mutate(head_age_sq = head_age^2,
+         head_edu_num = as.numeric(head_education_cat))
+
 # standardize coefficients
 all_hh = all_hh %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'village'))
 
@@ -90,7 +94,7 @@ stunting_fit_cfsva = lm(formula = stuntingZ ~ sex + age_months + low_birthwt +
                           road_dist_cat + school_dist_cat + market_dist_cat + health_dist_cat,
                         data = all)
 summary(stunting_fit_cfsva)
-coefplot(stunting_fit_cfsva, cluster_col = all$village)
+plot_coef(stunting_fit_cfsva, cluster_col = all$village)
 # plot_relationships(stunting_fit_cfsva)
 
 # stunting score
@@ -105,7 +109,7 @@ stunted_fit_cfsva = lm(formula = isStunted ~ sex + age_months + low_birthwt +
                        data = all)
 
 summary(stunted_fit_cfsva)
-coefplot(stunted_fit_cfsva, cluster_col = all$village, negative_good = TRUE)
+plot_coef(stunted_fit_cfsva, cluster_col = all$village, negative_good = TRUE)
 
 # plot_relationships(stunted_fit_cfsva)
 
@@ -161,13 +165,13 @@ tim_models = formulas(~stuntingZ, # lhs
 
 stunting_tim = all_hh %>% fit_with(lm, tim_models)
 
-coefplot(stunting_tim$basic, cluster_col = all_hh$village)
+plot_coef(stunting_tim$basic, cluster_col = all_hh$village)
 # plot_relationships(stunting_tim$tim)
 
-coefplot(stunting_tim$tim, cluster_col = all_hh$village)
-coefplot(stunting_tim$combined_tim, cluster_col = all_hh$village)
-coefplot(stunting_tim$combined, cluster_col = all_hh$village)
-coefplot(stunting_tim$combined_plus, cluster_col = all_hh$village)
+plot_coef(stunting_tim$tim, cluster_col = all_hh$village)
+plot_coef(stunting_tim$combined_tim, cluster_col = all_hh$village)
+plot_coef(stunting_tim$combined, cluster_col = all_hh$village)
+plot_coef(stunting_tim$combined_plus, cluster_col = all_hh$village)
 
 # Nada comparison ---------------------------------------------------------
 
@@ -225,8 +229,8 @@ nada_mf <- glm(isStunted ~
 
 summary(nada_mf)
 
-coefplot(nada_m_model)
-coefplot(nada_f_model)
+plot_coef(nada_m_model)
+plot_coef(nada_f_model)
 
 
 
@@ -291,8 +295,8 @@ ch_models = formulas(~stuntingZ, # lhs
                      # hh_size + crowding + pct_under7,
                      
                      # -- WASH (broken down) --
-                     wash1 = ~ impr_toilet + drinkingH2O_cat,
-                     wash2 = ~ impr_toilet + impr_water, 
+                     wash1 = ~ impr_toilet + drinkingH2O_cat + share_toilet,
+                     wash2 = ~ impr_unshared_toilet + impr_water, 
                      
                      # impr_toilet + share_toilet + impr_water + 
                      # H2Otreatment_cat + time_drinkingH2O_cat + wash_knowl
@@ -302,8 +306,8 @@ ch_models = formulas(~stuntingZ, # lhs
                      rural2 = ~rural_cat,
                      
                      # -- health (child) --
-                     health1 = ~ diarrhea + fever + cough + dewormed + vitaminA,
-                     health2 = ~ diarrhea, 
+                     health1 = ~ diarrhea + fever + cough + dewormed + vitaminA + birthwt,
+                     health2 = ~ diarrhea + birthwt, 
                      
                      # -- breastfeeding habits --
                      breast1 = ~ breastfed_afterbirth + fed_nonbreastmilk,
@@ -353,10 +357,10 @@ ch_fits = all %>% fit_with(lm, ch_models)
 # lapply(ch_fits, function(x) summary(x))
 
 # Plot and evaluate variations
-coefplot(ch_fits$village, cluster_col = all$village)
-coefplot(ch_fits$simple, cluster_col = all$village)
-coefplot(ch_fits$cmplx, cluster_col = all$village)
-coefplot(ch_fits$breastfeeding, cluster_col = all$village)
+plot_coef(ch_fits$final, cluster_col = all$village)
+plot_coef(ch_fits$simple, cluster_col = all$village)
+plot_coef(ch_fits$cmplx, cluster_col = all$village)
+plot_coef(ch_fits$breastfeeding, cluster_col = all$village)
 
 compare_models(ch_fits$final, ch_fits$cmplx, cluster_col = all$village) 
 compare_models(ch_fits$simple, ch_fits$cmplx, cluster_col = all$village) 
@@ -399,7 +403,7 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           
                           # -- geography --
                           livelihood_zone + 
-                          village_cat +
+                          rural_cat +
                           
                           # -- wealth --
                           # splines::bs(monthly_pc_expend, degree = 2),
@@ -407,25 +411,41 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           
                           # -- hh demographics -- 
                           kids_under5 + 
+                          crowding + 
+                          fem_head +  
+                          head_age + head_age_sq +
+                          numWomen_18plus + 
+                          hh_occup_cat +
                           
                           # -- WASH (broken down) --
-                          impr_toilet + 
-                          impr_water +
+                          impr_unshared_toilet + 
+                          wash_knowl + 
+                          impr_water_30min + 
                           
                           # -- health (child) --
-                          diarrhea + fever + cough + dewormed + vitaminA +
+                          diarrhea + fever + cough + dewormed + vitaminA + birthwt +
                           
                           # -- breastfeeding habits --
                           breastfed_afterbirth +
                           
                           # -- food --
-                          FCS + CSI_cat + # CARI contains FCS.
+                          FCS +
+                          CSI_cat + # CARI contains FCS.
+                          months_food_access +
+                          protein_days + ironrich_days + vitAfruitveg_days + 
+                          sh_food_grown +
                           # months_food_access,
                           
                           # -- connectivity --
-                          health_less_60min + road_dist_cat,
-                        
-                        demo_hh = ~hh_size + crowding + fem_head + numWomen_18plus + head_age, 
+                          health_less_60min + road_dist_cat +
+                          
+                          # -- ag --
+                          own_livestock + TLU + land_size + hh_garden +
+                          
+                          # -- ed --
+                          mother_education + head_education_cat,
+                        #+ pct_lowEd + pct_highEd + pct_illiterate,
+                        # mother_literate + head_literate +
                         
                         
                         # -- mother --
@@ -433,53 +453,48 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           antenatal_care + num_antenatal_visits + when_antenatal +
                           mother_mosquito_net + mother_ill_2weeks + Fe_supplements,
                         
-                        # -- ag --
-                        ag = ~ own_livestock + TLU + land_size + hh_garden,
-                        
-                        # -- ed --
-                        ed = ~ mother_education + head_education_cat,
-                        #+ pct_lowEd + pct_highEd + pct_illiterate,
-                        # mother_literate + head_literate +
                         
                         shk = ~ shock_drought + shock_illness,
                         
                         wealth2 = ~ food_assistance + financial_assistance + ag_assistance,
-                        # monthly_pc_expend + new_ubudehe + old_ubudehe + got_loan + asked_loan + infrastruct_idx + impr_roof + impr_floor + impr_wall + own_house_cat + cookingfuel_cat +
+                        # monthly_pc_expend + new_ubudehe + old_ubudehe + got_loan + asked_loan + 
+                        # infrastruct_idx + impr_roof + impr_floor + impr_wall + own_house_cat + cookingfuel_cat +
                         
-                        health_kid = ~ birthwt,
+                        # health_kid = ~ ,
                         # + birthweight_cat,
                         
-                        wash2 = ~ share_toilet + time_water_source + time_drinkingH2O_cat + 
-                          H2Otreatment_cat + wash_knowl + wash_beforecook + wash_kidtoilet + wash_beforeeat + 
-                          wash_aftertoilet + wash_ifdirty,
+                        # wash2 = ~ share_toilet + time_water_source + time_drinkingH2O_cat + 
+                        # H2Otreatment_cat + wash_knowl + wash_beforecook + wash_kidtoilet + wash_beforeeat + 
+                        # wash_aftertoilet + wash_ifdirty,
                         
-                        food2 = ~ months_food_access + protein_days + ironrich_days + vitAfruitveg_days + sh_food_grown,
-                          # pref_staple + child_meal_freq + CARI_cat + food_access_prob + food_access_year_cat + 
-                           # sh_food_purchased + sh_food_expend,
+                        # food2 = ~ months_food_access + protein_days + ironrich_days + vitAfruitveg_days + sh_food_grown,
+                        # pref_staple + child_meal_freq + CARI_cat + food_access_prob + food_access_year_cat + 
+                        # sh_food_purchased + sh_food_expend,
                         # DDS + dietDiv_W24h + dietDiv_W24h_cat + HDDS_24h + 
                         # milk_days + 
                         
-                        livelihood = ~ hh_occup_cat +
-                          growing_beans + hh_occup_cat + sh_agricultural_production + sh_labour_ag_work + 
-                          sh_unskilled_labour + num_jobs + mostly_selling + mostly_consuming,
+                        # livelihood = ~ ,
+                        # growing_beans + hh_occup_cat + sh_agricultural_production + sh_labour_ag_work + 
+                        # sh_unskilled_labour + num_jobs 
+                        # + mostly_selling + mostly_consuming,
                         
-                        village = ~village_VUP + village_noSchemes + village_IDPmodel + village_landConsolid + village_structUmudugudu,
+                        # village = ~village_VUP + village_noSchemes + village_IDPmodel + village_landConsolid + village_structUmudugudu,
                         
-                        
-                        simple = add_predictors(basic),
-                        educ = add_predictors(basic, ed),
-                        all = add_predictors(basic, mom, ag, ed, demo_hh, shk, wealth2, health_kid, wash2, food2, livelihood, village)
+                        mother = add_predictors(basic, mom),                        
+                        all = add_predictors(basic, mom, shk, wealth2)
 )
 
 stunting_fits = all_hh %>% fit_with(lm, ch_hh_models)
 
 # lapply(ch_fits, function(x) summary(x))
 
+# Intermediate a
 # Plot model comparison
 compare_models(stunting_fits, cluster_col = all$village) 
 
 # Plot and evaluate variations
-coefplot(stunting_fits$all, cluster_col = all_hh$village)
+plot_coef(stunting_fits$mother, cluster_col = all_hh$village)
+plot_coef(stunting_fits$all, cluster_col = all_hh$village)
 
 
 
@@ -488,20 +503,20 @@ coefplot(stunting_fits$all, cluster_col = all_hh$village)
 library(data.table)
 df = all_hh %>% filter(admin1 %like% 'North')
 stunting_fits_north = df %>% fit_with(lm, stunting_models)
-coefplot(stunting_fits_north$broken_wealth, cluster_col = df$village)
+plot_coef(stunting_fits_north$broken_wealth, cluster_col = df$village)
 
 df = all_hh %>% filter(admin1 %like% 'Kigali')
 stunting_fits_kigali = df %>% fit_with(lm, stunting_models)
-coefplot(stunting_fits_kigali$broken_wealth, cluster_col = df$village)
+plot_coef(stunting_fits_kigali$broken_wealth, cluster_col = df$village)
 
 df = all_hh %>% filter(admin1 %like% 'East')
 stunting_fits_east = df %>% fit_with(lm, stunting_models)
-coefplot(stunting_fits_east$broken_wealth, cluster_col = df$village)
+plot_coef(stunting_fits_east$broken_wealth, cluster_col = df$village)
 
 df = all_hh %>% filter(admin1 %like% 'South')
 stunting_fits_south = df %>% fit_with(lm, stunting_models)
-coefplot(stunting_fits_south$broken_wealth, cluster_col = df$village)
+plot_coef(stunting_fits_south$broken_wealth, cluster_col = df$village)
 
 df = all_hh %>% filter(admin1 %like% 'West')
 stunting_fits_west = df %>% fit_with(lm, stunting_models)
-coefplot(stunting_fits_west$broken_wealth, cluster_col = df$village)
+plot_coef(stunting_fits_west$broken_wealth, cluster_col = df$village)
