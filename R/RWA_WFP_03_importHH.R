@@ -293,6 +293,19 @@ hh = hh %>%
                             TRUE ~ NA_real_
     ),
     
+    vitA_binary = case_when(hh$VitA_groups == 1 ~ 0, # consumed ANY vitA food grps in last week
+                            hh$VitA_groups > 1  ~ 1,
+                            TRUE ~ NA_real_), 
+    proteinRich_binary = case_when(hh$protein_groups == 1 ~ 0, # consumed ANY protein-rich food grps in last week
+                            hh$protein_groups > 1  ~ 1,
+                            TRUE ~ NA_real_), 
+    proteinRich_binary = case_when(hh$protein_groups == 1 ~ 0, # consumed ANY protein-rich food grps in last week
+                                   hh$protein_groups > 1  ~ 1,
+                                   TRUE ~ NA_real_), 
+    ironRich_binary = case_when(hh$HIron_groups == 1 ~ 0, # consumed ANY protein-rich food grps in last week
+                                   hh$HIron_groups > 1  ~ 1,
+                                   TRUE ~ NA_real_), 
+    
     village_VUP = case_when(hh$v_S2_03_1 == 0 ~ 0,
                             hh$v_S2_03_1 == 1 ~ 1,
                             TRUE ~ NA_real_), 
@@ -405,6 +418,8 @@ hh = hh %>%
                     hh$livelihood_zone %like% 'Kigali'            ~ 'Kigali City',
                     TRUE ~ NA_character_))
    
+
+
 # Admin3 seems confused.
 codebk = data.frame(code = attr(hh_raw[['S0_E_Sect']], "labels"),
                     names = names(attr(hh_raw[['S0_E_Sect']], "labels")))
@@ -470,6 +485,38 @@ hh$hh_occup_cat = forcats::fct_collapse(hh$hh_occup_cat_all,
 )
 
 hh$head_education_cat = na_if(hh$head_education_cat, 'missing')
+
+
+
+# Create new combo vars ---------------------------------------------------
+hh = hh %>% 
+  mutate(
+    # reclassifying land
+    land_size_cat = case_when(hh$own_land == 0 ~ 0, # no land
+                           hh$S4_01_2 == 0 ~ 0, # land size reported as 'none'
+                           hh$S4_01_2 == 1 ~ 1, # land size = 0.00 - 0.10 ha
+                           hh$S4_01_2 == 2 ~ 1, # land size = 0.10 - 0.19 ha
+                           hh$S4_01_2 == 3 ~ 2, # land size = 0.20 - 0.49 ha
+                           hh$S4_01_2 == 4 ~ 2, # land size = 0.50 - 0.99 ha
+                           hh$S4_01_2 == 5 ~ 3, # land size = 1.00 - 1.99 ha
+                           hh$S4_01_2 >= 6 ~ 3, # land size > 2.00  ha - lumping previous category "> 5 ha" together, since only 9 hh
+                           TRUE ~ NA_real_),
+    land_size_cat = 
+      factor(land_size_cat,
+             levels = 0:3,
+             labels = c('no land', 
+                        '0.00 - 0.19 ha',
+                        '0.20 - 0.99 ha',
+                        'more than 1.00 ha')))
+
+hh_land_size_cat = fct_relevel(hh$land_size_cat, '0.00 - 0.19 ha') # rebase
+
+hh = hh %>% 
+  rowwise() %>% 
+  mutate(milk_meat_days = max(milk_days, meat_days),
+         fruit_veg_days = max(fruit_days, veg_days))
+
+
 
 # double check there are no NA values in any of the vars ------------------
 # Assuming NA values are 88
