@@ -66,6 +66,7 @@ ch2012 = ch2012_raw %>%
     # -- child demographics --
     age_months = MONTHS_NEW,
     Q202_09, # sex
+    Q202_13, # birth weight (sorta)
     
     # -- hh demographics --
     hh_size = hh_size_computed, # same as HH_size
@@ -90,7 +91,7 @@ ch2012 = ch2012_raw %>%
     # Q202_18, # ill w/ diarrhea past 2 weeks.  Not sure why is tagged as -1, 0, 1. Using Diarrhoea.  What seems to be the case: -1 == no illness in the past 2 weeks.  0 is 0, 1 is 1.  obv.
     diarrhea = Diarrhoea,
     # -- ag --
-    Q401_2, # land size
+    # Q401_2, # land size Substitutes NA for no land; using land size from hh module
     # TLU: QA412-QH412
     
     # -- food --
@@ -123,13 +124,6 @@ ch2012 = ch2012_raw %>%
   months_food_access,
 
 # -- mother --
-mom2 = ~  mother_age + mother_age_sq +
-  mother_education + 
-  # -- mother health --
-  num_antenatal_visits +
-  mother_mosquito_net  +
-  stunted_mother,
-# contains ~ 700 NAs --> seriously cuts down sample size
 
 shk = ~ shock_drought + shock_illness,
 
@@ -243,3 +237,11 @@ ggplot(stunting_san_untidy, aes(x = san_diff, y = diff)) +
             nudge_y = 0.005) +
   theme_xygrid() +
   xlim(c(0, .6))
+
+
+# Vars not available in 2012 ----------------------------------------------
+
+
+# ! NOTE: no antenatal care
+
+# + elevation
