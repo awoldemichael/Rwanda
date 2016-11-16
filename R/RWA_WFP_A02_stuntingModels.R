@@ -395,6 +395,7 @@ sqrt(vif(stunting_fits$total)) > 2
 
 
 # ch-hh models ------------------------------------------------------------
+# impr_water vs. impr_water_under30 v similar
 # Removed b/c seeming overlap or unimportance:
 # - fever + cough + dewormed + vitaminA + 
 # road_dist
@@ -459,7 +460,7 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           # -- WASH (broken down) --
                           impr_unshared_toilet + 
                           # wash_knowl + 
-                          impr_water_30min + 
+                          impr_water_under30 + 
                           
                           # -- health (child) --
                           diarrhea + birthwt +
@@ -655,21 +656,29 @@ compare_models(models, negative_good = T, negative_ontop = F,
 # models by province ------------------------------------------------------
 library(data.table)
 df = all_hh %>% filter(admin1 %like% 'North')
-stunting_fits_north = df %>% fit_with(lm, stunting_models)
-plot_coef(stunting_fits_north$broken_wealth, cluster_col = df$village)
+stunting_fits_north = df %>% fit_with(lm, ch_hh_models)
+plot_coef(stunting_fits_north$all, cluster_col = df$village)
 
 df = all_hh %>% filter(admin1 %like% 'Kigali')
-stunting_fits_kigali = df %>% fit_with(lm, stunting_models)
-plot_coef(stunting_fits_kigali$broken_wealth, cluster_col = df$village)
+stunting_fits_kigali = df %>% fit_with(lm, ch_hh_models)
+plot_coef(stunting_fits_kigali$all, cluster_col = df$village)
 
 df = all_hh %>% filter(admin1 %like% 'East')
-stunting_fits_east = df %>% fit_with(lm, stunting_models)
-plot_coef(stunting_fits_east$broken_wealth, cluster_col = df$village)
+stunting_fits_east = df %>% fit_with(lm, ch_hh_models)
+plot_coef(stunting_fits_east$all, cluster_col = df$village)
 
 df = all_hh %>% filter(admin1 %like% 'South')
-stunting_fits_south = df %>% fit_with(lm, stunting_models)
-plot_coef(stunting_fits_south$broken_wealth, cluster_col = df$village)
+stunting_fits_south = df %>% fit_with(lm, ch_hh_models)
+plot_coef(stunting_fits_south$all, cluster_col = df$village)
 
 df = all_hh %>% filter(admin1 %like% 'West')
-stunting_fits_west = df %>% fit_with(lm, stunting_models)
-plot_coef(stunting_fits_west$broken_wealth, cluster_col = df$village)
+stunting_fits_west = df %>% fit_with(lm, ch_hh_models)
+plot_coef(stunting_fits_west$all, cluster_col = df$village)
+
+compare_models(list('north' = stunting_fits_north$all,
+                    'east' = stunting_fits_east$all,
+                    'south' = stunting_fits_south$all,
+                    'west' = stunting_fits_west$all,
+                    'kigali' = stunting_fits_kigali$all
+), 
+filter_insignificant = T)
