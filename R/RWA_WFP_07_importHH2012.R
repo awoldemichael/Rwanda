@@ -67,8 +67,8 @@ hh2012 =  hh2012_raw %>%
     # -- WASH --
     #Q205_1, # type of toilet
     improved_water,
-    improved_toilet,
-    Q206, # shared toilet
+    impr_toilet = improved_toilet,
+    share_toilet = Q206, # shared toilet
     # Q209_1, # water source
     Q215_1, # distance from water
     Q216, # water treatment
@@ -153,6 +153,16 @@ ed_all = ~ pct_lowEd, #pct_literate
 
 )
 # clean vars --------------------------------------------------------------
+
+hh2012 = hh2012 %>% 
+  mutate(
+    # -- fix weirdness / create new var --
+    impr_unshared_toilet = case_when(hh2012$impr_toilet == 0 ~ 0,
+                                     (hh2012$impr_toilet == 1 & hh2012$share_toilet == 0) ~ 1, # improved + unshared
+                                     (hh2012$impr_toilet == 1 & hh2012$share_toilet == 1) ~ 0, # improved + shared
+                                     TRUE ~ NA_real_)
+  )
+
 hh2012 = hh2012 %>% 
   # -- location --
   factorize(hh2012_raw, 'Urban', 'rural_cat') %>% 
@@ -161,6 +171,11 @@ hh2012 = hh2012 %>%
   factorize(hh2012_raw, 's_code', 'admin3') %>% 
   factorize(hh2012_raw, 'v_code', 'admin4') %>% 
   factorize(hh2012_raw, 'fews_code', 'livelihood_zone')
+
+# Fix Kigali City (sigh)
+hh2012 =  hh2012  %>% 
+  mutate(livelihood_zone = ifelse(livelihood_zone %like% 'Kigali', 'Kigali city',
+                                  as.character(livelihood_zone)))
 
 # Admin3 seems confused.
 codebk = data.frame(code = attr(hh2012_raw[['s_code']], "labels"),
