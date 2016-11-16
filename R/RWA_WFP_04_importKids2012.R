@@ -1,6 +1,6 @@
 # Rwanda stunting analysis -----------------------------------------
 #
-# RW_WFP_06_importHH2012.R: import household-level data from 2012 dataset
+# RW_WFP_04_importKids2012.R: import child-level data from 2012 dataset
 #
 # Script to pull stunting data and associated household- or
 # child-level data for Rwanda from the CFSVA dataset
@@ -32,7 +32,6 @@ ch2012_raw = read_sav(paste0(baseDir, 'RW_2012_CFSVA/cfsvans-2012- children-v01.
 
 
 
-
 # Checking how weights should be applied ----------------------------------
 
 
@@ -41,14 +40,100 @@ ch2012_raw = read_sav(paste0(baseDir, 'RW_2012_CFSVA/cfsvans-2012- children-v01.
 
 # stunting is based on 2006 WHO children's growth standards
 # stunting was calculated by WFP in SPSS.
-# Key stunting variables for 2015 data is Stunted_global (binary stunted) and HAZWHO (height-for-age z-score based on the WHO distribution)
+# Key stunting variables for 2015 data is G_stunted (binary stunted) and HAZWHO (height-for-age z-score based on the WHO distribution)
 
 # select variables --------------------------------------------------------
 # Majority of household explanatory variables will be pulled from the household-level data.
-ch2012 = ch2012_raw 
+ch2012 = ch2012_raw %>% 
+  select(
+    # -- survey data --
+    childID, 
+    hh_id,
+    weight = FINAL_norm_weight,
+    strata_ID,
+    interview_date = Q001_2,
+    mother_id = Q202_03, # mother number from maternal section
+    
+    # -- geo --
+    p_code, #admin1
+    d_code, #admin2
+    s_code, #admin3
+    v_code, # village
+    t_code, # team (enumerator?)
+    final_urban,
+    fews_code,
+    
+    # -- child demographics --
+    age_months = MONTHS_NEW,
+    Q202_09, # sex
+    
+    # -- hh demographics --
+    hh_size = hh_size_computed, # same as HH_size
+    livelihood, # head occupation
+    kids_under5 = under5,
+    Q102, # femheaded
+    Q103, # head age
+    QG110_2, # fem 18-59 y old
+    QH110_2, # fem 60+
+    rooms_hh = Q204, # sleeping rooms in hh
+    
+    # -- education --
+    Q105, # head ed
+    
+    # -- WASH --
+    Q206, # share toilet
+    Q215_1, # time to water, in min.
+    impr_toilet = improved_toilet, 
+    impr_water = improved_water,
+    
+    # -- health --
+    # Q202_18, # ill w/ diarrhea past 2 weeks.  Not sure why is tagged as -1, 0, 1. Using Diarrhoea.  What seems to be the case: -1 == no illness in the past 2 weeks.  0 is 0, 1 is 1.  obv.
+    diarrhea = Diarrhoea,
+    # -- ag --
+    Q401_2, # land size
+    # TLU: QA412-QH412
+    
+    # -- food --
+    # Q1002-- food security q's
+    FCS,
+    CSI_reduced,
+    
+    # -- nutrition --
+    isStunted = G_Stunted,
+    stuntingZ = HAZWHO
+  )
 
 
 # clean vars --------------------------------------------------------------
+  
+  # -- geography --
+  rural_cat +
+  
+  # -- wealth --
+  
+  wealth_idx +
+  
+  hh_garden +
+  
+  # -- ed --
+  
+  # -- food --
+  FCS +
+  CSI_cat + # CARI contains FCS.
+  months_food_access,
+
+# -- mother --
+mom2 = ~  mother_age + mother_age_sq +
+  mother_education + 
+  # -- mother health --
+  num_antenatal_visits +
+  mother_mosquito_net  +
+  stunted_mother,
+# contains ~ 700 NAs --> seriously cuts down sample size
+
+shk = ~ shock_drought + shock_illness,
+
+wealth2 = ~ food_assistance + financial_assistance + ag_assistance,
 
 
 
