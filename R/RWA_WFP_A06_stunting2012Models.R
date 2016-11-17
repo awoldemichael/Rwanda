@@ -83,11 +83,13 @@ all_hh = all_hh %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('we
 ch_hh_models = formulas(~stuntingZ, # lhs
                         # -- child demographics --
                         basic = ~ 
-                          splines::bs(age_months, degree = 3, knots = 24) +
+                          # splines::bs(age_months, degree = 3, knots = 24) +
+                          age_months +
                           sex + 
                           
                           # -- geography --
                           rural_cat +
+                          Q_altitude + 
                           
                           # -- wealth --
                           WI_cat +
@@ -112,7 +114,7 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           health_less_60min + 
                           
                           # -- ag --
-                          TLU + land_size_cat + hh_garden +
+                          land_size_cat + hh_garden +
                           
                           # -- ed --
                           head_education_cat +
@@ -147,12 +149,14 @@ stunting_fits = all_hh %>% fit_with(lm, ch_hh_models)
 
 # lapply(ch_fits, function(x) summary(x))
 
-# So many NAs!  Where do they come from?
-plot_relationships(stunting_fits$all)
+# So many NAs!  Where do they come from?  TLUs are the major culprit.
+# hh-level vars == 274 NAs
+# mother-level vars == 660 NAs
+plot_relationships(stunting_fits$all, all_hh)
 
 # Plot and evaluate variations
-plot_coef(stunting_fits$mother, cluster_col = all_hh$v_code)
 plot_coef(stunting_fits$all, cluster_col = all_hh$v_code)
+plot_coef(stunting_fits$mother, cluster_col = all_hh$v_code)
 plot_coef(stunting_fits$nogeo, cluster_col = all_hh$v_code)
 plot_coef(stunting_fits$simple, cluster_col = all_hh$v_code)
 
