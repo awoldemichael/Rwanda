@@ -59,11 +59,11 @@
 # Remove NAs from stunting ------------------------------------------------
 
 
-all_hh = ch_hh2012 %>% 
+all_hh2012 = ch_hh2012 %>% 
   filter(!is.na(isStunted))
 
 # standardize coefficients
-all_hh = all_hh %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'village'))
+all_hh2012 = all_hh2012 %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'v_code'))
 
 
 # ch-hh models ------------------------------------------------------------
@@ -75,7 +75,7 @@ all_hh = all_hh %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('we
 # • altitude
 
 # -- CHANGED: --
-# • TLUs might not be TLUs.
+# • TLUs manually recalculated.
 # • continuous wealth index not available; substituting quantiled index or deciled pc-income or deciled pc-expenditures
 # • hh_occup_cats might not be comparable.
 # • actual birth weight unavailable
@@ -92,6 +92,7 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           
                           # -- wealth --
                           WI_cat +
+                          splines::bs(log_pcexp, degree = 3, knots = 0.4) + # determined knot by plotting the 
                           
                           # -- hh demographics -- 
                           kids_under5 + 
@@ -144,26 +145,26 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                         nogeo = add_predictors(basic, mom1, shk, wealth2)
 )
 
-stunting_fits = all_hh %>% fit_with(lm, ch_hh_models)
+stunting_fits2012 = all_hh2012 %>% fit_with(lm, ch_hh_models)
 
 # lapply(ch_fits, function(x) summary(x))
 
 # So many NAs!  Where do they come from?  TLUs are the major culprit.  Going to have to go back and calculate TLUs properly. :(
 # hh-level vars == 274 NAs
 # mother-level vars == 660 NAs
-plot_relationships(stunting_fits$all, all_hh)
+plot_relationships(stunting_fits2012$all, all_hh2012)
 
 # Plot and evaluate variations
-plot_coef(stunting_fits$all, cluster_col = all_hh$v_code)
-plot_coef(stunting_fits$mother, cluster_col = all_hh$v_code)
-plot_coef(stunting_fits$nogeo, cluster_col = all_hh$v_code)
-plot_coef(stunting_fits$simple, cluster_col = all_hh$v_code)
+plot_coef(stunting_fits2012$all, cluster_col = all_hh2012$v_code)
+plot_coef(stunting_fits2012$mother, cluster_col = all_hh2012$v_code)
+plot_coef(stunting_fits2012$nogeo, cluster_col = all_hh2012$v_code)
+plot_coef(stunting_fits2012$simple, cluster_col = all_hh2012$v_code)
 
-compare_models(list('all' = stunting_fits$all,
-                    'no-geo' = stunting_fits$nogeo,
-                    'fcs' = stunting_fits$fcs,
-                    # 'protRich' = stunting_fits$protRich,
-                    # 'mother' = stunting_fits$mother,
-                    'momBMI' = stunting_fits$momBMI
+compare_models(list('all' = stunting_fits2012$all,
+                    'no-geo' = stunting_fits2012$nogeo,
+                    'fcs' = stunting_fits2012$fcs,
+                    # 'protRich' = stunting_fits2012$protRich,
+                    # 'mother' = stunting_fits2012$mother,
+                    'momBMI' = stunting_fits2012$momBMI
 ), 
 filter_insignificant = T)
