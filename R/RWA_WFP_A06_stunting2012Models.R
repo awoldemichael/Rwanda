@@ -76,7 +76,6 @@ all_hh = all_hh %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('we
 ch_hh_models = formulas(~stuntingZ, # lhs
                         # -- child demographics --
                         basic = ~ 
-                          # age_months +
                           splines::bs(age_months, degree = 3, knots = 24) +
                           sex + 
                           
@@ -84,7 +83,6 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           rural_cat +
                           
                           # -- wealth --
-                          
                           wealth_idx +
                           
                           # -- hh demographics -- 
