@@ -247,6 +247,8 @@ ch = ch %>%
   mutate(
     
     # -- fix weirdness / create new var --
+    wealth_idx_num = WI_cat_lyr_lyr,
+    
     interview_date = as.Date(S0_B_DATE + ISOdate(1582,10,14)), # Convert SPSS date to a normal time; based on http://r.789695.n4.nabble.com/How-to-convert-SPSS-date-data-to-dates-td793972.html
     month = lubridate::month(interview_date),
     

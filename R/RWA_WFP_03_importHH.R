@@ -236,6 +236,8 @@ hh = hh %>%
     asked_loan = na_if(S7_01, 88),
     
     # -- fix weirdness / create new var --
+    wealth_idx_num = WI_cat,
+    
     impr_unshared_toilet = case_when(hh$impr_toilet == 0 ~ 0,
                                      (hh$impr_toilet == 1 & hh$share_toilet == 0) ~ 1, # improved + unshared
                                      (hh$impr_toilet == 1 & hh$share_toilet == 1) ~ 0, # improved + shared
@@ -245,6 +247,9 @@ hh = hh %>%
                                  (hh$impr_water == 1 & hh$time_water_source == 1) ~ 1, # improved + < 30 min. away
                                  (hh$impr_water == 1 & hh$time_water_source > 1) ~ 0, # improved + > 30 min. away
                                  TRUE ~ NA_real_),
+    
+    # -- wealth --
+    log_pcexp = ifelse(monthly_pc_expend == 0, NA_real_, log10(monthly_pc_expend)), # 2 obs. w/ 0 PC exp. Filtering, since it'd --> Inf log(pcexp)
     
     months_food_access = ifelse(FoodAccess == 0, 0, Months_FA), # # months have food access issues; setting NAs to 0 if no food access issues
     
@@ -534,7 +539,7 @@ hh_test = t(hh_test)
 
 ch_hh = left_join(ch, hh, by = c("weight",                   
                                  "S2_13",     # liters of water used              
-                                 "WI_cat_lyr_lyr" = "WI_cat",
+                                 "wealth_idx_num",
                                  "S12_01", # Ubudehe profile (old) 
                                  "S12_02", # Ubudehe profile (new)
                                  "FCS",   
