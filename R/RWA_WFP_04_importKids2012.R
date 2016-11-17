@@ -73,9 +73,9 @@ ch2012 = ch2012_raw %>%
     livelihood, # head occupation
     kids_under5 = under5,
     Q102, # femheaded
-    Q103, # head age
-    QG110_2, # fem 18-59 y old
-    QH110_2, # fem 60+
+    head_age  = Q103, # head age
+    numWomen_18_59 = QG110_2, # fem 18-59 y old
+    numWomen_60plus = QH110_2, # fem 60+
     rooms_hh = Q204, # sleeping rooms in hh
     
     # -- education --
@@ -97,37 +97,13 @@ ch2012 = ch2012_raw %>%
     # -- food --
     # Q1002-- food security q's
     FCS,
-    CSI_reduced,
+    CSI = CSI_reduced, # numeric CSI index
     
     # -- nutrition --
     isStunted = G_Stunted,
     stuntingZ = HAZWHO
   )
 
-
-# clean vars --------------------------------------------------------------
-  
-  # -- geography --
-  rural_cat +
-  
-  # -- wealth --
-  
-  wealth_idx +
-  
-  hh_garden +
-  
-  # -- ed --
-  
-  # -- food --
-  FCS +
-  CSI_cat + # CARI contains FCS.
-  months_food_access,
-
-# -- mother --
-
-shk = ~ shock_drought + shock_illness,
-
-wealth2 = ~ food_assistance + financial_assistance + ag_assistance,
 
 
 

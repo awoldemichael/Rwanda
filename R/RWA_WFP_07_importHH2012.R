@@ -75,7 +75,7 @@ hh2012 =  hh2012_raw %>%
     
     # -- geography --
     p_code, d_code, s_code, v_code, # province, district
-    Urban, Urban_NEW, final_urban, int_urban,
+    Urban, Urban_NEW, final_urban, int_urban, # SOOO I have no idea which of these is right.  Using Urban_NEW since it is the one w/ only 2 classes of urban/rural, but I have no idea if that's correct. There's no pattern to the 4 "urban" variables.
     agro_climat, 
     fews_code,
     Q_altitude, # village height in m
@@ -84,7 +84,7 @@ hh2012 =  hh2012_raw %>%
     suitability, # slope suitability
     
     # -- food --
-    CSI_cat = CSI_categories, 
+    # CSI_cat = CSI_categories,  
     months_food_access = Months_FA,
     
     FCS, FCS_category,
@@ -99,11 +99,13 @@ hh2012 =  hh2012_raw %>%
     sugar_days = Sugar,
     
     # -- wealth --
-    WI_cat = NFAC1_1, GWI,
+    WI_cat = NFAC1_1,  # GWI is the similar as NFAC1_1, but terciles instead of quintiles.
+    pc_exp_year,
+    pc_income_year, # same as pc_income (but yearly, not monthly) but different than pc_income_NEW Unclear how or why.
     
     # -- livelihoods --
-    livelihood_NEW,
-    livelihood,
+    # livelihood_NEW, # SO: this contains similar info, but the categories don't align w/ the pc_income brackets they defined.  So using livelihood
+    livelihood, 
     num_jobs = Q301, #! check same def
     
     # -- ag --
@@ -112,6 +114,7 @@ hh2012 =  hh2012_raw %>%
     Q401_2, # size land
     hh_garden = Q410,
     TLU_cat,
+    Livestock_Ownership, # maybe TLUs?
     
     growing_beans = beans_YN,
     growing_maize = maize_YN,
@@ -127,12 +130,8 @@ hh2012 =  hh2012_raw %>%
     Ag_assitance,
     
     
-    # -- food --
-    
-    
-    
     # -- connectivity --
-    health_less_60min  = Q_hospital,
+    Q_hospital,
     road_dist_cat = Q_roads_km,
     market_dist_cat = Q_market
   )
@@ -173,7 +172,8 @@ k = left_join(ch2012, hh2012,
               by = c("hh_id", "weight", "strata_ID", "p_code", "d_code", "s_code", 
                      "v_code", "final_urban", "hh_size", 
                      # "fews_code",
-                     "livelihood", "Q102", "Q105", "Q215_1", "impr_toilet", "FCS"))
+                     "livelihood", "Q102", "Q105", "Q215_1", "impr_toilet", "FCS", 
+                     "head_age"))
 # 308 total.
 # 19 fews code mis-match.
 # 282 children with hhid==0 (wtf?)
@@ -191,33 +191,97 @@ k = left_join(ch2012, hh2012,
 
 # merge for real. ---------------------------------------------------------
 ch_hh2012 = left_join(ch2012, hh2012, 
-          by = c("hh_id", "weight", "strata_ID", "p_code", "d_code", "s_code", 
-                 "v_code", "final_urban", "hh_size", 
-                 "livelihood", "Q102", "Q105", "Q215_1", "impr_toilet", "FCS"))
+                      by = c("hh_id", "weight", "strata_ID", "p_code", "d_code", "s_code", 
+                             "v_code", "final_urban", "hh_size", "head_age",
+                             "livelihood", "Q102", "Q105", "Q215_1", "impr_toilet", "FCS"))
 
 
 ch_hh2012 = left_join(ch_hh2012, females2012, by = c("hh_id", "weight", "mother_id", "p_code", 
-                     "d_code", "s_code", "v_code", "t_code", "final_urban"))
+                                                     "d_code", "s_code", "v_code", "t_code", "final_urban"))
 
-# clean vars --------------------------------------------------------------
-
-hh2012 = hh2012 %>% 
+# clean ch-hh vars --------------------------------------------------------------
+ch_hh2012 = ch_hh2012 %>% 
   mutate(
     # -- fix weirdness / create new var --
-    impr_unshared_toilet = case_when(hh2012$impr_toilet == 0 ~ 0,
-                                     (hh2012$impr_toilet == 1 & hh2012$share_toilet == 0) ~ 1, # improved + unshared
-                                     (hh2012$impr_toilet == 1 & hh2012$share_toilet == 1) ~ 0, # improved + shared
-                                     TRUE ~ NA_real_)
-  )
-
-hh2012 = hh2012 %>% 
+    head_age_sq = head_age^2,
+    mother_age_sq = mother_age^2,
+    # impr_unshared_toilet = case_when(ch_hh2012$impr_toilet == 0 ~ 0,
+    #                                  (hh2012$impr_toilet == 1 & hh2012$share_toilet == 0) ~ 1, # improved + unshared
+    #                                  (hh2012$impr_toilet == 1 & hh2012$share_toilet == 1) ~ 0, # improved + shared
+    #                                  TRUE ~ NA_real_)
+    
+    # -- create binaries --
+    health_less_60min = case_when(ch_hh2012$Q_hospital == -1 ~ 0, # Assuming -1 means no hospital access? Only 25 obs.
+                                  ch_hh2012$Q_hospital <= 60 ~ 1,
+                                  ch_hh2012$Q_hospital > 60 ~ 0,
+                                  TRUE ~ NA_real_),
+    
+    # -- regroup --
+    numWomen_18plus = numWomen_18_59 + numWomen_60plus,
+    
+    # reclassifying CSI to match 2015 breaks.
+    CSI_cat = case_when(ch_hh2012$CSI == 0 ~ 0, # no food insecurity
+                        (ch_hh2012$CSI > 0 & ch_hh2012$CSI < 10) ~ 1, # 'low' coping: few changes to diet
+                        (ch_hh2012$CSI > 9 & ch_hh2012$CSI < 18) ~ 2, # 'medium' coping
+                        (ch_hh2012$CSI > 17) ~ 3, # 'high' coping: most changes to diet
+                             TRUE ~ NA_real_),
+    CSI_cat = 
+      factor(CSI_cat,
+             levels = 0:3,
+             labels = c('No coping strategies',
+                        'Low coping',
+                        'Medium coping',
+                        'High coping'
+             )),
+    
+    # guessing on regrouping hh occupations to align w/ 2015 cats.  unskilled/skilled difficult part; based partly on avg. stunting rate (after grouping by category)
+    hh_occup_cat = case_when(ch_hh2012$livelihood == 1 ~ 1, # low income ag
+                             ch_hh2012$livelihood == 2 ~ 4, # agro-pastoralists
+                             ch_hh2012$livelihood == 3 ~ 3, # day laborer
+                             ch_hh2012$livelihood == 4 ~ 3, # ag workers = group with day laborers? 
+                             ch_hh2012$livelihood == 5 ~ 5, # informal sales = unskilled?
+                             ch_hh2012$livelihood == 6 ~ 6, # business = skilled
+                             ch_hh2012$livelihood == 7 ~ 6, # sellers  = trade (?) = skilled
+                             ch_hh2012$livelihood == 8 ~ 6, # artisans = skilled
+                             ch_hh2012$livelihood == 9 ~ 5, # marginal livelihood = unskilled
+                             ch_hh2012$livelihood == 10 ~ 2, # high income ag
+                             ch_hh2012$livelihood == 11 ~ 1, # assuming the no income reported are low income agriculturalists
+                             TRUE ~ NA_real_),
+    hh_occup_cat = 
+      factor(hh_occup_cat,
+             levels = 1:6,
+             labels = c('Low-income agriculturalists',
+                        'Medium/high income agriculturalists',
+                        'Agricultural daily labour',
+                        'Agro-pastoralists',
+                        'Unskilled', 
+                        'Skilled'
+             ))
+  ) %>% 
   # -- location --
-  factorize(hh2012_raw, 'Urban', 'rural_cat') %>% 
+  factorize(hh2012_raw, 'Urban_NEW', 'rural_cat') %>% 
   factorize(hh2012_raw, 'p_code', 'admin1') %>% 
   factorize(hh2012_raw, 'd_code', 'admin2') %>% 
   factorize(hh2012_raw, 's_code', 'admin3') %>% 
   factorize(hh2012_raw, 'v_code', 'admin4') %>% 
-  factorize(hh2012_raw, 'fews_code', 'livelihood_zone')
+  factorize(ch2012_raw, 'fews_code', 'livelihood_zone') %>% 
+  # -- demographics --
+  factorize(ch2012_raw, 'Q202_09', 'sex') %>% 
+  factorize(ch2012_raw, 'Q102', 'femhead') %>% 
+  arrange()
+
+# -- deciled wealth --
+ch_hh2012$month_pcexpend_decile = ntile(ch_hh2012$pc_exp_year, 10)
+ch_hh2012$month_pcincome_decile = ntile(ch_hh2012$pc_income_year, 10)
+
+# -- occupation --
+# Grouped into classes based on similarity in FCS and natural connections
+ch_hh2012$hh_occup_cat = forcats::fct_collapse(ch_hh2012$hh_occup_cat_all,
+                                               # Agriculturalists = c('Low-income agriculturalists', 'Medium/high income agriculturalists'),
+                                               Skilled = c('Salaried work/own business', 'Skilled labour', 'Artisanal work/other', 'Trade/petty trade'),
+                                               Unskilled = c('Unskilled daily labour', 'External support/transfers/begging')
+                                               
+)
 
 # Fix Kigali City (sigh)
 hh2012 =  hh2012  %>% 
