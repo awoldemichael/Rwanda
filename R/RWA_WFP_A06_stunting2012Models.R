@@ -53,7 +53,7 @@
 
 # import data -------------------------------------------------------------
 
-# source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
+source('~/GitHub/Rwanda/R/RWA_WFP_07_importHH2012.R')
 
 
 # Remove NAs from stunting ------------------------------------------------
@@ -86,13 +86,11 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           splines::bs(age_months, degree = 3, knots = 24) +
                           # age_months +
                           sex + 
+                          interview_date.x +
                           
                           # -- geography --
                           rural_cat +
                           
-                          # -- wealth --
-                          WI_cat +
-                          splines::bs(log_pcexp, degree = 3, knots = 0.4) + # determined knot by plotting the 
                           
                           # -- hh demographics -- 
                           kids_under5 + 
@@ -105,7 +103,7 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           # -- WASH (broken down) --
                           impr_unshared_toilet + 
                           # wash_knowl + 
-                          impr_water_under30 + 
+                          impr_water_30min + 
                           
                           # -- health (child) --
                           diarrhea + low_birthwt +
@@ -125,6 +123,10 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           CSI_cat + # CARI contains FCS.
                           months_food_access,
                         
+                        # -- wealth --
+                        wealth1 = ~ wealth_idx_num,
+                        wealth2 = ~ splines::bs(log_pcexp, degree = 3, knots = 0.4), # determined knot by plotting the scaled values and seeing approx. break pt.
+                        
                         # -- mother --
                         mom1 = ~  mother_age + mother_age_sq +
                           mother_education + 
@@ -133,16 +135,18 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           stunted_mother,
                         # contains ~ 700 NAs --> seriously cuts down sample size
                         
-                        shk = ~ shock_drought + shock_illness,
-                        
-                        wealth2 = ~ food_assistance + financial_assistance + ag_assistance,
+                        shk = ~ shock_drought + shock_illness +
+                          food_assistance + financial_assistance + ag_assistance,
                         
                         geo = ~ livelihood_zone,
+                        altitude = ~ altitude,
                         
-                        simple = add_predictors(basic, geo),
-                        mother = add_predictors(basic, mom1, geo),               
-                        all = add_predictors(basic, mom1, shk, wealth2, geo),
-                        nogeo = add_predictors(basic, mom1, shk, wealth2)
+                        simple = add_predictors(basic, geo, wealth1),
+                        pc_exp = add_predictors(basic, mom1, shk, wealth2, geo),
+                        # mother = add_predictors(basic, mom1, geo),               
+                        all = add_predictors(basic, mom1, shk, wealth1, geo),
+                        alt = add_predictors(basic, mom1, shk, wealth1, geo, altitude),
+                        nogeo = add_predictors(basic, mom1, shk, wealth1, altitude)
 )
 
 stunting_fits2012 = all_hh2012 %>% fit_with(lm, ch_hh_models)
@@ -152,19 +156,20 @@ stunting_fits2012 = all_hh2012 %>% fit_with(lm, ch_hh_models)
 # So many NAs!  Where do they come from?  TLUs are the major culprit.  Going to have to go back and calculate TLUs properly. :(
 # hh-level vars == 274 NAs
 # mother-level vars == 660 NAs
-plot_relationships(stunting_fits2012$all, all_hh2012)
+# plot_relationships(stunting_fits2012$all, all_hh2012)
 
 # Plot and evaluate variations
 plot_coef(stunting_fits2012$all, cluster_col = all_hh2012$v_code)
 plot_coef(stunting_fits2012$mother, cluster_col = all_hh2012$v_code)
 plot_coef(stunting_fits2012$nogeo, cluster_col = all_hh2012$v_code)
 plot_coef(stunting_fits2012$simple, cluster_col = all_hh2012$v_code)
+plot_coef(stunting_fits2012$pc_exp, cluster_col = all_hh2012$v_code)
+plot_coef(stunting_fits2012$alt, cluster_col = all_hh2012$v_code)
 
 compare_models(list('all' = stunting_fits2012$all,
                     'no-geo' = stunting_fits2012$nogeo,
-                    'fcs' = stunting_fits2012$fcs,
-                    # 'protRich' = stunting_fits2012$protRich,
-                    # 'mother' = stunting_fits2012$mother,
-                    'momBMI' = stunting_fits2012$momBMI
+                    'pc-exp' = stunting_fits2012$pc_exp,
+                    'simple' = stunting_fits2012$simple,
+                    'alt' = stunting_fits2012$alt
 ), 
 filter_insignificant = T)
