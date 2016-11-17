@@ -68,10 +68,23 @@ all = ch %>% filter(!is.na(isStunted))
 all = all %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'village'))
 
 males_hh = ch_hh %>% filter(!is.na(isStunted), 
-                            sex == 'Male')
+                            sex == 'Male') %>% 
+  mutate(head_age_sq = head_age^2,
+         mother_age_sq = mother_age^2,
+         head_edu_num = as.numeric(head_education_cat))
+
+males_hh = males_hh %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'village', 'wealth_idx_cat', 'month_pcexpend_decile'))
+
+
 
 females_hh = ch_hh %>% filter(!is.na(isStunted), 
-                              sex == 'Female')
+                              sex == 'Female') %>% 
+  mutate(head_age_sq = head_age^2,
+         mother_age_sq = mother_age^2,
+         head_edu_num = as.numeric(head_education_cat)) 
+
+females_hh = females_hh %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'village', 'wealth_idx_cat', 'month_pcexpend_decile'))
+
 
 all_hh = ch_hh %>% 
   filter(!is.na(isStunted)) %>% 
@@ -447,12 +460,6 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           # -- geography --
                           rural_cat +
                           
-                          # -- wealth --
-                          # splines::bs(monthly_pc_expend, degree = 2) +
-                          # as.numeric(wealth_idx_cat) +
-                          wealth_idx +
-                          # month_pcexpend_decile +
-                          
                           # -- hh demographics -- 
                           kids_under5 + 
                           crowding + 
@@ -504,20 +511,28 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                         mom2 = ~stunted_mother,
                         # contains ~ 700 NAs --> seriously cuts down sample size
                         
-                        shk = ~ shock_drought + shock_illness,
+                        shk = ~ shock_drought + shock_illness +
+                          food_assistance + financial_assistance + ag_assistance,
                         
-                        wealth2 = ~ food_assistance + financial_assistance + ag_assistance,
+                        
+                        
+                        # -- wealth --
+                        wealth1 = ~ wealth_idx_num, 
+                        wealth2 = ~ splines::bs(monthly_pc_expend, degree = 3, knot = 0.4),
+                        wealth3 = ~ wealth_idx,
                         
                         geo = ~ livelihood_zone,
                         
-                        fcs = add_predictors(basic, food1, geo),
-                        protRich = add_predictors(basic, food2, geo),
-                        foods = add_predictors(basic, food3, geo),
+                        fcs = add_predictors(basic, food1, geo, wealth1),
+                        protRich = add_predictors(basic, food2, geo, wealth1),
+                        foods = add_predictors(basic, food3, geo, wealth2),
                         
-                        mother = add_predictors(basic, mom1, food1, geo),               
-                        momBMI = add_predictors(basic, mom1, mom2, food1, geo),                        
-                        all = add_predictors(basic, mom1, mom2, food1, shk, wealth2, geo),
-                        nogeo = add_predictors(basic, mom1, mom2, food1, shk, wealth2)
+                        # mother = add_predictors(basic, mom1, food1, geo),               
+                        mother = add_predictors(basic, mom1, mom2, food1, wealth1, geo),                        
+                        all = add_predictors(basic, mom1, mom2, food1, shk, wealth1, geo),
+                        all_PC = add_predictors(basic, mom1, mom2, food1, shk, wealth2, geo),
+                        all_WI = add_predictors(basic, mom1, mom2, food1, shk, wealth3, geo),
+                        nogeo = add_predictors(basic, mom1, mom2, food1, shk, wealth1)
 )
 
 stunting_fits = all_hh %>% fit_with(lm, ch_hh_models)
@@ -532,7 +547,17 @@ plot_coef(stunting_fits$foods, cluster_col = all_hh$village)
 plot_coef(stunting_fits$mother, cluster_col = all_hh$village)
 plot_coef(stunting_fits$momBMI, cluster_col = all_hh$village)
 plot_coef(stunting_fits$all, cluster_col = all_hh$village)
+plot_coef(stunting_fits$all_WI, cluster_col = all_hh$village)
+plot_coef(stunting_fits$all_WI, cluster_col = all_hh$village)
 plot_coef(stunting_fits$nogeo, cluster_col = all_hh$village)
+
+
+# Variation b/w the wealth options doesn't seem to matter too much.
+compare_models(list('all' = stunting_fits$all,
+                    'all_WI' = stunting_fits$all_WI,
+                    'all_PC' = stunting_fits$all_PC
+), 
+filter_insignificant = T)
 
 compare_models(list('all' = stunting_fits$all,
                     'no-geo' = stunting_fits$nogeo,
@@ -558,6 +583,34 @@ plot_relationships(stunting_fits$basic, all_hh)
 compare_models(stunting_fits, cluster_col = all$village) 
 
 
+# run M and F models ------------------------------------------------------
+male_fit = lm(stuntingZ ~ splines::bs(age_months, degree = 3, 
+                                      knots = 24) + rural_cat + kids_under5 + crowding + 
+                fem_head + head_age + head_age_sq + numWomen_18plus + hh_occup_cat + 
+                impr_unshared_toilet + impr_water_30min + diarrhea + birthwt + 
+                health_less_60min + TLU + land_size_cat + hh_garden + head_education_cat + 
+                (mother_age + mother_age_sq + mother_education + num_antenatal_visits + 
+                   mother_mosquito_net) + stunted_mother + (FCS + CSI_cat + 
+                                                              months_food_access) + (shock_drought + shock_illness + food_assistance + 
+                                                                                       financial_assistance + ag_assistance) + wealth_idx_num + 
+                livelihood_zone, data = males_hh)
+
+female_fit = lm(stuntingZ ~ splines::bs(age_months, degree = 3, 
+                                        knots = 24) + rural_cat + kids_under5 + crowding + 
+                  fem_head + head_age + head_age_sq + numWomen_18plus + hh_occup_cat + 
+                  impr_unshared_toilet + impr_water_30min + diarrhea + birthwt + 
+                  health_less_60min + TLU + land_size_cat + hh_garden + head_education_cat + 
+                  (mother_age + mother_age_sq + mother_education + num_antenatal_visits + 
+                     mother_mosquito_net) + stunted_mother + (FCS + CSI_cat + 
+                                                                months_food_access) + (shock_drought + shock_illness + food_assistance + 
+                                                                                         financial_assistance + ag_assistance) + wealth_idx_num + 
+                  livelihood_zone, data = females_hh)
+
+compare_models(list('male' = male_fit,
+                    'female' = female_fit,
+                    'all' = stunting_fits$all), 
+filter_insignificant = F,
+sort_by_est = F, alpha_insignificant = 0.2)
 # stunted models ----------------------------------------------------------
 
 stunted_models = formulas(~isStunted, # lhs
@@ -634,9 +687,9 @@ plot_coef(stunted_fits$nogeo) # Everything
 
 # compare models ----------------------------------------------------------
 models_z = list('all' = stunting_fits$all,
-              ' nogeo' = stunting_fits$nogeo,
-              'simple' = stunting_fits$fcs,
-              'mom' = stunting_fits$mother
+                ' nogeo' = stunting_fits$nogeo,
+                'simple' = stunting_fits$fcs,
+                'mom' = stunting_fits$mother
 )
 
 compare_models(models_z, 
@@ -646,9 +699,9 @@ compare_models(models_z,
                filter_insignificant = T)
 
 models = list('all' = stunted_fits$all,
-                ' nogeo' = stunted_fits$nogeo,
-                'simple' = stunted_fits$simple,
-                'mom' = stunted_fits$mother
+              ' nogeo' = stunted_fits$nogeo,
+              'simple' = stunted_fits$simple,
+              'mom' = stunted_fits$mother
 )
 
 compare_models(models, 
