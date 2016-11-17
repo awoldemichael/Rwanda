@@ -16,7 +16,7 @@ log using "$pathlog/04_StuntingAnalysisTemporal.txt", replace
 
 use "$pathout/DHS_2015_Stunting.dta", clear
 ren district district2015
-append using "C:\Users\Tim\Documents\Rwanda\Dataout\DHS_2010_Stunting.dta"
+append using "$pathout\DHS_2010_Stunting.dta"
 
 * Fix up districts
 * 2010 district labels - 
@@ -65,12 +65,75 @@ la val district SHDISTRI
 label list SHDISTRI
 
 * Check data overtime by district/livelihood zone
-foreach x of varlist stunting2 stunted2 extstunted2 {
+foreach x of varlist stunting2 stunted2 extstunted2 improvedSanit {
 	egen `x'_dist2010 = mean(`x') if year == 2010, by(district)
 	egen `x'_dist2015 = mean(`x') if year == 2014, by(district)
 	egen `x'_lvd2010 = mean(`x') if year == 2010, by(lvdzone)
 	egen `x'_lvd2015 = mean(`x') if year == 2014, by(lvdzone)
 }
 *end
+
+mean stunted2 if year == 2010 [aw=cweight] 
+mean stunted2 if year == 2014 [aw=cweight] 
+
 graph dot (mean) stunted2_dist2010 stunted2_dist2015, over(district, sort(2))
 graph dot (mean) stunted2_lvd2010 stunted2_lvd2015, over(lvdzone, sort(2))
+graph dot (mean) improvedSanit_lvd2010 improvedSanit_lvd2015, over(lvdzone, sort(2))
+
+* Run regressions pooled and separately
+* Create groups for covariates as they map into conceptual framework for stunting
+global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
+global hhchar "wealth improvedSanit improvedWater bnetITNuse landless"
+global hhchar2 "mobile bankAcount improvedSanit improvedWater bnetITNuse"
+global hhag "tlutotal"
+global hhag2 "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
+global demog "hhsize agehead hhchildUnd5"
+global chldchar "ageChild agechildsq birthOrder birthWgt"
+global chldchar2 "birthOrder birthWgt"
+global chealth "intParasites vitaminA diarrhea anemia"
+global geog "altitude2 rural"
+global geog2 "altitude2 ib(1).lvdzone "
+global cluster "cluster(dhsclust)"
+global cluster2 "cluster(hhgroup)"
+
+* STOP: Check all globals for missing values!
+sum $matchar $hhchar $hhag $demog female $chldchar $chealth
+
+* Be continuous versus binary
+est clear
+eststo sted1_0: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate if year == 2010, $cluster 
+eststo sted1_1: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1381).intdate if year == 2014, $cluster 
+eststo sted1_2: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate if year == 2010, $cluster 
+eststo sted1_3: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1381).intdate if year == 2014, $cluster 
+eststo sted2_4: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate if year == 2010, $cluster or 
+eststo sted2_5: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1381).intdate if year == 2014, $cluster or 
+eststo sted2_6: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate if year == 2010, $cluster or
+eststo sted2_7: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1381).intdate if year == 2014, $cluster or
+eststo sted2_8: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate if year == 2010, $cluster or 
+eststo sted2_9: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1381).intdate if year == 2014, $cluster or 
+eststo sted2_10: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate if year == 2010, $cluster or 
+eststo sted2_11: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1381).intdate if year == 2014, $cluster or 
+esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
+* export results to .csv
+esttab sted* using "$pathout/`x'WideAll.csv", wide mlabels(none) ar2 pr2 beta label replace not
+est clear
+
+eststo sted1_3: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1381).intdate, $cluster 
+eststo sted1_4: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar2 $chealth $geog2 ib(1381).intdate, $cluster 
+esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2  beta  /*eform(0 0 1 1 1)*/ compress
+
+
+
+* Look at changing improved sanitation rates over time
+mean improvedSanit [aw = hhweight] if year == 2010, over(district)
+ 	matrix plot = r(table)'
+	matsort plot 1 "down"
+	matrix plot = plot'
+mean improvedSanit [aw = hhweight] if year == 2014, over(district)
+ 	matrix plot2 = r(table)'
+	matsort plot2 1 "down"
+	matrix plot2 = plot2'	
+	coefplot (matrix(plot2[1,]), ci((plot2[5,] plot2[6,])))(matrix(plot[1,]), ci((plot[5,] plot[6,])))
+	
+	
+	coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,])) xline(`varmean')
