@@ -219,7 +219,7 @@ ch_hh2012 = ch_hh2012 %>%
                                      (ch_hh2012$impr_toilet == 1 & ch_hh2012$share_toilet == 1) ~ 0, # improved + shared
                                      TRUE ~ NA_real_),
     
-    impr_water_30min = case_when(ch_hh2012$impr_water == 0 ~ 0, # unimproved
+    impr_water_under30 = case_when(ch_hh2012$impr_water == 0 ~ 0, # unimproved
                                  (ch_hh2012$impr_water == 1 & ch_hh2012$Q215_1 <= 30) ~ 1, # improved + < 30 min. away
                                  (ch_hh2012$impr_water == 1 & ch_hh2012$Q215_1 > 30) ~ 0, # improved + > 30 min. away
                                  TRUE ~ NA_real_),
@@ -315,7 +315,7 @@ ch_hh2012 = ch_hh2012 %>%
   factorize(hh2012_raw, 'fews_code', 'livelihood_zone') %>% 
   # -- demographics --
   factorize(ch2012_raw, 'Q202_09', 'sex') %>% 
-  factorize(ch2012_raw, 'Q102', 'femhead') %>% 
+  factorize(ch2012_raw, 'Q102', 'fem_head') %>% 
   # -- education --
   factorize(ch2012_raw, 'Q105', 'head_education_cat') %>% 
   factorize(females2012_raw, 'Q102_04', 'mother_education') %>% 
