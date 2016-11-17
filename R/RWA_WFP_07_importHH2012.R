@@ -79,7 +79,7 @@ hh2012 =  hh2012_raw %>%
     Urban, Urban_NEW, final_urban, int_urban, # SOOO I have no idea which of these is right.  Using Urban_NEW since it is the one w/ only 2 classes of urban/rural, but I have no idea if that's correct. There's no pattern to the 4 "urban" variables.
     agro_climat, 
     fews_code,
-    Q_altitude, # village height in m
+    altitude = Q_altitude, # village height in m
     Q_sfi, # soil fertility index
     Q_se, # soil erosion
     suitability, # slope suitability
@@ -100,7 +100,7 @@ hh2012 =  hh2012_raw %>%
     sugar_days = Sugar,
     
     # -- wealth --
-    wealth_idx_cat = NFAC1_1,  # GWI is the similar as NFAC1_1, but terciles instead of quintiles.
+    wealth_idx_num = NFAC1_1,  # GWI is the similar as NFAC1_1, but terciles instead of quintiles.
     pc_exp_year,
     pc_income_year, # same as pc_income (but yearly, not monthly) but different than pc_income_NEW Unclear how or why.
     
@@ -235,7 +235,7 @@ ch_hh2012 = ch_hh2012 %>%
                                      (ch_hh2012$impr_toilet == 1 & ch_hh2012$share_toilet == 1) ~ 0, # improved + shared
                                      TRUE ~ NA_real_),
     
-    impr_water_under30 = case_when(ch_hh2012$impr_water == 0 ~ 0, # unimproved
+    impr_water_30min = case_when(ch_hh2012$impr_water == 0 ~ 0, # unimproved
                                    (ch_hh2012$impr_water == 1 & ch_hh2012$Q215_1 <= 30) ~ 1, # improved + < 30 min. away
                                    (ch_hh2012$impr_water == 1 & ch_hh2012$Q215_1 > 30) ~ 0, # improved + > 30 min. away
                                    TRUE ~ NA_real_),
