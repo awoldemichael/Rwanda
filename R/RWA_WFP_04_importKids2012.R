@@ -61,7 +61,7 @@ ch2012 = ch2012_raw %>%
     v_code, # village
     t_code, # team (enumerator?)
     final_urban,
-    fews_code,
+    # fews_code, # fews code seems wrong for 19 kids; labeled as being Kigali, but in fews_hh are listed as being Agropastoral. Looking into it-- the 19 hh are in the Eastern province, which doesn't make sense.  So it must be wrong.
     
     # -- child demographics --
     age_months = MONTHS_NEW,
@@ -101,26 +101,30 @@ ch2012 = ch2012_raw %>%
     
     # -- nutrition --
     isStunted = G_Stunted,
-    stuntingZ = HAZWHO
+    stuntingZ = HAZWHO,
+    
+    # -- shocks -- (ignoring 3rd and 4th)
+    Q1105_1_1, # first shock
+    Q1105_2_1 # second shock
   )
 
 
 
 
 # old stuff ---------------------------------------------------------------
-cfsva2012 = svydesign(id = ~v_code, strata = ~d_code, weights = ~FINAL_PopWeight, data = ch2012)
-stunting_lz_2012 = svyby(~G_Stunted, design = cfsva2012, by = ~fews_code, svymean, na.rm = TRUE)
-svyby(~G_Stunted, design = cfsva2012, by = ~d_code, svymean, na.rm = TRUE)
-
-# strata_ID has 495 missing values (?)
-stunting_lz_2012 = calcPtEst(df = ch2012, var = 'G_Stunted', by_var = 'fews_code', 
-                             psu_var = 'v_code', 
-          strata_var = 'd_code', weight_var = 'FINAL_norm_weight')
-
-stunting_lz_2012 = factorize(stunting_lz_2012, ch2012_raw, 'fews_code', 'livelihood_zone')
-stunting_lz_2012 = stunting_lz_2012 %>% 
-  mutate(livelihood_zone = ifelse(livelihood_zone %like% 'Kigali', 'Kigali city',
-                                  as.character(livelihood_zone)))
+# cfsva2012 = svydesign(id = ~v_code, strata = ~d_code, weights = ~FINAL_PopWeight, data = ch2012)
+# stunting_lz_2012 = svyby(~G_Stunted, design = cfsva2012, by = ~fews_code, svymean, na.rm = TRUE)
+# svyby(~G_Stunted, design = cfsva2012, by = ~d_code, svymean, na.rm = TRUE)
+# 
+# # strata_ID has 495 missing values (?)
+# stunting_lz_2012 = calcPtEst(df = ch2012, var = 'G_Stunted', by_var = 'fews_code', 
+#                              psu_var = 'v_code', 
+#           strata_var = 'd_code', weight_var = 'FINAL_norm_weight')
+# 
+# stunting_lz_2012 = factorize(stunting_lz_2012, ch2012_raw, 'fews_code', 'livelihood_zone')
+# stunting_lz_2012 = stunting_lz_2012 %>% 
+#   mutate(livelihood_zone = ifelse(livelihood_zone %like% 'Kigali', 'Kigali city',
+#                                   as.character(livelihood_zone)))
 
 # merge w/ 2015 -----------------------------------------------------------
 stunting_comb = full_join(stunting_lz_2012, stunting_lz_cfsva, by = 'livelihood_zone')

@@ -25,8 +25,9 @@
 
 
 # Previous dependencies ---------------------------------------------------
-# source('RWA_WFP_00_setup.R')
-# source('RWA_WFP_04_importKids2012.R')
+source('RWA_WFP_00_setup.R')
+source('RWA_WFP_04_importKids2012.R')
+source('RWA_WFP_06_importMoms2012.R')
 
 hh2012_raw = read_sav(paste0(baseDir, 'RW_2012_CFSVA/cfsvans-2012- household-v01.sav'))
 
@@ -109,12 +110,12 @@ hh2012 =  hh2012_raw %>%
     num_jobs = Q301, #! check same def
     
     # -- ag --
-    land_size = Land_cat,
+    Land_cat,
     Q401_1, # farm land
     Q401_2, # size land
     hh_garden = Q410,
     TLU_cat,
-    Livestock_Ownership, # maybe TLUs?
+    TLU = Livestock_Ownership, # maybe TLUs?
     
     growing_beans = beans_YN,
     growing_maize = maize_YN,
@@ -125,9 +126,9 @@ hh2012 =  hh2012_raw %>%
     
     # -- finances --
     # Q1202, Q1204, QA1206+#food_assistance + financial_assistance + ag_assistance
-    food_assitance,
-    financial_assitance,
-    Ag_assitance,
+    food_assistance = food_assitance,
+    financial_assistance = financial_assitance,
+    ag_assistance = Ag_assitance,
     
     
     # -- connectivity --
@@ -148,17 +149,17 @@ length(unique(females2012$hh_id)) == nrow(females2012) # duplicative, but maybe 
 # canary column for men: sum(is.na(hh2012$Q_altitude))
 
 # test merge:
-k = left_join(ch2012, females2012, 
-              by = c("hh_id", "weight", "mother_id", "p_code", 
-                     "d_code", "s_code", "v_code", "t_code", "final_urban", "fews_code"))
-
-if(nrow(k) != nrow(ch2012)) {
-  print('ch2012 / females2012 merge fail. Redundant/nondescript ids')
-} else if (sum(is.na(k$moth_ID)) > 0){
-  print('ch2012 / females2012 merge fail: mother NAs')
-} else if (sum(is.na(k$Q202_09)) > 0){
-  print('ch2012 / females2012 merge fail: mother NAs')
-}
+# k = left_join(ch2012, females2012, 
+#               by = c("hh_id", "weight", "mother_id", "p_code", 
+#                      "d_code", "s_code", "v_code", "t_code", "final_urban", "fews_code"))
+# 
+# if(nrow(k) != nrow(ch2012)) {
+#   print('ch2012 / females2012 merge fail. Redundant/nondescript ids')
+# } else if (sum(is.na(k$moth_ID)) > 0){
+#   print('ch2012 / females2012 merge fail: mother NAs')
+# } else if (sum(is.na(k$Q202_09)) > 0){
+#   print('ch2012 / females2012 merge fail: mother NAs')
+# }
 
 # Lots of mothers that don't merge.  Porque?  Motherless children, or something else?
 # 875 problems initially.
@@ -168,14 +169,14 @@ if(nrow(k) != nrow(ch2012)) {
 # rest seem to be code mismatches.  Not sure I can fix.
 
 
-k = left_join(ch2012, hh2012, 
-              by = c("hh_id", "weight", "strata_ID", "p_code", "d_code", "s_code", 
-                     "v_code", "final_urban", "hh_size", 
-                     # "fews_code",
-                     "livelihood", "Q102", "Q105", "Q215_1", "impr_toilet", "FCS", 
-                     "head_age"))
+# k = left_join(ch2012, hh2012, 
+#               by = c("hh_id", "weight", "strata_ID", "p_code", "d_code", "s_code", 
+#                      "v_code", "final_urban", "hh_size", 
+#                      # "fews_code",
+#                      "livelihood", "Q102", "Q105", "Q215_1", "impr_toilet", "FCS", 
+#                      "head_age"))
 # 308 total.
-# 19 fews code mis-match.
+# 19 fews code mis-match.  Some Kigali kids labeled as being in Eastern Agropastoral Zone
 # 282 children with hhid==0 (wtf?)
 # 7 children w/ hh_id 1 but different sampling weights and interview dates, neither of which matches the one in hh.
 # Not sure there's anything to be done...
@@ -200,21 +201,52 @@ ch_hh2012 = left_join(ch_hh2012, females2012, by = c("hh_id", "weight", "mother_
                                                      "d_code", "s_code", "v_code", "t_code", "final_urban"))
 
 # clean ch-hh vars --------------------------------------------------------------
-ch_hh2012 = ch_hh2012 %>% 
+# Defining illness shocks as being: 
+ill_shk_cats = 11:14 # serious illness or death in family
+
+
+ch_hh2012 = ch_hh2012 %>%  
   mutate(
     # -- fix weirdness / create new var --
+    
+    # -- ages --
     head_age_sq = head_age^2,
     mother_age_sq = mother_age^2,
-    # impr_unshared_toilet = case_when(ch_hh2012$impr_toilet == 0 ~ 0,
-    #                                  (hh2012$impr_toilet == 1 & hh2012$share_toilet == 0) ~ 1, # improved + unshared
-    #                                  (hh2012$impr_toilet == 1 & hh2012$share_toilet == 1) ~ 0, # improved + shared
-    #                                  TRUE ~ NA_real_)
+    
+    # -- WASH --
+    impr_unshared_toilet = case_when(ch_hh2012$impr_toilet == 0 ~ 0,
+                                     (ch_hh2012$impr_toilet == 1 & ch_hh2012$share_toilet == 0) ~ 1, # improved + unshared
+                                     (ch_hh2012$impr_toilet == 1 & ch_hh2012$share_toilet == 1) ~ 0, # improved + shared
+                                     TRUE ~ NA_real_),
+    
+    impr_water_30min = case_when(ch_hh2012$impr_water == 0 ~ 0, # unimproved
+                                 (ch_hh2012$impr_water == 1 & ch_hh2012$Q215_1 <= 30) ~ 1, # improved + < 30 min. away
+                                 (ch_hh2012$impr_water == 1 & ch_hh2012$Q215_1 > 30) ~ 0, # improved + > 30 min. away
+                                 TRUE ~ NA_real_),
+    
+    # -- shocks --
+    shock_illness = case_when(ch_hh2012$Q1105_1_1 %in% ill_shk_cats ~ 1, # primary shock
+                              ch_hh2012$Q1105_2_1 %in% ill_shk_cats ~ 1, # secondary shock
+                              (!(ch_hh2012$Q1105_1_1 %in% ill_shk_cats) &
+                                !(ch_hh2012$Q1105_2_1 %in% ill_shk_cats)) ~ 0, # not shocked.
+                              TRUE ~ NA_real_
+    ), # no NAs in data
+    
+    shock_drought = case_when(ch_hh2012$Q1105_1_1 == 1 ~ 1, # primary shock
+                              ch_hh2012$Q1105_2_1 == 1 ~ 1, # secondary shock
+                              (ch_hh2012$Q1105_1_1 != 1 &
+                              ch_hh2012$Q1105_2_1 != 1) ~ 0, # not shocked.
+                              TRUE ~ NA_real_
+    ), # no NAs in data
     
     # -- create binaries --
     health_less_60min = case_when(ch_hh2012$Q_hospital == -1 ~ 0, # Assuming -1 means no hospital access? Only 25 obs.
                                   ch_hh2012$Q_hospital <= 60 ~ 1,
                                   ch_hh2012$Q_hospital > 60 ~ 0,
                                   TRUE ~ NA_real_),
+    low_birthwt = case_when(ch_hh2012$Q202_13 %in% c(1, 2, 3) ~ 0, # very large, larger than normal, normal
+                            ch_hh2012$Q202_13 %in% c(4, 5) ~ 1, # very large, larger than normal, normal
+                            TRUE ~ NA_real_),
     
     # -- regroup --
     numWomen_18plus = numWomen_18_59 + numWomen_60plus,
@@ -224,7 +256,7 @@ ch_hh2012 = ch_hh2012 %>%
                         (ch_hh2012$CSI > 0 & ch_hh2012$CSI < 10) ~ 1, # 'low' coping: few changes to diet
                         (ch_hh2012$CSI > 9 & ch_hh2012$CSI < 18) ~ 2, # 'medium' coping
                         (ch_hh2012$CSI > 17) ~ 3, # 'high' coping: most changes to diet
-                             TRUE ~ NA_real_),
+                        TRUE ~ NA_real_),
     CSI_cat = 
       factor(CSI_cat,
              levels = 0:3,
@@ -233,6 +265,22 @@ ch_hh2012 = ch_hh2012 %>%
                         'Medium coping',
                         'High coping'
              )),
+    
+    # reclassifying land to match 2015.
+    land_size_cat = case_when(ch_hh2012$Land_cat == 0 ~ 0, # land size reported as 'none'
+                              ch_hh2012$Land_cat == 1 ~ 1, # land size = 0.00 - 0.10 ha
+                              ch_hh2012$Land_cat == 2 ~ 1, # land size = 0.10 - 0.19 ha
+                              ch_hh2012$Land_cat == 3 ~ 2, # land size = 0.20 - 0.49 ha
+                              ch_hh2012$Land_cat == 4 ~ 2, # land size = 0.50 - 0.99 ha
+                              ch_hh2012$Land_cat == 5 ~ 3, # land size > 1 ha
+                              TRUE ~ NA_real_),
+    land_size_cat = 
+      factor(land_size_cat,
+             levels = 0:3,
+             labels = c('no land', 
+                        '0.00 - 0.19 ha',
+                        '0.20 - 0.99 ha',
+                        'more than 1.00 ha')),
     
     # guessing on regrouping hh occupations to align w/ 2015 cats.  unskilled/skilled difficult part; based partly on avg. stunting rate (after grouping by category)
     hh_occup_cat = case_when(ch_hh2012$livelihood == 1 ~ 1, # low income ag
@@ -264,29 +312,53 @@ ch_hh2012 = ch_hh2012 %>%
   factorize(hh2012_raw, 'd_code', 'admin2') %>% 
   factorize(hh2012_raw, 's_code', 'admin3') %>% 
   factorize(hh2012_raw, 'v_code', 'admin4') %>% 
-  factorize(ch2012_raw, 'fews_code', 'livelihood_zone') %>% 
+  factorize(hh2012_raw, 'fews_code', 'livelihood_zone') %>% 
   # -- demographics --
   factorize(ch2012_raw, 'Q202_09', 'sex') %>% 
   factorize(ch2012_raw, 'Q102', 'femhead') %>% 
-  arrange()
+  # -- education --
+  factorize(ch2012_raw, 'Q105', 'head_education_cat') %>% 
+  factorize(females2012_raw, 'Q102_04', 'mother_education') %>% 
+  # -- Admins --
+  # Fix Kigali City (sigh)
+  mutate(livelihood_zone = ifelse(livelihood_zone %like% 'Kigali', 'Kigali city',
+                                  as.character(livelihood_zone)),
+         admin1 = stringr::str_to_title(admin1)
+  )
 
 # -- deciled wealth --
 ch_hh2012$month_pcexpend_decile = ntile(ch_hh2012$pc_exp_year, 10)
 ch_hh2012$month_pcincome_decile = ntile(ch_hh2012$pc_income_year, 10)
 
-# -- occupation --
-# Grouped into classes based on similarity in FCS and natural connections
-ch_hh2012$hh_occup_cat = forcats::fct_collapse(ch_hh2012$hh_occup_cat_all,
-                                               # Agriculturalists = c('Low-income agriculturalists', 'Medium/high income agriculturalists'),
-                                               Skilled = c('Salaried work/own business', 'Skilled labour', 'Artisanal work/other', 'Trade/petty trade'),
-                                               Unskilled = c('Unskilled daily labour', 'External support/transfers/begging')
-                                               
+
+# -- education --
+ch_hh2012$head_education_cat = forcats::fct_collapse(ch_hh2012$head_education_cat,
+                                                     no_school = 'No School',
+                                                     some_prim = 'Some Primary',
+                                                     prim_vocational = c('Vocational School', 'Completed Primary'),
+                                                     sec_plus = c('Some secondary', 'Completed Secondary', 'Some / Completed University or College')
 )
 
-# Fix Kigali City (sigh)
-hh2012 =  hh2012  %>% 
-  mutate(livelihood_zone = ifelse(livelihood_zone %like% 'Kigali', 'Kigali city',
-                                  as.character(livelihood_zone)))
+ch_hh2012$mother_education = forcats::fct_collapse(ch_hh2012$mother_education,
+                                                   no_school = 'No School',
+                                                   some_prim = 'Some Primary',
+                                                   prim_vocational = c('Vocational School', 'Completed Primary'),
+                                                   sec_plus = c('Some secondary', 'Completed Secondary', 'Some / Completed University or College')
+)
+
+
+
+
+
+# rebase ------------------------------------------------------------------
+
+
+
+# - -----------------------------------------------------------------------
+# - -----------------------------------------------------------------------
+
+
+
 
 # Admin3 seems confused.
 codebk = data.frame(code = attr(hh2012_raw[['s_code']], "labels"),

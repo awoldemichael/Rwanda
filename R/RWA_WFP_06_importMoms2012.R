@@ -49,7 +49,7 @@ females2012 = females2012_raw %>%
     v_code, # village
     t_code, # team (enumerator?)
     final_urban,
-    fews_code,
+    # fews_w = fews_code, # some slight mismatch w/ fews codes; assuming child is right ?  Women's at least has lots more NAs for some reason.
     
     # -- demographics -- 
     mother_age = Q102_02,
