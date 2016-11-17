@@ -92,8 +92,10 @@ ch2012 = ch2012_raw %>%
     diarrhea = Diarrhoea,
     # -- ag --
     # Q401_2, # land size Substitutes NA for no land; using land size from hh module
+    own_livestock = Q411,
     # TLU: QA412-QH412
-    
+    contains('412_1'), # All animals owned
+
     # -- food --
     # Q1002-- food security q's
     FCS,

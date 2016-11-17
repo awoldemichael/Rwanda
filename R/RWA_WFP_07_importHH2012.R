@@ -115,7 +115,8 @@ hh2012 =  hh2012_raw %>%
     Q401_2, # size land
     hh_garden = Q410,
     TLU_cat,
-    TLU = Livestock_Ownership, # maybe TLUs?
+    Livestock_Ownership, # maybe TLUs? Has NAs.  :(  Could combine w/ own_livestock
+    
     
     growing_beans = beans_YN,
     growing_maize = maize_YN,
@@ -204,6 +205,18 @@ ch_hh2012 = left_join(ch_hh2012, females2012, by = c("hh_id", "weight", "mother_
 # Defining illness shocks as being: 
 ill_shk_cats = 11:14 # serious illness or death in family
 
+# TLU coefs
+camelVal 	= 0.70
+cattleVal 	= 0.50
+pigVal 		= 0.20
+sheepVal 	= 0.10
+horsesVal 	= 0.50
+mulesVal 	= 0.60
+assesVal 	= 0.30
+chxVal 		= 0.01
+duckVal = 0.03
+rabbitVal = 0.02
+
 
 ch_hh2012 = ch_hh2012 %>%  
   mutate(
@@ -220,24 +233,46 @@ ch_hh2012 = ch_hh2012 %>%
                                      TRUE ~ NA_real_),
     
     impr_water_under30 = case_when(ch_hh2012$impr_water == 0 ~ 0, # unimproved
-                                 (ch_hh2012$impr_water == 1 & ch_hh2012$Q215_1 <= 30) ~ 1, # improved + < 30 min. away
-                                 (ch_hh2012$impr_water == 1 & ch_hh2012$Q215_1 > 30) ~ 0, # improved + > 30 min. away
-                                 TRUE ~ NA_real_),
+                                   (ch_hh2012$impr_water == 1 & ch_hh2012$Q215_1 <= 30) ~ 1, # improved + < 30 min. away
+                                   (ch_hh2012$impr_water == 1 & ch_hh2012$Q215_1 > 30) ~ 0, # improved + > 30 min. away
+                                   TRUE ~ NA_real_),
     
     # -- shocks --
     shock_illness = case_when(ch_hh2012$Q1105_1_1 %in% ill_shk_cats ~ 1, # primary shock
                               ch_hh2012$Q1105_2_1 %in% ill_shk_cats ~ 1, # secondary shock
                               (!(ch_hh2012$Q1105_1_1 %in% ill_shk_cats) &
-                                !(ch_hh2012$Q1105_2_1 %in% ill_shk_cats)) ~ 0, # not shocked.
+                                 !(ch_hh2012$Q1105_2_1 %in% ill_shk_cats)) ~ 0, # not shocked.
                               TRUE ~ NA_real_
     ), # no NAs in data
     
     shock_drought = case_when(ch_hh2012$Q1105_1_1 == 1 ~ 1, # primary shock
                               ch_hh2012$Q1105_2_1 == 1 ~ 1, # secondary shock
                               (ch_hh2012$Q1105_1_1 != 1 &
-                              ch_hh2012$Q1105_2_1 != 1) ~ 0, # not shocked.
+                                 ch_hh2012$Q1105_2_1 != 1) ~ 0, # not shocked.
                               TRUE ~ NA_real_
     ), # no NAs in data
+    
+    # -- TLUs --
+    # Create TLU (based on values from http://www.lrrd.org/lrrd18/8/chil18117.htm)
+    # Notes: Sheep includes sheep and goats
+    # Horse includes all draught animals (donkey, horse, bullock)
+    # chxTLU includes all small animals (chicken, fowl, etc).  Assuming rabbits fall into this category.
+    
+    total_chicken = ifelse(QA412_1 == -1, 0, QA412_1),
+    total_duck = ifelse(QB412_1 == -1, 0, QB412_1),
+    total_goat = ifelse(QC412_1 == -1, 0, QC412_1),
+    total_sheep = ifelse(QD412_1 == -1, 0, QD412_1),
+    total_pig = ifelse(QE412_1 == -1, 0, QE412_1),
+    total_cow = ifelse(QF412_1 == -1, 0, QF412_1),
+    total_rabbit = ifelse(QG412_1 == -1, 0, QG412_1),
+    
+    tlucattle = (total_cow) * cattleVal,	  
+    tlusheep 	= (total_sheep + total_goat) * sheepVal,
+    # tluhorses = (total_donkey + total_mule) * horsesVal, # no horses in data
+    tlupig 	= (total_pig) * pigVal,
+    tluchx 	= (total_chicken) * chxVal + total_duck * duckVal + total_rabbit * rabbitVal,
+    
+    TLU = tlucattle + tlusheep + tlupig + tluchx, # + tluhorses
     
     # -- create binaries --
     health_less_60min = case_when(ch_hh2012$Q_hospital == -1 ~ 0, # Assuming -1 means no hospital access? Only 25 obs.
@@ -351,7 +386,28 @@ ch_hh2012$mother_education = forcats::fct_collapse(ch_hh2012$mother_education,
 
 
 # rebase ------------------------------------------------------------------
+# -- livelihood zones -- rebasing to Lake Kivu
+ch_hh2012$livelihood_zone = factor(ch_hh2012$livelihood_zone,
+                                   levels = c("Lake Kivu Coffee Zone",
+                                              "Central Plateau Cassava and Coffee Zone",                         
+                                              "East Congo-Nile Highland Subsistence Farming Zone",               
+                                              "Southeastern Plateau Banana Zone",                                
+                                              "Northwest Volcanic Irish Potato Zone",                            
+                                              "Kigali city",                                                     
+                                              "West Congo-Nile Crest Tea Zone",                                  
+                                              "Central-Northern Highland Irish Potato, Beans and Vegetable Zone",
+                                              "Eastern Plateau Mixed Agriculture Zone",                          
+                                              "Eastern Agropastoral Zone",                                       
+                                              "Bugesera Cassava Zone",                                           
+                                              "Northern Highland Beans and Wheat Zone",                          
+                                              "Eastern Semi-Arid Agropastoral Zone"))
 
+# -- land: rebasing to small land plots 0-0.1ha --
+ch_hh2012$land_size_cat = fct_relevel(ch_hh2012$land_size_cat, "0.00 - 0.19 ha")
+
+# -- education: rebasing to no ed --
+ch_hh2012$head_education_cat = fct_relevel(ch_hh2012$head_education_cat, "no_school")
+ch_hh2012$mother_education = fct_relevel(ch_hh2012$mother_education, "no_school")
 
 
 # - -----------------------------------------------------------------------
