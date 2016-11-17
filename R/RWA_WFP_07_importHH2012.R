@@ -100,7 +100,7 @@ hh2012 =  hh2012_raw %>%
     sugar_days = Sugar,
     
     # -- wealth --
-    WI_cat = NFAC1_1,  # GWI is the similar as NFAC1_1, but terciles instead of quintiles.
+    wealth_idx_cat = NFAC1_1,  # GWI is the similar as NFAC1_1, but terciles instead of quintiles.
     pc_exp_year,
     pc_income_year, # same as pc_income (but yearly, not monthly) but different than pc_income_NEW Unclear how or why.
     
@@ -222,6 +222,9 @@ ch_hh2012 = ch_hh2012 %>%
   mutate(
     # -- fix weirdness / create new var --
     
+    # -- wealth --
+    log_pcexp = log10(pc_exp_year/12),
+    
     # -- ages --
     head_age_sq = head_age^2,
     mother_age_sq = mother_age^2,
@@ -274,7 +277,6 @@ ch_hh2012 = ch_hh2012 %>%
     
     TLU = tlucattle + tlusheep + tlupig + tluchx, # + tluhorses
     
-    # -- create binaries --
     health_less_60min = case_when(ch_hh2012$Q_hospital == -1 ~ 0, # Assuming -1 means no hospital access? Only 25 obs.
                                   ch_hh2012$Q_hospital <= 60 ~ 1,
                                   ch_hh2012$Q_hospital > 60 ~ 0,
