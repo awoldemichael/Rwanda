@@ -60,18 +60,25 @@
 
 
 all_hh = ch_hh2012 %>% 
-  filter(!is.na(isStunted)) %>% 
-  mutate(head_age_sq = head_age^2,
-         mother_age_sq = mother_age^2,
-         head_edu_num = as.numeric(head_education_cat))
+  filter(!is.na(isStunted))
 
 # standardize coefficients
 all_hh = all_hh %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'village'))
 
 
 # ch-hh models ------------------------------------------------------------
-# altitude available
-# # prenatal visits not.
+# CHANGES:
+# -- REMOVED: --
+# • prenatal visits (not in survey)
+
+# -- ADDED: --
+# • altitude
+
+# -- CHANGED: --
+# • TLUs might not be TLUs.
+# • continuous wealth index not available; substituting quantiled index or deciled pc-income or deciled pc-expenditures
+# • hh_occup_cats might not be comparable.
+# • actual birth weight unavailable
 
 ch_hh_models = formulas(~stuntingZ, # lhs
                         # -- child demographics --
@@ -83,7 +90,7 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           rural_cat +
                           
                           # -- wealth --
-                          wealth_idx +
+                          WI_cat +
                           
                           # -- hh demographics -- 
                           kids_under5 + 
@@ -99,7 +106,7 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           impr_water_under30 + 
                           
                           # -- health (child) --
-                          diarrhea + birthwt +
+                          diarrhea + low_birthwt +
                           
                           # -- connectivity --
                           health_less_60min + 
@@ -109,10 +116,10 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           
                           # -- ed --
                           head_education_cat +
-                        
-                        
-                        # -- food --
-                        FCS +
+                          
+                          
+                          # -- food --
+                          FCS +
                           CSI_cat + # CARI contains FCS.
                           months_food_access,
                         
@@ -130,29 +137,24 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                         
                         geo = ~ livelihood_zone,
                         
-                        fcs = add_predictors(basic, food1, geo),
-                        protRich = add_predictors(basic, food2, geo),
-                        foods = add_predictors(basic, food3, geo),
-                        
-                        mother = add_predictors(basic, mom1, food1, geo),               
-                        momBMI = add_predictors(basic, mom1, mom2, food1, geo),                        
-                        all = add_predictors(basic, mom1, mom2, food1, shk, wealth2, geo),
-                        nogeo = add_predictors(basic, mom1, mom2, food1, shk, wealth2)
+                        simple = add_predictors(basic, geo),
+                        mother = add_predictors(basic, mom1, geo),               
+                        all = add_predictors(basic, mom1, shk, wealth2, geo),
+                        nogeo = add_predictors(basic, mom1, shk, wealth2)
 )
 
 stunting_fits = all_hh %>% fit_with(lm, ch_hh_models)
 
 # lapply(ch_fits, function(x) summary(x))
 
+# So many NAs!  Where do they come from?
+plot_relationships(stunting_fits$all)
 
 # Plot and evaluate variations
-plot_coef(stunting_fits$fcs, cluster_col = all_hh$village)
-plot_coef(stunting_fits$protRich, cluster_col = all_hh$village)
-plot_coef(stunting_fits$foods, cluster_col = all_hh$village)
-plot_coef(stunting_fits$mother, cluster_col = all_hh$village)
-plot_coef(stunting_fits$momBMI, cluster_col = all_hh$village)
-plot_coef(stunting_fits$all, cluster_col = all_hh$village)
-plot_coef(stunting_fits$nogeo, cluster_col = all_hh$village)
+plot_coef(stunting_fits$mother, cluster_col = all_hh$v_code)
+plot_coef(stunting_fits$all, cluster_col = all_hh$v_code)
+plot_coef(stunting_fits$nogeo, cluster_col = all_hh$v_code)
+plot_coef(stunting_fits$simple, cluster_col = all_hh$v_code)
 
 compare_models(list('all' = stunting_fits$all,
                     'no-geo' = stunting_fits$nogeo,
@@ -160,149 +162,5 @@ compare_models(list('all' = stunting_fits$all,
                     # 'protRich' = stunting_fits$protRich,
                     # 'mother' = stunting_fits$mother,
                     'momBMI' = stunting_fits$momBMI
-), 
-filter_insignificant = T)
-# intermediate analysis ---------------------------------------------------
-# Initially: running age as linear, not splines, since 
-library(car)
-vif(stunting_fits$all)
-# splines of age, when_antenatal = never aliased.
-
-# look at relationships
-plot_relationships(stunting_fits$basic, all_hh)
-
-
-
-
-# Plot model comparison
-compare_models(stunting_fits, cluster_col = all$village) 
-
-
-# stunted models ----------------------------------------------------------
-
-stunted_models = formulas(~isStunted, # lhs
-                          # -- child demographics --
-                          basic = ~ 
-                            # age_months +
-                            splines::bs(age_months, degree = 3, knots = 24) +
-                            sex + 
-                            
-                            # -- geography --
-                            rural_cat +
-                            
-                            # -- wealth --
-                            
-                            wealth_idx +
-                            
-                            # -- hh demographics -- 
-                            kids_under5 + 
-                            crowding + 
-                            fem_head +  
-                            head_age + head_age_sq +
-                            numWomen_18plus + 
-                            hh_occup_cat +
-                            
-                            # -- WASH (broken down) --
-                            impr_unshared_toilet + 
-                            # wash_knowl + 
-                            impr_water_30min + 
-                            
-                            # -- health (child) --
-                            diarrhea + birthwt +
-                            
-                            # -- connectivity --
-                            health_less_60min + 
-                            
-                            # -- ag --
-                            TLU + land_size_cat + hh_garden +
-                            
-                            # -- ed --
-                            head_education_cat +
-                            
-                            # -- food --
-                            FCS +
-                            CSI_cat + # CARI contains FCS.
-                            months_food_access,
-                          
-                          # -- mother --
-                          mom2 = ~  mother_age + mother_age_sq +
-                            mother_education + 
-                            # -- mother health --
-                            num_antenatal_visits +
-                            mother_mosquito_net  +
-                            stunted_mother,
-                          # contains ~ 700 NAs --> seriously cuts down sample size
-                          
-                          shk = ~ shock_drought + shock_illness,
-                          
-                          wealth2 = ~ food_assistance + financial_assistance + ag_assistance,
-                          
-                          geo = ~ livelihood_zone,
-                          
-                          simple = add_predictors(basic, geo),
-                          mother = add_predictors(basic, mom2, geo),               
-                          all = add_predictors(basic, mom2, shk, wealth2, geo),
-                          nogeo = add_predictors(basic, mom2, shk, wealth2)
-)
-
-stunted_fits = all_hh %>% fit_with(lm, stunted_models)
-
-plot_coef(stunted_fits$simple) # Simpler model; no mother data (incr. sample size); no shocks/social capital
-plot_coef(stunted_fits$mother) # + Mother data (incr. sample size); no shocks/social capital
-plot_coef(stunted_fits$all) # Everything
-plot_coef(stunted_fits$nogeo) # Everything
-
-# compare models ----------------------------------------------------------
-models_z = list('all' = stunting_fits$all,
-              ' nogeo' = stunting_fits$nogeo,
-              'simple' = stunting_fits$fcs,
-              'mom' = stunting_fits$mother
-)
-
-compare_models(models_z, 
-               filter_insignificant = F, sort_by_est = F)
-
-compare_models(models_z, 
-               filter_insignificant = T)
-
-models = list('all' = stunted_fits$all,
-                ' nogeo' = stunted_fits$nogeo,
-                'simple' = stunted_fits$simple,
-                'mom' = stunted_fits$mother
-)
-
-compare_models(models, 
-               filter_insignificant = F, sort_by_est = F, negative_good = T)
-
-compare_models(models, negative_good = T, negative_ontop = F,
-               filter_insignificant = T)
-
-# models by province ------------------------------------------------------
-library(data.table)
-df = all_hh %>% filter(admin1 %like% 'North')
-stunting_fits_north = df %>% fit_with(lm, ch_hh_models)
-plot_coef(stunting_fits_north$all, cluster_col = df$village)
-
-df = all_hh %>% filter(admin1 %like% 'Kigali')
-stunting_fits_kigali = df %>% fit_with(lm, ch_hh_models)
-plot_coef(stunting_fits_kigali$all, cluster_col = df$village)
-
-df = all_hh %>% filter(admin1 %like% 'East')
-stunting_fits_east = df %>% fit_with(lm, ch_hh_models)
-plot_coef(stunting_fits_east$all, cluster_col = df$village)
-
-df = all_hh %>% filter(admin1 %like% 'South')
-stunting_fits_south = df %>% fit_with(lm, ch_hh_models)
-plot_coef(stunting_fits_south$all, cluster_col = df$village)
-
-df = all_hh %>% filter(admin1 %like% 'West')
-stunting_fits_west = df %>% fit_with(lm, ch_hh_models)
-plot_coef(stunting_fits_west$all, cluster_col = df$village)
-
-compare_models(list('north' = stunting_fits_north$all,
-                    'east' = stunting_fits_east$all,
-                    'south' = stunting_fits_south$all,
-                    'west' = stunting_fits_west$all,
-                    'kigali' = stunting_fits_kigali$all
 ), 
 filter_insignificant = T)
