@@ -77,10 +77,12 @@ all_hh = ch_hh %>%
   filter(!is.na(isStunted)) %>% 
   mutate(head_age_sq = head_age^2,
          mother_age_sq = mother_age^2,
-         head_edu_num = as.numeric(head_education_cat))
+         head_edu_num = as.numeric(head_education_cat)) 
+
+all_hh$month_pcexpend_decile = ntile(all_hh$monthly_pc_expend, 10)/10
 
 # standardize coefficients
-all_hh = all_hh %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'village'))
+all_hh = all_hh %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'village', 'wealth_idx_cat', 'month_pcexpend_decile'))
 
 
 # Check CFSVA lit models --------------------------------------------------
@@ -446,8 +448,10 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           rural_cat +
                           
                           # -- wealth --
-                          
+                          # splines::bs(monthly_pc_expend, degree = 2) +
+                          # as.numeric(wealth_idx_cat) +
                           wealth_idx +
+                          # month_pcexpend_decile +
                           
                           # -- hh demographics -- 
                           kids_under5 + 
@@ -460,7 +464,7 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           # -- WASH (broken down) --
                           impr_unshared_toilet + 
                           # wash_knowl + 
-                          impr_water_under30 + 
+                          impr_water_30min + 
                           
                           # -- health (child) --
                           diarrhea + birthwt +
