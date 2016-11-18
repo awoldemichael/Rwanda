@@ -551,6 +551,34 @@ plot_coef(stunting_fits$all_WI, cluster_col = all_hh$village)
 plot_coef(stunting_fits$all_WI, cluster_col = all_hh$village)
 plot_coef(stunting_fits$nogeo, cluster_col = all_hh$village)
 
+test = lm(formula = stuntingZ ~ splines::bs(age_months, degree = 3, 
+                                            knots = 24) + 
+            sex + 
+            rural_cat + 
+            kids_under5 + 
+            # crowding + 
+            # fem_head + head_age + head_age_sq + numWomen_18plus + hh_occup_cat + 
+            impr_unshared_toilet + 
+            impr_water_30min + 
+            diarrhea + 
+            # birthwt +
+            low_birthwt +
+            health_less_60min + 
+            TLU + 
+            land_size_cat + 
+            # hh_garden + 
+            head_education_cat + 
+            mother_age + mother_age_sq + 
+            mother_education + 
+            num_antenatal_visits + 
+            mother_mosquito_net + 
+            stunted_mother + 
+            FCS*months_food_access + 
+            CSI_cat +  
+            log_pcexp + 
+            livelihood_zone, data = all_hh)
+
+plot_coef(test, cluster_col = all_hh$village)
 
 # Variation b/w the wealth options doesn't seem to matter too much.
 compare_models(list('all' = stunting_fits$all,
