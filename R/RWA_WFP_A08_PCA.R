@@ -82,12 +82,11 @@ ggplot(pct_var, aes(x=  x, y = var)) +
 
 
 # project stunting onto PCs -----------------------------------------------
+# Select 3 PCs (~ 20% of variance)
 eigenvectors = pca$rotation[,1:3]
 
-# Matrix multiplication
+# Matrix multiplication to convert to a [2800 x 3] matrix
 projected_indpt = as.matrix(indpt) %*% eigenvectors
-
-# projected_indpt = data.frame(projected_indpt)
 
 # Multiply by the stunting score
 pos =  colMeans(projected_indpt * (dpndt > 0) * dpndt)
@@ -125,7 +124,7 @@ var_contrib_untidy = var_contrib %>%
 ggplot(var_contrib, aes(x = factor, y = var)) +
   geom_segment(aes(x = `2012`, xend = `2015`, y = var, yend = var),
                colour = grey90K, size = 0.1, data = var_contrib_untidy) +
-  geom_vline(xintercept = 0, colour = grey90K, size = 0.25) +
+  geom_vline(xintercept = 0, colour = grey90K, size = 0.5) +
   geom_point(aes(fill = factor,
                  alpha = year,
                  shape = year),
