@@ -14,7 +14,7 @@ ggplot(ch_hh, aes(x = scale(log_pcexp), y = stuntingZ)) +
   # geom_vline(xintercept = 0.4) + # location of knot.
   theme_xygrid() + xlim(c(-2.5, 2.5)) # clipping super small values
 
-ggplot(ch_hh, aes(x = scale(log_pcexp), y = impr_unsha#313695_toilet)) + 
+ggplot(ch_hh, aes(x = scale(log_pcexp), y = impr_unshared_toilet)) + 
   geom_smooth(colour = '#313695') +
   geom_smooth(colour = '#abd9e9', data = ch_hh2012) +
   theme_xygrid() + xlim(c(-2.5, 2.5)) + 
@@ -54,7 +54,7 @@ ggplot(ch_hh, aes(x = wealth_idx_num, y = stuntingZ)) +
   # geom_vline(xintercept = 0.4) + # location of knot.
   theme_xygrid() 
 
-ggplot(ch_hh, aes(x = wealth_idx_num, y = impr_unsha#313695_toilet)) + 
+ggplot(ch_hh, aes(x = wealth_idx_num, y = impr_unshared_toilet)) + 
   stat_summary(geom = 'point', fun.y  = 'mean', size = 4, colour = '#313695') +
   stat_summary(geom = 'point', fun.y  = 'mean', size = 4, colour = '#abd9e9', data = removeAttributes(ch_hh2012)) +
   # geom_vline(xintercept = 0.4) + # location of knot.
