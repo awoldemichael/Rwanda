@@ -107,6 +107,8 @@ var_contrib = data.frame(var = row.names(var_contrib), factor = var_contrib)
 
 
 # compare years -----------------------------------------------------------
+# (re-ran for 2012; will document properly later)
+
 var_contrib = full_join(var_contrib, var_contrib2, by = 'var')
 
 var_contrib = var_contrib %>% 
