@@ -80,6 +80,8 @@ global pathmen "`dir'/Datain/RW_2014-15_DHS/rwmr70dt"
 global pathroster "`dir'/Datain/RW_2014-15_DHS/rwpr70dt"
 global pathhh "`dir'/Datain/RW_2014-15_DHS/rwhr70dt"
 global path2010 "`dir'/Datain/RW_2010_DHS/"
+global pathgit "C:/Users/Tim/Documents/Github/Rwanda/LivelihoodData/"
+global pathgit2 "C:/Users/t/Documents/Github/Rwanda/LivelihoodData/"
 
 global pathlog  "`dir'\Log"
 global pathin "`dir'\Datain"

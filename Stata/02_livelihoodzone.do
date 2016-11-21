@@ -12,9 +12,19 @@
 clear
 capture log close
 
-import delimited using "$pathout/RWA_DHS2015_Livelihoods.csv", clear
+* Save unmatched data as a .dta for merging later on
+import delimited using "$pathgit/RWA_DHS2015_LivelihoodsUnmatched.csv", clear
+save "$pathout/2015_lvdunmatch.dta", replace
+
+import delimited using "$pathgit/RWA_DHS2015_Livelihoods.csv", clear
 log using "$pathlog/04_livelihoodzone.txt", replace
 
+* Import unmatched clusters and backfill data
+append using "C:\Users\Tim\Documents\Rwanda\Dataout\2015_lvdunmatch.dta"
+replace lznamee = "Lake Kivu Coffee" if inlist(dhsclust, 418, 161, 296, 81, 171)
+replace lznamee = "Central Plateau Cassava and Coffee" if inlist(dhsclust, 101, 317)
+
+* Encode the livelihood zone names and match to CSFVA numerical system
 encode lznamee, gen(lvhood_zone2015)
 
 /* These DHS cluster offsets fall outside of livelihood zones or within
@@ -29,6 +39,26 @@ tab lvhood_zone2015, mi
 
 * Recode zones to match those from FEWS NET
 * https://github.com/tessam30/RwandaLAM/blob/master/Datain/LivelihoodZones_FEWS.csv
+/*
+| FEWS | Livelihood Zone                                             | CSFVA |
+|------|-------------------------------------------------------------|-------|
+| 14   | Urban Area                                                  | 0     |
+| 8    | Lake Kivu Coffee                                            | 1     |
+| 15   | Western Congo-Nile Crest Tea                                | 2     |
+| 11   | Northwestern Volcanic Irish Potato                          | 3     |
+| 5    | Eastern Congo-Nile Highland Subsistence Farming             | 4     |
+| 2    | Central Plateau Cassava and Coffee                          | 5     |
+| 10   | Northern Highland Beans and Wheat                           | 6     |
+| 3    | Central-Northern Highland Irish Potato Beans and Vegetables | 7     |
+| 1    | Bugesera Cassava                                            | 8     |
+| 6    | Eastern Plateau Mixed Agricultural                          | 9     |
+| 13   | Southeastern Plateau Banana                                 | 10    |
+| 4    | Eastern Agropastoral                                        | 11    |
+| 7    | Eastern Semi-Arid Agropastoral                              | 12    |
+| 9    | Mukura Forest Reserve                                       | NA    |
+| 12   | Nyungwe Forest National Park                                | NA    |
+*/
+
 #delimit ;
 recode lvhood_zone (14 = 0 "Urban Area")
 				   (8 = 1 "Lake Kivu Coffee")
@@ -45,18 +75,21 @@ recode lvhood_zone (14 = 0 "Urban Area")
 				   (7 = 12 "Eastern Semi-Arid Agropastoral"),
 				   gen(lvdzone);
 #delimit cr
+
+* Fix lznumbers to align with lvdzone names
+tab lvdzone lznum, mi
 replace lznum = 2 if lznum == 13 & lvdzone == 2	
+replace lznum = 1 if lznum == . & lvdzone == 1
+replace lznum = 5 if lznum == . & lvdzone == 5
 drop lvhood_zone				   
 la var lvdzone "livelihood zones (from FEWSNET)"
 
+* Add in the remaining 2015 DHS data
 merge 1:m dhsclust using "$pathout/DHS_hhvar.dta", gen(_lvd)
-
-
-
 saveold "$pathout/RWA_DHS_Livelihoods.dta", replace
 
 * Import 2010 data and perform similar jooin
-import delimited using "$pathout/RWA_DHS2010_Livelihoods.csv", clear
+import delimited using "$pathgit/RWA_DHS2010_Livelihoods.csv", clear
 encode lznamee, gen(lvhood_zone2010)
 
 /* These DHS cluster offsets fall outside of livelihood zones or within
@@ -69,7 +102,26 @@ encode lznamee, gen(lvhood_zone2010)
 replace lvhood_zone2010 = 9 if inlist(dhsclust, 181, 117, 116)
 replace lvhood_zone2010 = 15 if inlist(dhsclust, 386)
 
-* Recode zones to match those from FEWS NET
+/*
+| FEWS2010 | LivelihoodZone                                   | CSFVA |
+|----------|--------------------------------------------------|-------|
+| 14       | Urban Area                                       | 0     |
+| 9        | Lake Kivu Coffee                                 | 1     |
+| 15       | Western Congo-Nile Crest Tea                     | 2     |
+| 11       | Northwestern Volcanic Irish Potato               | 3     |
+| 5        | Eastern Congo-Nile Highland Subsistence Farming  | 4     |
+| 2        | Central Plateau Cassava and Coffee               | 5     |
+| 10       | Northern Highland Beans and Wheat                | 6     |
+| 3        | Central-Northern Highland Irish Potato Vegetable | 7     |
+| 1        | Bugesera Cassava                                 | 8     |
+| 6        | Eastern Plateau Mixed Agricultural               | 9     |
+| 13       | Southeastern Plateau Banana                      | 10    |
+| 4        | Eastern Agropastoral                             | 11    |
+| 7        | Eastern Semi-Arid Agropastoral                   | 12    |
+| 8        | Gishwati Forest Reserve                          | NA    |
+| 12       | Nyungwe Forest National Park                     | NA    |
+*/
+
 #delimit ;
 recode lvhood_zone2010 (14 = 0 "Urban Area")
 				   (9 = 1 "Lake Kivu Coffee")
@@ -89,7 +141,11 @@ recode lvhood_zone2010 (14 = 0 "Urban Area")
 drop lvhood_zone2010				   
 la var lvdzone "livelihood zones (from FEWSNET)"
 
-merge 1:m dhsclust using "$pathout/DHS_hhvar2010.dta", gen(_lvd2010)
+tab lvdzone lznum, mi
+replace lznum = 1 if lznum == 13 & lvdzone == 1
+replace lznum = 2 if lznum == 13 & lvdzone == 2
 
+* Add in the remaining 2010 DHS data
+merge 1:m dhsclust using "$pathout/DHS_hhvar2010.dta", gen(_lvd2010)
 saveold "$pathout/RWA_DHS2010_Livelihoods.dta", replace
 
