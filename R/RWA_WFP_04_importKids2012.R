@@ -114,8 +114,8 @@ ch2012 = ch2012_raw %>%
 
 
 # old stuff ---------------------------------------------------------------
-# cfsva2012 = svydesign(id = ~v_code, strata = ~d_code, weights = ~FINAL_PopWeight, data = ch2012)
-# stunting_lz_2012 = svyby(~G_Stunted, design = cfsva2012, by = ~fews_code, svymean, na.rm = TRUE)
+cfsva2012 = svydesign(id = ~v_code, strata = ~d_code, weights = ~weight, data = ch_hh2012)
+stunting_lz_2012 = svyby(~isStunted, design = cfsva2012, by = ~livelihood_zone, svymean, na.rm = TRUE)
 # svyby(~G_Stunted, design = cfsva2012, by = ~d_code, svymean, na.rm = TRUE)
 # 
 # # strata_ID has 495 missing values (?)
@@ -129,27 +129,6 @@ ch2012 = ch2012_raw %>%
 #                                   as.character(livelihood_zone)))
 
 # merge w/ 2015 -----------------------------------------------------------
-stunting_comb = full_join(stunting_lz_2012, stunting_lz_cfsva, by = 'livelihood_zone')
-
-
-stunting_comb = stunting_comb %>% 
-  select(`2012` = G_Stunted, `2015` = isStunted, livelihood_zone) %>% 
-  gather(year, stunting, -livelihood_zone)
-
-stunting2015 = stunting_comb %>% 
-  filter(year == '2015') %>% 
-  arrange((stunting))
-
-# Reorder factors
-stunting_comb$livelihood_zone = factor(stunting_comb$livelihood_zone, 
-                                       levels = stunting2015$livelihood_zone)
-arrow_adj = 0.05
-stunting_untidy = stunting_comb %>% 
-  spread(year, stunting) %>% 
-  mutate(y2 = ifelse(`2015` < `2012`, 
-                     `2015` * (1 + arrow_adj),
-                     `2015` * (1 - arrow_adj)),
-         diff = `2015` - `2012`)
   
 ggplot(stunting_comb) +
   geom_segment(aes(x = `2012`, xend  = y2, 
@@ -182,7 +161,8 @@ ggplot(stunting_comb) +
 
 
 # san2012/2015 ------------------------------------------------------------
-
+hh2012 = factorize(hh2012, hh2012_raw, 'fews_code', 'livelihood_zone')
+  
 san2012 = hh2012 %>% group_by(livelihood_zone) %>% 
   summarise(san= mean(impr_unshared_toilet)) %>% 
   arrange(desc(san)) %>% 
