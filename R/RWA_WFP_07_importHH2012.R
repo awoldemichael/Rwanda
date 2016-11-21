@@ -25,6 +25,8 @@
 
 
 # Previous dependencies ---------------------------------------------------
+setwd('~/GitHub/Rwanda/R/')
+
 source('RWA_WFP_00_setup.R')
 source('RWA_WFP_04_importKids2012.R')
 source('RWA_WFP_06_importMoms2012.R')
