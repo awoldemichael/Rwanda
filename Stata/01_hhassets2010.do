@@ -304,7 +304,7 @@ local labCheck agehead bankAcount bednet bike car dirtfloor /*
 		*/ treatwater tv
 
 * Most everything looks ok, not sure we need value labels but will leave for now
-set more on	
+set more off	
 foreach x of local labCheck {
 	tab `x', mi nol
 	
