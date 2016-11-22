@@ -246,6 +246,6 @@ matrix plot = r(table)'
 matsort plot 1 "down"
 matrix plot = plot'
 coefplot (matrix(plot[1,])) , ci((plot[5,] plot[6,]))  xline(0, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) xlabel(, labsize(small))
-
+ log close
 
 

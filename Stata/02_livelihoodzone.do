@@ -13,10 +13,10 @@ clear
 capture log close
 
 * Save unmatched data as a .dta for merging later on
-import delimited using "$pathgit2/RWA_DHS2015_LivelihoodsUnmatched.csv", clear
+import delimited using "$pathgit/RWA_DHS2015_LivelihoodsUnmatched.csv", clear
 save "$pathout/2015_lvdunmatch.dta", replace
 
-import delimited using "$pathgit2/RWA_DHS2015_Livelihoods.csv", clear
+import delimited using "$pathgit/RWA_DHS2015_Livelihoods.csv", clear
 log using "$pathlog/04_livelihoodzone.txt", replace
 
 * Import unmatched clusters and backfill data
@@ -90,7 +90,7 @@ merge 1:m dhsclust using "$pathout/DHS_hhvar.dta", gen(_lvd)
 saveold "$pathout/RWA_DHS_Livelihoods.dta", replace
 
 * Import 2010 data and perform similar jooin
-import delimited using "$pathgit2/RWA_DHS2010_Livelihoods.csv", clear
+import delimited using "$pathgit/RWA_DHS2010_Livelihoods.csv", clear
 encode lznamee, gen(lvhood_zone2010)
 
 /* These DHS cluster offsets fall outside of livelihood zones or within
