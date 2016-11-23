@@ -255,6 +255,6 @@ ggplot(chain) +
   )
 
 
-save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/RWA_02_CHAIN_stunting_dhs.pdf',
+save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/RWA_02_CHAIN_stunting_dhs', saveBoth = TRUE,
           width = 10, height = 7)
 # 

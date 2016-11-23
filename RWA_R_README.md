@@ -75,6 +75,7 @@ Laura Hughes, lhughes@usaid.gov
 1. `RWA_WFP_P01_diets.R`                 
 
 * `RWA_WFP_P02_stuntingCHAIN.R` 
+![stuntingSpark](/exported_img/RWA_02_CHAIN_stunting_dhs.png)
 
 * `RWA_WFP_P03_plotIndivDist.R`         
 ![stuntingViolin](/exported_img/indivmap.png)
