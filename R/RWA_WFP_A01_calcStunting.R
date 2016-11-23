@@ -16,6 +16,30 @@
 #
 # -------------------------------------------------------------------------
 
+
+# Dependencies ------------------------------------------------------------
+# setwd('~/GitHub/Rwanda/R')
+# 
+# # Load setup functions / vars ---------------------------------------------
+# source('RWA_WFP_00_setup.R')
+# 
+# 
+# # IMPORT ------------------------------------------------------------------
+# 
+# 
+# # Import / clean individual children-level data --------------------------------------------
+# source('RWA_WFP_01_importKids.R')
+# 
+# # Import / clean individual women's data --------------------------------------------
+# source('RWA_WFP_02_importMother.R')
+# 
+# # Import / clean hh-level data --------------------------------------------
+# source('RWA_WFP_03_importHH.R')
+# 
+# 
+# # Import shapefiles for choropleths ---------------------------------------
+# source('RWA_WFP_05_importGeo.R')
+
 # Calculate estimates at the Admin0 level ---------------------------------
 
 stunting_admin0_cfsva = calcPtEst(ch, 'isStunted', 
