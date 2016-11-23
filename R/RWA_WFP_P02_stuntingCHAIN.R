@@ -1,4 +1,20 @@
-# Merging w/ CHAIN data and plotting
+# Rwanda stunting analysis -----------------------------------------
+#
+# RW_WFP_P02_stuntingCHAIN.R: Compare stunting w/ CHAIN locations
+#
+# Script to create plots to compare DHS district averages of stunting w/ CHAIN project locations.
+# 
+# Data are from the 2015 Comprehensive Food Security and Vulnerability Analysis
+# by the World Food Programme
+# Available at http://microdata.statistics.gov.rw/index.php/catalog/70
+# Report: https://www.wfp.org/content/rwanda-comprehensive-food-security-and-vulnerability-analysis-march-2016
+#
+# Laura Hughes, lhughes@usaid.gov, 14 September 2016
+# with Tim Essam (tessam@usaid.gov) and Nada Petrovic (npetrovic@usaid.gov)
+#
+# Copyright 2016 by Laura Hughes via MIT License
+#
+# -------------------------------------------------------------------------
 
 
 # import data -------------------------------------------------------------
