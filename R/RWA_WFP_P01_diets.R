@@ -18,7 +18,9 @@
 
 
 # load data ---------------------------------------------------------------
-source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
+setwd('~/GitHub/Rwanda/R')
+
+source('RWA_WFP_runAll.R')
 
 
 

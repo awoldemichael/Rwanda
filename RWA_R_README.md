@@ -46,6 +46,7 @@ Laura Hughes, lhughes@usaid.gov
 * `RWA_WFP_P02_stuntingCHAIN.R` 
 
 * `RWA_WFP_P03_plotIndivDist.R`         
+![stuntingViolin](/exported_img/indivmap.png)
 
 * `RWA_WFP_P04_stuntingChoros.R`       
 ![stuntingViolin](/exported_img/choro_stunting_wfp_lz.png)
