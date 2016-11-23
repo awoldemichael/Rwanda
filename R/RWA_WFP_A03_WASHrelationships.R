@@ -1,3 +1,23 @@
+# Rwanda stunting analysis -----------------------------------------
+#
+# RW_WFP_A03_WASHrelationships.R: exploring relationship b/w WASH variables
+#
+# Data are from the 2015 Comprehensive Food Security and Vulnerability Analysis
+# by the World Food Programme
+# Available at http://microdata.statistics.gov.rw/index.php/catalog/70
+# Report: https://www.wfp.org/content/rwanda-comprehensive-food-security-and-vulnerability-analysis-march-2016
+#
+# Laura Hughes, lhughes@usaid.gov, 5 October 2016
+# with Tim Essam (tessam@usaid.gov) and Nada Petrovic (npetrovic@usaid.gov)
+#
+# Copyright 2016 by Laura Hughes via MIT License
+
+
+
+# import data -------------------------------------------------------------
+
+source('~/GitHub/Rwanda/R/RWA_WFP_run2015.R')
+
 # impr toilet by livelihood_zone
 hh %>% 
   group_by(livelihood_zone) %>% 
@@ -32,11 +52,12 @@ ggplot(cor_wash, aes(x = x, y = y, fill = corr)) +
   geom_text(aes(colour = corr, label = percent(corr, 0))) +
   scale_colour_text(data_col = cor_wash$corr) +
   scale_fill_gradientn(colours = brewer.pal(11, 'RdYlBu'), limits = c(-1, 1)) +
-  theme_xylab()
+  theme_xylab() 
 
 plot_corr(ch %>% select(diarrhea, impr_toilet, impr_water, impr_unshared_toilet, 
                             wash_beforecook, wash_kidtoilet, wash_beforeeat,  
-                            wash_ifdirty, wash_aftertoilet, wash_knowl))
+                            wash_ifdirty, wash_aftertoilet, wash_knowl)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 0.85))
 
 
 # t-test of diarrhea and WASH vars ----------------------------------------

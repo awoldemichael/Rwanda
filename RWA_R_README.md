@@ -90,17 +90,20 @@ Laura Hughes, lhughes@usaid.gov
 ## Analysis Files:
 (or files that calculate averages)
 
-1. `RWA_WFP_A01_calcStunting.R`
+1. `RWA_WFP_A01_calcStunting.R`: calculate mean stunting values
 
 ![dhs-cfsva-comp1](/exported_img/DHS-CFSVA_dist.png)
 ![dhs-cfsva-comp2](/exported_img/DHS-CFSVA_lz.png)
 
-* `RWA_WFP_A02_stuntingModels.R`  
+* `RWA_WFP_A02_stuntingModels.R`: run and evaluate stunting regressions  
+
 ![stuntingmodel](/exported_img/stunting_model.png)
 ![stuntingmodel-comp1](/exported_img/stuntingmodel_comp.png)
 ![stuntingmodel-comp2](/exported_img/stuntingmodel_compAll.png)
 
-* `RWA_WFP_A03_stuntingModelsMusings.R` 
+* `RWA_WFP_A03_WASHrelationships.R`: examinging relationships b/w WASH variables
+![WASH_corr](/exported_img/WASH_corr.png)
+
 * `RWA_WFP_A04_calcGrowing.R`          
 * `RWA_WFP_A05_FCSModels.R`             
 * `RWA_WFP_A06_stunting2012Models.R`   
