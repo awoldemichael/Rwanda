@@ -1,5 +1,11 @@
 # Quick sparkline of national stunting over time in Rwanda, from DHS stats.
+# Laura Hughes, 20 November 2016, lhughes@usaid.gov
 
+
+# libraries ---------------------------------------------------------------
+library(ggplot2)
+library(dplyr)
+library(llamar)
 
 # pull in DHS data --------------------------------------------------------
 rw_stunting = llamar::loadDHS(breakdown = 'national', indicators = 'CN_NUTS_C_HA2', countries = 'RW')
@@ -21,21 +27,21 @@ africa = data.frame(SurveyYear = c(2015,
                                  51.6)) %>% 
   mutate(pct_stunting = stunting/100)
 
-# UN estimates: all Africa
-c(31.6, 
-33.9, 
-36.1, 
-38.3, 
-40.2, 
-42.3) 
-
-# UN estimates: E. Africa
-c(37.5,
-40.1,
-42.9,
-45.6,
-48.4,
-51.2)
+# # UN estimates: all Africa
+# c(31.6, 
+# 33.9, 
+# 36.1, 
+# 38.3, 
+# 40.2, 
+# 42.3) 
+# 
+# # UN estimates: E. Africa
+# c(37.5,
+# 40.1,
+# 42.9,
+# 45.6,
+# 48.4,
+# 51.2)
 
 # clean data --------------------------------------------------------------
 rw_stunting = rw_stunting %>% 
@@ -73,4 +79,6 @@ ggplot(rw_stunting, aes(x = SurveyYear, y = pct_stunting)) +
   scale_x_continuous(expand = c(0.1, 0.1)) +
   theme_blank()
 
-
+# Export
+save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/DHS_stunting_spark', saveBoth = TRUE,
+          width = 4.5, height = 2)
