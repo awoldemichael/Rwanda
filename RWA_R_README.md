@@ -43,7 +43,6 @@ Laura Hughes, lhughes@usaid.gov
 
 1. `RWA_WFP_P01_diets.R`                 
 
-<<<<<<< HEAD
 * `RWA_WFP_P02_stuntingCHAIN.R` 
 
 * `RWA_WFP_P03_plotIndivDist.R`         
@@ -51,6 +50,7 @@ Laura Hughes, lhughes@usaid.gov
 * `RWA_WFP_P04_stuntingChoros.R`       
 
 * `RWA_WFP_P05_testStuntingDistrib.R`   
+![stuntingViolin](/exported_img/violin.png)
 
 * `RWA_WFP_P06_stuntingChg.R`: 
 

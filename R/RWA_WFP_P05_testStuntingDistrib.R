@@ -1,3 +1,22 @@
+# Rwanda stunting analysis -----------------------------------------
+#
+# RW_WFP_P05_testStuntingDistrib.R: testing violin plots of stunting
+#
+# Data are from the 2015 Comprehensive Food Security and Vulnerability Analysis
+# by the World Food Programme
+# Available at http://microdata.statistics.gov.rw/index.php/catalog/70
+# Report: https://www.wfp.org/content/rwanda-comprehensive-food-security-and-vulnerability-analysis-march-2016
+#
+# Laura Hughes, lhughes@usaid.gov, 5 October 2016
+# with Tim Essam (tessam@usaid.gov) and Nada Petrovic (npetrovic@usaid.gov)
+#
+# Copyright 2016 by Laura Hughes via MIT License
+
+
+# Dependencies ------------------------------------------------------------
+setwd('~/GitHub/Rwanda/R/')
+source('RWA_WFP_runAll.R')
+
 
 # Quick test of violin plots + rug of stunting z-scores -------------------
 
@@ -17,4 +36,8 @@ ggplot(ch, aes(x = livelihood_zone, y = stuntingZ)) +
   scale_colour_manual(values= c('0' = 'blue', '1' = 'red')) +
 # gradientn(colours = brewer.pal(11, 'RdYlBu'), limits = c(-4, 2))+
   # coord_flip() + 
-  theme_ygrid() + theme(axis.text.y = element_text(size = 8))
+  theme_ygrid() + 
+  theme(axis.text.y = element_text(size = 8)) +
+  theme_stroke()
+
+save_plot('~/GitHub/Rwanda/exported_img/violin.png', width = 5, height = 4)
