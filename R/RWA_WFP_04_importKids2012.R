@@ -160,46 +160,6 @@ ggplot(stunting_comb) +
         axis.title.x = element_blank())
 
 
-# san2012/2015 ------------------------------------------------------------
-hh2012 = factorize(hh2012, hh2012_raw, 'fews_code', 'livelihood_zone')
-  
-san2012 = hh2012 %>% group_by(livelihood_zone) %>% 
-  summarise(san= mean(impr_unshared_toilet)) %>% 
-  arrange(desc(san)) %>% 
-  mutate(year = 2012)
-
-san2015 = hh %>% 
-  group_by(livelihood_zone) %>% 
-  summarise(san = mean(impr_unshared_toilet)) %>% 
-  arrange(desc(san)) %>% 
-  mutate(year = 2015)
-
-san = bind_rows(san2012, san2015)
-
-san_untidy = full_join(san2012 %>% select(-year), san2015 %>% 
-                         select(-year), by = c("livelihood_zone")) %>% 
-  rename(san2012 = san.x,
-         san2015 = san.y) %>% 
-  mutate(san_diff = san2015 - san2012)
-
-san = san %>% 
-  mutate(year = as.character(year))
-
-stunting_san = full_join(san, stunting_comb, by = c('livelihood_zone', 'year'))
-
-
-stunting_san_untidy = full_join(san_untidy, stunting_untidy)
-
-ggplot(stunting_san_untidy, aes(x = san_diff, y = diff)) +
-  geom_smooth(method='lm', colour = 'red', fill = NA) +
-  geom_point(size = 4) +
-  geom_text(aes(label = livelihood_zone),
-            size = 2,
-            hjust = 1, 
-            nudge_y = 0.005) +
-  theme_xygrid() +
-  xlim(c(0, .6))
-
 
 # Vars not available in 2012 ----------------------------------------------
 
