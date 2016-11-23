@@ -1,6 +1,6 @@
 # Rwanda stunting analysis -----------------------------------------
 #
-# RW_WFP_07_importHH2012.R: import household-level data from 2012 dataset
+# RW_WFP_07_importHH2012.R: import household-level data from 2012 dataset and merge w/ children's data
 #
 # Script to pull stunting data and associated household- or
 # child-level data for Rwanda from the CFSVA dataset
@@ -434,28 +434,28 @@ codebk = data.frame(code = attr(hh2012_raw[['v_code']], "labels"),
 hh2012$admin4 = fct_infreq(factor(hh2012$v_code, levels = codebk$code,
                                   labels = codebk$names))
 
-# where the WB was working ------------------------------------------------
-
-wb = hh2012 %>% 
-  select(admin2, admin3, wb_site) %>% 
-  distinct() %>% 
-  mutate(admin3 = stringr::str_to_title(admin3))
-
-# test
-wb_map = full_join(RWA_admin3$centroids, wb, by = c('label' = 'admin3'))
-
-wb_map %>% filter(is.na(wb_site))
-
-wb_map %>% filter(is.na(lat))
-
-# Only missing Shyrongi, and I'm too lazy to fix since it isn't a site anyway.
-# Note: village names do not merge w/ Cell names.
-
-wb_map = full_join(RWA_admin3$df, wb, by = c('Sector' = 'admin3'))
-
-ggplot(wb_map, aes(fill = factor(wb_site), x = long, y = lat,
-                   group = group, order = order)) +
-  geom_polygon() +
-  coord_equal() +
-  scale_fill_manual(values = c('0' = grey15K, '1' = brewer.pal(9, 'Spectral')[1])) +
-  theme_blank()
+# # where the WB was working ------------------------------------------------
+# 
+# wb = hh2012 %>% 
+#   select(admin2, admin3, wb_site) %>% 
+#   distinct() %>% 
+#   mutate(admin3 = stringr::str_to_title(admin3))
+# 
+# # test
+# wb_map = full_join(RWA_admin3$centroids, wb, by = c('label' = 'admin3'))
+# 
+# wb_map %>% filter(is.na(wb_site))
+# 
+# wb_map %>% filter(is.na(lat))
+# 
+# # Only missing Shyrongi, and I'm too lazy to fix since it isn't a site anyway.
+# # Note: village names do not merge w/ Cell names.
+# 
+# wb_map = full_join(RWA_admin3$df, wb, by = c('Sector' = 'admin3'))
+# 
+# ggplot(wb_map, aes(fill = factor(wb_site), x = long, y = lat,
+#                    group = group, order = order)) +
+#   geom_polygon() +
+#   coord_equal() +
+#   scale_fill_manual(values = c('0' = grey15K, '1' = brewer.pal(9, 'Spectral')[1])) +
+#   theme_blank()
