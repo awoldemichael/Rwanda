@@ -74,7 +74,8 @@ Laura Hughes, lhughes@usaid.gov
 
 * `RWA_WFP_A09_stuntingAvgs2012-2015.R`: all averages of stunting for 2012 and 2015
 
-* Analysis files all reference the correct file
+* Analysis files all reference the correct file(s) needed to run
+* Visualization files all reference the correct file(s) needed to run
 
 ## Data Prep Files:
 1. `RWA_WFP_00_setup.R`: libraries + global vars
@@ -89,7 +90,10 @@ Laura Hughes, lhughes@usaid.gov
 ## Analysis Files:
 (or files that calculate averages)
 
-1. `RWA_WFP_A01_calcStunting.R`          
+1. `RWA_WFP_A01_calcStunting.R`
+![dhs-cfsva-comp1](/exported_img/DHS-CFSVA_dist.png)
+![dhs-cfsva-comp2](/exported_img/DHS-CFSVA_lz.png)
+
 * `RWA_WFP_A02_stuntingModels.R`       
 * `RWA_WFP_A03_stuntingModelsMusings.R` 
 * `RWA_WFP_A04_calcGrowing.R`          
@@ -108,16 +112,16 @@ Laura Hughes, lhughes@usaid.gov
 1. `RWA_WFP_P01_diets.R`                 
 
 * `RWA_WFP_P02_stuntingCHAIN.R` 
-![stuntingSpark](/exported_img/RWA_02_CHAIN_stunting_dhs.png)
+![chain-comp](/exported_img/RWA_02_CHAIN_stunting_dhs.png)
 
 * `RWA_WFP_P03_plotIndivDist.R`         
-![stuntingViolin](/exported_img/indivmap.png)
+![indivMap](/exported_img/indivmap.png)
 
 * `RWA_WFP_P04_stuntingChoros.R`       
-![stuntingViolin](/exported_img/choro_stunting_wfp_lz.png)
-![stuntingViolin](/exported_img/choro_stunting_dhs_lz.png)
-![stuntingViolin](/exported_img/choro_stunting_wfp_dist.png)
-![stuntingViolin](/exported_img/choro_stunting_dhs_dist.png)
+![choro1](/exported_img/choro_stunting_wfp_lz.png)
+![choro2](/exported_img/choro_stunting_dhs_lz.png)
+![choro3](/exported_img/choro_stunting_wfp_dist.png)
+![choro4](/exported_img/choro_stunting_dhs_dist.png)
 
 * `RWA_WFP_P05_testStuntingDistrib.R`   
 ![stuntingViolin](/exported_img/violin.png)
