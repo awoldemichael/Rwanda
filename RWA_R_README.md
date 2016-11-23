@@ -11,19 +11,20 @@ Laura Hughes, lhughes@usaid.gov
   * more important in the E provinces? 
 * **Wealth** good
   * in 2012, virtually irrelevant at lowest 3 quintiles of wealth, but becomes important at high wealth.
-* *Sanitation* good
+* **Sanitation** good
   * diarrhea bad (so sanitation? health knowledge/access?)
   * in 2010, more of a predictor in DHS --> sanitation access becoming more equal across country?
-* Family planning important
+* **Family planning** important
   * number of children under 5 --> more likely to have stunted child
   * crowding is negatively associated with stunting.
   * birth order, birth gap significant
-* Intergenerational poverty 
+* **Intergenerational poverty** 
   * stunted/malnourished mother --> more likely to have stunted child
-* Healthcare access / connectivity
+* **Healthcare access / connectivity**
   * isolation / lack of healthcare associated w/ higher stunting.
-* Diets
+* **Diets**
   * somewhat associated with lower stunting; possibly driven by vitamin-A rich fruits and vegetables.
+  * Food security was a larger issue in 2015 compared to 2012, and seemed to have affected the poor more than the wealthy.
 
 ## Summary of CFSVA FCS regressions
 
