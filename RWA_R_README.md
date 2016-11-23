@@ -91,10 +91,15 @@ Laura Hughes, lhughes@usaid.gov
 (or files that calculate averages)
 
 1. `RWA_WFP_A01_calcStunting.R`
+
 ![dhs-cfsva-comp1](/exported_img/DHS-CFSVA_dist.png)
 ![dhs-cfsva-comp2](/exported_img/DHS-CFSVA_lz.png)
 
-* `RWA_WFP_A02_stuntingModels.R`       
+* `RWA_WFP_A02_stuntingModels.R`  
+![stuntingmodel](/exported_img/stunting_model.png)
+![stuntingmodel-comp1](/exported_img/stuntingmodel_comp.png)
+![stuntingmodel-comp2](/exported_img/stuntingmodel_compAll.png)
+
 * `RWA_WFP_A03_stuntingModelsMusings.R` 
 * `RWA_WFP_A04_calcGrowing.R`          
 * `RWA_WFP_A05_FCSModels.R`             
