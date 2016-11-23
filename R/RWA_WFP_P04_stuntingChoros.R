@@ -27,7 +27,7 @@ rw_width = 7.1397 # output width
 # !!!!! NOTE: weighted averages used for the CFSVA and DHS, including for the livelihood zones.
 setwd('~/GitHub/Rwanda/R')
 
-source('RWA_WFP_runAll.R')
+source('RWA_WFP_run2015.R')
 
 # Plot Maps --------------------------------------------------------------------
 plot_choro = function(df, 

@@ -18,7 +18,7 @@
 
 
 # import data -------------------------------------------------------------
-source('~/GitHub/Rwanda/R/RWA_WFP_runAll.R')
+source('~/GitHub/Rwanda/R/RWA_WFP_run2015.R')
 
 
 # set constants -----------------------------------------------------------

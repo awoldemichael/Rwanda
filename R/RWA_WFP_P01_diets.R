@@ -20,7 +20,7 @@
 # load data ---------------------------------------------------------------
 setwd('~/GitHub/Rwanda/R')
 
-source('RWA_WFP_runAll.R')
+source('RWA_WFP_run2015.R')
 
 
 
