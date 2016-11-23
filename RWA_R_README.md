@@ -25,14 +25,14 @@ Laura Hughes, lhughes@usaid.gov
 ## Analysis Files:
 (or files that calculate averages)
 
-1. "RWA_WFP_A01_calcStunting.R"          
-* "RWA_WFP_A02_stuntingModels.R"       
-* "RWA_WFP_A03_stuntingModelsMusings.R" 
-* "RWA_WFP_A04_calcGrowing.R"          
-* "RWA_WFP_A05_FCSModels.R"             
-* "RWA_WFP_A06_stunting2012Models.R"   
-* "RWA_WFP_A07_wavecomparison.R"        
-* "RWA_WFP_A08_PCA.R"   
+1. `RWA_WFP_A01_calcStunting.R`          
+* `RWA_WFP_A02_stuntingModels.R`       
+* `RWA_WFP_A03_stuntingModelsMusings.R` 
+* `RWA_WFP_A04_calcGrowing.R`          
+* `RWA_WFP_A05_FCSModels.R`             
+* `RWA_WFP_A06_stunting2012Models.R`   
+* `RWA_WFP_A07_wavecomparison.R`        
+* `RWA_WFP_A08_PCA.R`   
                        
 "DHSvariable_overlap.R"              
 "RWA_CHAIN_interventioncorr.R"        "RWA_clustering.R"                   
@@ -41,14 +41,19 @@ Laura Hughes, lhughes@usaid.gov
          
 ## Plotting files:               
 
-1."RWA_WFP_P01_diets.R"                 
-* "RWA_WFP_P02_stuntingCHAIN.R"        
-* "RWA_WFP_P03_plotIndivDist.R"         
-* "RWA_WFP_P04_stuntingChoros.R"       
-* "RWA_WFP_P05_testStuntingDistrib.R"   
-* "RWA_WFP_P06_stuntingChg.R" 
-* "RWA_DHS_P07_stuntingSpark.R": Changes in DHS over time
+1. `RWA_WFP_P01_diets.R`                 
 
+* `RWA_WFP_P02_stuntingCHAIN.R` 
+
+* `RWA_WFP_P03_plotIndivDist.R`         
+
+* `RWA_WFP_P04_stuntingChoros.R`       
+
+* `RWA_WFP_P05_testStuntingDistrib.R`   
+
+* `RWA_WFP_P06_stuntingChg.R`: 
+
+* `RWA_DHS_P07_stuntingSpark.R`: Changes in DHS over time
 !(stuntingSpark)[/exported_img/DHS_stunting_spark.png]
 
 

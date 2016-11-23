@@ -81,4 +81,4 @@ ggplot(rw_stunting, aes(x = SurveyYear, y = pct_stunting)) +
 
 # Export
 save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/DHS_stunting_spark', saveBoth = TRUE,
-          width = 4.5, height = 2)
+          width = 4.5, height = 4)
