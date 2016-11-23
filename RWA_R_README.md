@@ -43,6 +43,7 @@ Laura Hughes, lhughes@usaid.gov
 
 1. `RWA_WFP_P01_diets.R`                 
 
+<<<<<<< HEAD
 * `RWA_WFP_P02_stuntingCHAIN.R` 
 
 * `RWA_WFP_P03_plotIndivDist.R`         
@@ -54,7 +55,7 @@ Laura Hughes, lhughes@usaid.gov
 * `RWA_WFP_P06_stuntingChg.R`: 
 
 * `RWA_DHS_P07_stuntingSpark.R`: Changes in DHS over time
-!(stuntingSpark)[/exported_img/DHS_stunting_spark.png]
+![stuntingSpark](/exported_img/DHS_stunting_spark.png)
 
 
 ---
