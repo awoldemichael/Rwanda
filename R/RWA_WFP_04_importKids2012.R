@@ -134,38 +134,6 @@ ch2012 = ch2012_raw %>%
 #   mutate(livelihood_zone = ifelse(livelihood_zone %like% 'Kigali', 'Kigali city',
 #                                   as.character(livelihood_zone)))
 
-# merge w/ 2015 -----------------------------------------------------------
-  
-ggplot(stunting_comb) +
-  geom_segment(aes(x = `2012`, xend  = y2, 
-                   y = livelihood_zone, yend = livelihood_zone),
-               size = 0.5, 
-               arrow = arrow(length = unit(0.03, "npc")),
-               colour = grey60K, 
-               data = stunting_untidy) +
-  geom_point(aes(x = stunting, y = livelihood_zone,
-                 color = year, shape = year, fill = year),
-             size = 8, colour = grey90K) +
-  geom_point(aes(x = b, y = livelihood_zone),
-             # width = 0,
-             size = 8, colour = grey90K,
-             fill = brewer.pal(9, 'Spectral')[9],
-             shape = 23,
-             data = stunting_lz_dhs) +
-  # geom_text(aes(x = stunting, y = livelihood_zone,
-  #                color = year, shape = year, fill = year,
-  #                label = percent(stunting, 0)),
-  #           colour = grey75K,
-  #           size = 3) +
-  theme_xgrid() +
-  scale_shape_manual(values = c(21, 23)) +
-  scale_x_continuous(labels = percent, limits = c(0.2, 0.62),
-                     breaks = seq(0.2, 0.6, by = 0.2)) +
-  scale_fill_manual(values = c('2012' = 'white', '2015' = brewer.pal(9, 'Spectral')[1])) +
-  theme(axis.text.y = element_text(size = 10),
-        axis.title.x = element_blank())
-
-
 
 # Vars not available in 2012 ----------------------------------------------
 
