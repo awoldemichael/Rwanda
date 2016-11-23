@@ -1,6 +1,36 @@
 # Outputs and code location for Rwanda stunting analysis.
 Laura Hughes, lhughes@usaid.gov
 
+## Summary of combined DHS/CFSVA stunting analyses
+* Geography 
+  * NW corner of country has significantly worse (high elevations)
+  * In 2010/2012, most of country was pretty similar, aside from Kigali.
+  * In 2014/2015, large gains were observed in the East and parts of the West, leading to a large gap in the high-elevation mid-Western section of the country. 
+* Education good 
+  * esp. mothers
+  * more important in the E provinces? 
+* Wealth good
+  * in 2012, virtually irrelevant at lowest 3 quintiles of wealth, but becomes important at high wealth.
+* Sanitation good
+  * diarrhea bad (so sanitation? health knowledge/access?)
+  * in 2010, more of a predictor in DHS --> sanitation access becoming more equal across country?
+* Family planning important
+  * number of children under 5 --> more likely to have stunted child
+  * crowding is negatively associated with stunting.
+  * birth order, birth gap significant
+* Intergenerational poverty 
+  * stunted/malnourished mother --> more likely to have stunted child
+* Healthcare access / connectivity
+  * isolation / lack of healthcare associated w/ higher stunting.
+* Diets
+  * somewhat associated with lower stunting; possibly driven by vitamin-A rich fruits and vegetables.
+
+## Summary of CFSVA FCS regressions
+
+
+
+---
+
 ## Naming conventions
 * WFP are files that mainly use the World Food Programme's Comprehensive Food Security and Vulnerability Analysis
 * DHS are files that mainly use the Demographic & Health Surveys
