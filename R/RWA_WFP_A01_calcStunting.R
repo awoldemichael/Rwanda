@@ -70,7 +70,7 @@ ggplot(stunting_admin2, aes(x = stunting_dhs, y = stunting_cfsva)) +
   xlab('DHS') +
   ylab('CFSVA') +
   ggtitle('districts') +
-  theme_xygridlight()
+  theme_xygrid()
 
 # Calculate estimates for livelihood zones ---------------------------------
 
@@ -122,7 +122,7 @@ ggplot(stunting_lz, aes(x = stunting_dhs, y = stunting_cfsva)) +
   xlab('DHS') +
   ylab('CFSVA') +
   ggtitle('livelihood zones') +
-  theme_xygridlight()
+  theme_xygrid()
 
 
 # Deciding factor levels --------------------------------------------------

@@ -247,7 +247,7 @@ ggplot(chain) +
                      breaks = c(0, 0.25, 0.50, 0.75)) +
                      # breaks = c(0, 0.2, 0.4, 0.6, 0.8)) +
   # -- themes --
-  theme_xygridlight() +
+  theme_xygrid() +
   theme(axis.title.y = element_blank(), 
         axis.title.x = element_text(hjust = 0, family = font_normal),
         axis.text = element_text(family = font_light),
