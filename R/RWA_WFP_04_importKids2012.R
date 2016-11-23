@@ -113,9 +113,15 @@ ch2012 = ch2012_raw %>%
 
 
 
-# old stuff ---------------------------------------------------------------
-cfsva2012 = svydesign(id = ~v_code, strata = ~d_code, weights = ~weight, data = ch_hh2012)
-stunting_lz_2012 = svyby(~isStunted, design = cfsva2012, by = ~livelihood_zone, svymean, na.rm = TRUE)
+# Applying sampling weights ---------------------------------------------------------------
+# !!! PROBLEM: strata_ID has missing values and doesn't seem to match the 2015 sampling frame.
+# 16 strata, not 30 (?)
+# Missing strata are all Kigali.
+# All strata grouped by districts, but some strata have multiple districts
+# Suggests 2012 isn't representative at the district level.
+
+# cfsva2012 = svydesign(id = ~v_code, strata = ~d_code, weights = ~weight, data = ch_hh2012)
+# stunting_lz_2012 = svyby(~isStunted, design = cfsva2012, by = ~livelihood_zone, svymean, na.rm = TRUE)
 # svyby(~G_Stunted, design = cfsva2012, by = ~d_code, svymean, na.rm = TRUE)
 # 
 # # strata_ID has 495 missing values (?)
