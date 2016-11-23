@@ -23,8 +23,8 @@
 rw_width = 7.1397 # output width
 
 
-
 # import averages ---------------------------------------------------------
+# !!!!! NOTE: weighted averages used for the CFSVA and DHS, including for the livelihood zones.
 
 source('RWA_WFP_runAll.R')
 

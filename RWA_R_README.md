@@ -48,6 +48,10 @@ Laura Hughes, lhughes@usaid.gov
 * `RWA_WFP_P03_plotIndivDist.R`         
 
 * `RWA_WFP_P04_stuntingChoros.R`       
+![stuntingViolin](/exported_img/choro_stunting_wfp_lz.png)
+![stuntingViolin](/exported_img/choro_stunting_dhs_lz.png)
+![stuntingViolin](/exported_img/choro_stunting_wfp_dist.png)
+![stuntingViolin](/exported_img/choro_stunting_dhs_dist.png)
 
 * `RWA_WFP_P05_testStuntingDistrib.R`   
 ![stuntingViolin](/exported_img/violin.png)
