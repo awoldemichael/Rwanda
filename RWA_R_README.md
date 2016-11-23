@@ -2,16 +2,16 @@
 Laura Hughes, lhughes@usaid.gov
 
 ## Summary of combined DHS/CFSVA stunting analyses
-* Geography 
+* **Geography**
   * NW corner of country has significantly worse (high elevations)
   * In 2010/2012, most of country was pretty similar, aside from Kigali.
   * In 2014/2015, large gains were observed in the East and parts of the West, leading to a large gap in the high-elevation mid-Western section of the country. 
-* Education good 
+* **Education** good 
   * esp. mothers
   * more important in the E provinces? 
-* Wealth good
+* **Wealth** good
   * in 2012, virtually irrelevant at lowest 3 quintiles of wealth, but becomes important at high wealth.
-* Sanitation good
+* *Sanitation* good
   * diarrhea bad (so sanitation? health knowledge/access?)
   * in 2010, more of a predictor in DHS --> sanitation access becoming more equal across country?
 * Family planning important
