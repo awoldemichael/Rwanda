@@ -406,7 +406,7 @@ alias(lm(stuntingZ ~ splines::bs(age_months, degree = 3,
 # VIF: look at values > 2; remove VIF > 5-10 (too much co-linearity)
 library(car)
 vif(ch_fits$final)
-sqrt(vif(stunting_fits$total)) > 2 
+sqrt(vif(ch_fits$total)) > 2 
 
 
 # ch-hh models ------------------------------------------------------------
