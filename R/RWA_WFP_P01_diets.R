@@ -1,6 +1,6 @@
 # Rwanda stunting analysis -----------------------------------------
 #
-# RW_WFP_05_P_diets.R: import household-level data
+# RW_WFP_P01_diets.R: dietary diversity / FCS plots
 #
 # Script to create plots for the dietary diversity and FCS scores of households within the 2015 CFSVA
 # 
