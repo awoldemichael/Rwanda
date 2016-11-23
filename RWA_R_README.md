@@ -27,7 +27,33 @@ Laura Hughes, lhughes@usaid.gov
   * Food security was a larger issue in 2015 compared to 2012, and seemed to have affected the poor more than the wealthy.
 
 ## Summary of CFSVA FCS regressions
+* **Geography**
+  * Kigali dominates; much, much higher FCS (driven by animal products)
+  * Urban areas better.
+  * Eastern half of country tends to be better than W.
+  * Northern Highland Beans & Wheat and W. Congo-Nile Tea Crest are worse than Kigali
+* **Food insecurity** bad
+  * # months food shortage
+  * poor coping methods
+* **demographics** 
+  * female-headed bad
+  * crowding bad
+  * occupation: skilled laboreres, agropastoralists, med/high income agriculuturalists better than low income agriculturalists
+* **financial capital** good
+  * wealth index
+* **ag assets** good
+  * gardens
+  * TLUs
+  * growing irish potatoes (proxy for ...?)
+  * land ownership > 1 ha (though minority of people)
+* **human capital**
+  * **education**: male and female
+  * **connectivity** good
+  * roads < 2 km
+  * hospital/health facility w/i 60 min.
 
+
+  
 
 
 ---
