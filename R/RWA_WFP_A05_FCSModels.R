@@ -20,7 +20,7 @@
 # * start w/ basic model and build up
 # * cluster errors at village level to take into account any non-independent behavior due to sample design (using package `multiwayvcov`)
 # * evaluate models using adjusted R^2
-# * look at stability of coefficients using coefplot
+# * look at stability of coefficients using plot_coef
 # * look at residuals by summarizing model
 # * for better models, standardize errors
 
@@ -87,7 +87,7 @@ fcs_models = formulas(~FCS, # lhs
                       
                       
                       # -- ag --
-                      ag = ~ TLU + land_size + hh_garden,
+                      ag = ~ TLU + land_size_cat + hh_garden,
                       
                       # -- ed --
                       ed = ~ pct_illiterate + pct_lowEd,
@@ -139,7 +139,7 @@ fcs_models = formulas(~FCS, # lhs
                         health_less_60min + road_dist_cat + market_dist_cat +
                         
                         # -- ag --
-                        TLU + land_size + hh_garden +
+                        TLU + land_size_cat + hh_garden +
                         
                         
                         # -- finances --
@@ -174,17 +174,16 @@ compare_models(list('occup' = fcs_fits$occup, 'sh' = fcs_fits$sh,
                     'education' = fcs_fits$min_edu)) 
 
 # Plot and evaluate variations
-coefplot(fcs_fits$occup, cluster_col = NA)
-coefplot(fcs_fits$noCSI, cluster_col = NA)
-coefplot(fcs_fits$sh, cluster_col = NA)
-coefplot(fcs_fits$min_lit, cluster_col = NA)
-coefplot(fcs_fits$min_edu, cluster_col = NA)
-coefplot(fcs_fits$all, cluster_col = NA)
+plot_coef(fcs_fits$occup, cluster_col = NA)
+plot_coef(fcs_fits$noCSI, cluster_col = NA)
+plot_coef(fcs_fits$sh, cluster_col = NA)
+plot_coef(fcs_fits$min_lit, cluster_col = NA)
+plot_coef(fcs_fits$min_edu, cluster_col = NA)
+plot_coef(fcs_fits$all, cluster_col = NA)
 
 
 # testing rebasing LZ, land ownership -----------------------------------------------------
 fcs$lz_centralPlateau = fct_relevel(fcs$livelihood_zone, "Central Plateau Cassava and Coffee Zone")
-# fcs$land_cat = fct_relevel(fcs$land_size, "0.00 - 0.10 ha")
 
 fcs_rebase = lm(FCS ~   month +
                   # -- geography --
@@ -241,7 +240,7 @@ fcs_rebase_land = lm(FCS ~   month +
                   health_less_60min + road_dist_cat + market_dist_cat +
                   
                   # -- ag --
-                  TLU + land_cat + hh_garden +
+                  TLU + land_size_cat + hh_garden +
                   
                   
                   # -- finances --
@@ -258,8 +257,8 @@ fcs_rebase_land = lm(FCS ~   month +
                 data = fcs)
 
 
-coefplot(fcs_rebase)
-# coefplot(fcs_rebase_land)
+plot_coef(fcs_rebase)
+# plot_coef(fcs_rebase_land)
 
 # model evaluation -------------------------------------------------------
 # http://www.statmethods.net/stats/rdiagnostics.html
@@ -293,7 +292,7 @@ fcs_models = formulas(~FCS, # lhs
                         health_less_60min + road_dist_cat + market_dist_cat +
                         
                         # -- ag --
-                        TLU + land_size + hh_garden +
+                        TLU + land_size_cat + hh_garden +
                         
                         # -- finances --
                         food_assistance + financial_assistance + ag_assistance,
@@ -335,9 +334,9 @@ compare_models(list('occup' = fcs_ch_fits$occup,
                cluster_col = fcs_ch$village) 
 
 # Plot and evaluate variations
-coefplot(fcs_ch_fits$occup, cluster_col = fcs_ch$village)
-coefplot(fcs_ch_fits$sh, cluster_col = fcs_ch$village)
-coefplot(fcs_ch_fits$min_edu, cluster_col = fcs_ch$village)
+plot_coef(fcs_ch_fits$occup, cluster_col = fcs_ch$village)
+plot_coef(fcs_ch_fits$sh, cluster_col = fcs_ch$village)
+plot_coef(fcs_ch_fits$min_edu, cluster_col = fcs_ch$village)
 
 vif(fcs_ch_fits$minimal)
 
@@ -361,7 +360,7 @@ fcs_rural = lm(FCS ~   month +
                   health_less_60min + road_dist_cat + market_dist_cat +
                   
                   # -- ag --
-                  TLU + land_size + hh_garden +
+                  TLU + land_size_cat + hh_garden +
                   
                   
                   # -- finances --
@@ -377,7 +376,49 @@ fcs_rural = lm(FCS ~   month +
                   hh_occup_cat + num_jobs, 
                 data = fcs %>% filter(rural_cat == 'Rural'))
 
-coefplot(fcs_rural)
+plot_coef(fcs_rural)
+
+# A-geographic model --------------------------------------------------------
+
+fcs_nogeo = lm(FCS ~   month +
+                 # -- geography --
+                 
+                 # -- wealth --
+                 WI_cat +
+                 
+                 # -- hh demographics -- 
+                 crowding + dep_ratio + fem_head +  head_age + head_age_sq +
+                 
+                 # -- food --
+                 months_food_access + sh_food_grown + # CARI contains FCS.  
+                 #mostly_selling has large # NAs, --> poorer fit.
+                 
+                 # -- connectivity --
+                 health_less_60min + road_dist_cat + market_dist_cat +
+                 
+                 # -- ag --
+                 TLU + land_size_cat + hh_garden +
+                 
+                 
+                 # -- finances --
+                 food_assistance + financial_assistance + ag_assistance +
+                 
+                 # -- ed --
+                 head_education_cat +
+                 
+                 # -- coping strategies to food shortages --
+                 CSI_cat +
+                 growing_beans + growing_maize + growing_s_potato +
+                 growing_cassava + growing_i_potato + growing_sorghum +
+                 hh_occup_cat + num_jobs, 
+               data = fcs)
+
+plot_coef(fcs_nogeo)
+
+compare_models(list('+ geo' = fcs_fits$min_edu,
+                    '- geo' = fcs_nogeo),
+               filter_insignificant = TRUE)  
+
 # compare kids/all --------------------------------------------------------
 
 compare_models(list('(all hh)  share_work ' = fcs_fits$sh,
@@ -414,6 +455,13 @@ compare_models(list(
                         axis.text.y = element_text(size= 11))
 
 
-# model without geographic stuff ------------------------------------------
 
-coefplot(fcs_fits$min_edu, exclude_terms = 'livelihood_zone')
+
+# final models ------------------------------------------------------------
+plot_coef(fcs_fits$min_edu, exclude_terms = 'livelihood_zone') # just focusing on the non-geographic stuff
+plot_coef(fcs_fits$min_edu, cluster_col = NA)
+plot_coef(fcs_ch_fits$min_edu, cluster_col = fcs_ch$village)
+
+compare_models(list('hh' = fcs_fits$min_edu,
+                    'kids' = fcs_ch_fits$min_edu),
+               filter_insignificant = TRUE)
