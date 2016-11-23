@@ -101,18 +101,18 @@ sum $matchar $hhchar $hhag $demog female $chldchar $chealth
 
 * Be continuous versus binary
 est clear
-eststo sted1_0: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate if year == 2010, $cluster 
-eststo sted1_1: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1381).intdate if year == 2014, $cluster 
-eststo sted1_2: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate if year == 2010, $cluster 
-eststo sted1_3: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1381).intdate if year == 2014, $cluster 
-eststo sted2_4: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate if year == 2010, $cluster or 
-eststo sted2_5: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1381).intdate if year == 2014, $cluster or 
-eststo sted2_6: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate if year == 2010, $cluster or
-eststo sted2_7: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1381).intdate if year == 2014, $cluster or
-eststo sted2_8: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate if year == 2010, $cluster or 
-eststo sted2_9: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1381).intdate if year == 2014, $cluster or 
-eststo sted2_10: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate if year == 2010, $cluster or 
-eststo sted2_11: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1381).intdate if year == 2014, $cluster or 
+eststo sted1_0: reg stunting2 $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog ib(1333).intdate if year == 2010, $cluster 
+eststo sted1_1: reg stunting2 $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog ib(1381).intdate if year == 2014, $cluster 
+eststo sted1_2: reg stunting2 $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog2 ib(1333).intdate if year == 2010, $cluster 
+eststo sted1_3: reg stunting2 $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog2 ib(1381).intdate if year == 2014, $cluster 
+eststo sted2_4: logit stunted2 $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog ib(1333).intdate if year == 2010, $cluster or 
+eststo sted2_5: logit stunted2 $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog ib(1381).intdate if year == 2014, $cluster or 
+eststo sted2_6: logit stunted2 $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog2 ib(1333).intdate if year == 2010, $cluster or
+eststo sted2_7: logit stunted2 $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog2 ib(1381).intdate if year == 2014, $cluster or
+eststo sted2_8: logit extstunted2 $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog ib(1333).intdate if year == 2010, $cluster or 
+eststo sted2_9: logit extstunted2 $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog ib(1381).intdate if year == 2014, $cluster or 
+eststo sted2_10: logit extstunted2 $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog2 ib(1333).intdate if year == 2010, $cluster or 
+eststo sted2_11: logit extstunted2 $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog2 ib(1381).intdate if year == 2014, $cluster or 
 esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
 * export results to .csv
 esttab sted* using "$pathout/`x'WideAll.csv", wide mlabels(none) ar2 pr2 beta label replace not
@@ -122,6 +122,34 @@ eststo sted1_3: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $ch
 eststo sted1_4: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar2 $chealth $geog2 ib(1381).intdate, $cluster 
 esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2  beta  /*eform(0 0 1 1 1)*/ compress
 
+* Compare the regions across time 
+* Regional variations
+est clear
+local i = 0
+levelsof adm1name, local(levels)
+foreach x of local levels {
+	forvalues j = 2010(4)2014 {		
+		local name =  strtoname("`x'")
+		eststo stunt_`name'`j', title("Stunted `x'"): reg stunting2 $matchar $hhchar /*
+		*/ $hhag $demog female $chldchar $chealth $geog if adm1name == "`x'" & year == `j', $cluster 
+		local i = `++i'
+		}
+	}
+*end
+		
+esttab stunt_*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 beta
+esttab stunt_* using "$pathout/`x'WideAll.csv", append wide mlabels(none) ar2 pr2 beta label not
+
+* Export cuts of data for WVU
+preserve
+keep latnum longnum $matchar $hhchar /*
+	*/ $hhag $demog female $chldchar /*
+	*/ $chealth $geog stunting2 stunted2 /*
+	*/ extstunted2 eligChild dhscc dhsyear dhsclust year  
+export delimited "$pathexport/RWA_2010_stunting.csv" if year == 2010 & eligChild == 1
+export delimited "$pathexport/RWA_2014_stunting.csv" if year == 2014 & eligChild == 1
+restore
+bob
 
 
 * Look at changing improved sanitation rates over time
