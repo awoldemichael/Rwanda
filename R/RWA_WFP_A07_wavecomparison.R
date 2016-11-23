@@ -1,3 +1,10 @@
+
+# import data -------------------------------------------------------------
+source('~/GitHub/Rwanda/R/RWA_WFP_07_importHH2012.R')
+source('~/GitHub/Rwanda/R/RWA_WFP_07_importHH2012.R')
+
+
+
 # Monthly pc expend comparison.
 # Similar densities; shift to higher values for 2015.  May just be b/c of inflation.
 ggplot(ch_hh2012, aes(x = log10(pc_exp_year/12))) +

@@ -63,7 +63,8 @@ all_hh2012 = ch_hh2012 %>%
   filter(!is.na(isStunted))
 
 # standardize coefficients
-all_hh2012 = all_hh2012 %>% stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'v_code'))
+all_hh2012 = all_hh2012 %>% 
+  stdize4regr(center = TRUE, scale = TRUE, cols2ignore = c('weight', 'v_code'))
 
 
 # ch-hh models ------------------------------------------------------------
