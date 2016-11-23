@@ -13,17 +13,18 @@ Laura Hughes, lhughes@usaid.gov
 
 ## Data Prep Files:
 1. `R\RWA_WFP_runAll.R`: wrapper for files 00-05
-* "RWA_WFP_00_setup.R": libraries + global vars
-* "RWA_WFP_01_importKids.R": import/clean 2015 CFSVA children's data             
-* "RWA_WFP_02_importMother.R": import/clean 2015 CFSVA women's data          
-* "RWA_WFP_03_importHH.R": import/clean 2015 CFSVA household data               
-* "RWA_WFP_03b_uniqueHHid.R": helper file to find a unique id       
-* "RWA_WFP_04_importKids2012.R": import/clean 2012 CFSVA children's data          
-* "RWA_WFP_06_importMoms2012.R": import/clean 2012 CFSVA women's data          
-* "RWA_WFP_07_importHH2012.R": import/clean 2012 CFSVA household data 
+* `RWA_WFP_00_setup.R`: libraries + global vars
+* `RWA_WFP_01_importKids.R`: import/clean 2015 CFSVA children's data             
+* `RWA_WFP_02_importMother.R`: import/clean 2015 CFSVA women's data          
+* `RWA_WFP_03_importHH.R`: import/clean 2015 CFSVA household data               
+* `RWA_WFP_03b_uniqueHHid.R`: helper file to find a unique id       
+* `RWA_WFP_04_importKids2012.R`: import/clean 2012 CFSVA children's data          
+* `RWA_WFP_06_importMoms2012.R`: import/clean 2012 CFSVA women's data          
+* `RWA_WFP_07_importHH2012.R`: import/clean 2012 CFSVA household data 
 
 ## Analysis Files:
 (or files that calculate averages)
+
 10. "RWA_WFP_A01_calcStunting.R"          
 * "RWA_WFP_A02_stuntingModels.R"       
 * "RWA_WFP_A03_stuntingModelsMusings.R" 
@@ -39,6 +40,7 @@ Laura Hughes, lhughes@usaid.gov
         
          
 ## Plotting files:               
+
 "RWA_WFP_P01_diets.R"                 "RWA_WFP_P02_stuntingCHAIN.R"        
 "RWA_WFP_P03_plotIndivDist.R"         "RWA_WFP_P04_stuntingChoros.R"       
 "RWA_WFP_P05_testStuntingDistrib.R"   "RWA_WFP_P06_stuntingChg.R" 
