@@ -16,6 +16,11 @@
 #
 # -------------------------------------------------------------------------
 
+
+# import data -------------------------------------------------------------
+setwd('~/GitHub/Rwanda/R/')
+source('RWA_WFP_run2015.R')
+
 # Calculate estimates at the Admin2 level ---------------------------------
 # Can't weight by sampling weights, since don't have the village ID.
 
