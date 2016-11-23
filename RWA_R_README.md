@@ -68,9 +68,16 @@ Laura Hughes, lhughes@usaid.gov
 
 ---
 
+## Where to start:
+* `R\RWA_WFP_run2015.R`: 2015 data (wrapper for data prep files 00-05)
+* `R\RWA_WFP_run2012.R`: 2012 data (wrapper for files 04-07)
+
+* `RWA_WFP_A09_stuntingAvgs2012-2015.R`: all averages of stunting for 2012 and 2015
+
+* Analysis files all reference the correct file
+
 ## Data Prep Files:
-1. `R\RWA_WFP_runAll.R`: wrapper for files 00-05
-* `RWA_WFP_00_setup.R`: libraries + global vars
+1. `RWA_WFP_00_setup.R`: libraries + global vars
 * `RWA_WFP_01_importKids.R`: import/clean 2015 CFSVA children's data             
 * `RWA_WFP_02_importMother.R`: import/clean 2015 CFSVA women's data          
 * `RWA_WFP_03_importHH.R`: import/clean 2015 CFSVA household data               
