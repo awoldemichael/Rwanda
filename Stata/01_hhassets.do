@@ -19,32 +19,32 @@ log using "$pathlog/01_hhassets", replace
 use "$pathmen/RWMR70FL.DTA", clear
 
 * Remove visitors from household to not convolute occupations
-drop if mv135 == 2
+	drop if mv135 == 2
 
 * Check how many unique household there are: 4,660
-egen tag = tag( mv001 mv002)
-tab tag, mi
+	egen tag = tag( mv001 mv002)
+	tab tag, mi
 
 * Create a variable for head of household's occupation
 * Note: not all household will have male head
-bys mv001 mv002: g occupationM = mv717 if mv150 == 1
+	bys mv001 mv002: g occupationM = mv717 if mv150 == 1
 
-bys mv001 mv002: g headLit = mv155 if mv150 == 1
-recode headLit (3 4 = 1)
-lab val headLit MV155
+	bys mv001 mv002: g headLit = mv155 if mv150 == 1
+	recode headLit (3 4 = 1)
+	lab val headLit MV155
 
-la var occupation "Occupation of male head"
-la var headLit "Literacy status of male head"
+	la var occupation "Occupation of male head"
+	la var headLit "Literacy status of male head"
 
-include "$pathdo/Programs/copylabels.do"
-collapse (max) occupationM headLit, by(mv001 mv002)
-include "$pathdo/Programs/attachlabels.do"
+	include "$pathdo/Programs/copylabels.do"
+	collapse (max) occupationM headLit, by(mv001 mv002)
+	include "$pathdo/Programs/attachlabels.do"
 
-lab val headLit MV155
-lab val occupationM MV717
+	lab val headLit MV155
+	lab val occupationM MV717
 
-ren (mv001 mv002)(v001 v002)
-isid v001 v002
+	ren (mv001 mv002)(v001 v002)
+	isid v001 v002
 save "$pathout/hh_occupM.dta", replace
 clear
 
@@ -52,13 +52,13 @@ clear
 * Add in data about female occupation in hh *
 *********************************************
 use "$pathwomen/RWIR70FL.DTA", clear
-bys v001 v002: g occupationF = v717 if v150 == 1
+	bys v001 v002: g occupationF = v717 if v150 == 1
 
-include "$pathdo/Programs/copylabels.do"
-collapse (max) occupationF, by(v001 v002)
-include "$pathdo/Programs/attachlabels.do"
+	include "$pathdo/Programs/copylabels.do"
+	collapse (max) occupationF, by(v001 v002)
+	include "$pathdo/Programs/attachlabels.do"
 
-lab val occupationF V717
+	lab val occupationF V717
 
 save "$pathout/hh_occupF.dta", replace
 
@@ -69,31 +69,31 @@ use "$pathroster/RWPR70FL.dta", clear
 
 * Household composition of women; Is it an older or younger household?
 * Note: These need to be summed when collapsing to the household level
-g byte numWomen15_25 = inrange(hv105, 16, 25) if hv104 == 2 & hv102 == 1
-g byte numWomen26_65 = inrange(hv105, 26, 65) if hv104 == 2 & hv102 == 1
+	g byte numWomen15_25 = inrange(hv105, 16, 25) if hv104 == 2 & hv102 == 1
+	g byte numWomen26_65 = inrange(hv105, 26, 65) if hv104 == 2 & hv102 == 1
 
-clonevar hhsize = hv012
-clonevar numChildUnd5 = hv014
+	clonevar hhsize = hv012
+	clonevar numChildUnd5 = hv014
 
-clonevar maleEduc 	= hb68
-clonevar femaleEduc = ha68 
-clonevar motherEduc = hvc68
+	clonevar maleEduc 	= hb68
+	clonevar femaleEduc = ha68 
+	clonevar motherEduc = hvc68
 
 
 include "$pathdo/Programs/copylabels.do"
-collapse (max) hhsize numChildUnd5 maleEduc femaleEduc /*
-*/ motherEduc (sum) numWomen15_25 numWomen26_65, by(hv001 hv002)
+	collapse (max) hhsize numChildUnd5 maleEduc femaleEduc /*
+	*/ motherEduc (sum) numWomen15_25 numWomen26_65, by(hv001 hv002)
 include "$pathdo/Programs/attachlabels.do"
 
-ren (hv001 hv002)(v001 v002)
-isid v001 v002
+	ren (hv001 hv002)(v001 v002)
+	isid v001 v002
 
 merge 1:1 v001 v002 using "$pathout/hh_occupF.dta", gen(_occupF)
 merge 1:1 v001 v002 using "$pathout/hh_occupM.dta", gen(_occupM)
 
-clonevar occupation = occupationM
-replace occupation = occupationF if occupation == . & occupationM == .
-la var occupation "occupation of head of household (male/female)"
+	clonevar occupation = occupationM
+	replace occupation = occupationF if occupation == . & occupationM == .
+	la var occupation "occupation of head of household (male/female)"
 
 save "$pathout/hhdemog.dta", replace
 
@@ -108,64 +108,63 @@ use "$pathhh/RWHR70FL.dta", clear
    for now. Need to collapse down to hh level to get mergability 
    726 that have conflicts due to concatenation   
    */
-clonevar v001 = hv001
-clonevar v002 = hv002
-isid v001 v002
+	clonevar v001 = hv001
+	clonevar v002 = hv002
+	isid v001 v002
 
 ****** NOTE : a better solution is to simply rename the merging variables ******
 
 * clean up sampling information
-clonevar cluster 	= hv001
-clonevar hhnum 		= hv002
-clonevar monthint 	= hv006
-clonevar yearint	= hv007
-clonevar intdate	= hv008
-clonevar psu		= hv021
-clonevar strata		= hv022
-clonevar province	= hv024
-clonevar altitude	= hv040
-clonevar district 	= shdistrict
+	clonevar cluster 	= hv001
+	clonevar hhnum 		= hv002
+	clonevar monthint 	= hv006
+	clonevar yearint	= hv007
+	clonevar intdate	= hv008
+	clonevar psu		= hv021
+	clonevar strata		= hv022
+	clonevar province	= hv024
+	clonevar altitude	= hv040
+	clonevar district 	= shdistrict
 
-g hhweight = hv005 / 1000000
-g maleweight = hv028/1000000
+	g hhweight = hv005 / 1000000
+	g maleweight = hv028/1000000
 
 * Syntax for setting weights *
 * svyset psu [pw = hhweight], strata(strata)
-
-la var hhweight "household weight"
-la var maleweight "male weight"
+	la var hhweight "household weight"
+	la var maleweight "male weight"
 
 * Fix value labels on rural
-recode hv025 (1 = 0 "urban")(2 = 1 "rural"), gen(rural)
+	recode hv025 (1 = 0 "urban")(2 = 1 "rural"), gen(rural)
 
 * HH size and demographics
-clonevar hhsize = hv009
-clonevar hhchildUnd5 = hv014
+	clonevar hhsize = hv009
+	clonevar hhchildUnd5 = hv014
 
 * HH assets
-clonevar toilet = hv205
-clonevar toiletShare = hv225
-g byte handwashObs = inlist(hv230a, 1)
-la var handwashObs "Observed handwashing station"
-rename (hv206 hv207 hv208 hv209 hv210 hv211 hv212 hv243a)(electricity radio tv refrig bike moto car mobile)
+	clonevar toilet = hv205
+	clonevar toiletShare = hv225
+	g byte handwashObs = inlist(hv230a, 1)
+	la var handwashObs "Observed handwashing station"
+	rename (hv206 hv207 hv208 hv209 hv210 hv211 hv212 hv243a)(electricity radio tv refrig bike moto car mobile)
 
-recode hv213 (11 12 = 1 "earth, sand, dung")(33 34 35 96 = 0 "ceramic or better"), gen(dirtfloor)
-clonevar hhrooms = hv216
-g roomPC = hhrooms / hhsize
-la var roomPC "rooms per hh size"
+	recode hv213 (11 12 = 1 "earth, sand, dung")(33 34 35 96 = 0 "ceramic or better"), gen(dirtfloor)
+	clonevar hhrooms = hv216
+	g roomPC = hhrooms / hhsize
+	la var roomPC "rooms per hh size"
 
-recode hv219 (1 = 0 "male")(2 = 1 "female"), gen(femhead)
-clonevar agehead = hv220
-replace agehead = . if agehead == 98
+	recode hv219 (1 = 0 "male")(2 = 1 "female"), gen(femhead)
+	clonevar agehead = hv220
+	replace agehead = . if agehead == 98
 
-recode hv230a (2 3 4 = 0 "unobserved") (1 = 1 "observed"), gen(handwash)
-recode hv237 (8 = .)(0 = 0 "no")(1 = 1 "yes"), gen(treatwater)
+	recode hv230a (2 3 4 = 0 "unobserved") (1 = 1 "observed"), gen(handwash)
+	recode hv237 (8 = .)(0 = 0 "no")(1 = 1 "yes"), gen(treatwater)
 
-recode hv242 (0 = 0 "no")(1 = 1 "yes")(. = .), gen(kitchen)
-clonevar bednet = hv227 
+	recode hv242 (0 = 0 "no")(1 = 1 "yes")(. = .), gen(kitchen)
+	clonevar bednet = hv227 
 
-g byte bnetITNuse = inlist(hml12_01, 1) & bednet == 1
-la var bnetITNuse "own ITN mosquito bednet"
+	g byte bnetITNuse = inlist(hml12_01, 1) & bednet == 1
+	la var bnetITNuse "own ITN mosquito bednet"
 
 * Wash variables (http://www.wssinfo.org/definitions-methods/watsan-categories/)
 /* IMPROVED WATER
@@ -225,24 +224,24 @@ replace landowned = . if landowned == 998
 replace landowned = (landowned / 10)
 *histogram landowned
 
-clonevar livestock = hv246
+	clonevar livestock = hv246
 
 /*Create TLU (based on values from http://www.lrrd.org/lrrd18/8/chil18117.htm)
 Notes: Sheep includes sheep and goats
 Horse includes all draught animals (donkey, horse, bullock)
 chxTLU includes all small animals (chicken, fowl, etc).*/
-g camelVal 	= 0.70
-g cattleVal = 0.50
-g pigVal 	= 0.20
-g sheepVal 	= 0.10
-g horsesVal = 0.50
-g mulesVal 	= 0.60
-g assesVal 	= 0.30
-g chxVal 	= 0.01
+	g camelVal 	= 0.70
+	g cattleVal = 0.50
+	g pigVal 	= 0.20
+	g sheepVal 	= 0.10
+	g horsesVal = 0.50
+	g mulesVal 	= 0.60
+	g assesVal 	= 0.30
+	g chxVal 	= 0.01
 
 * Decode unknown values to be missing not zero (affects few obs) and strip labels
-mvdecode hv246a hv246b hv246j, mv(98)
-_strip_labels hv246a-hv246j
+	mvdecode hv246a hv246b hv246j, mv(98)
+	_strip_labels hv246a-hv246j
 
 /* So it appears that hv246b has two components hv246i hv246j, being milk cows
    and bulls. Three (3) records do not follow the pattern but otherwise this seems
@@ -252,37 +251,37 @@ _strip_labels hv246a-hv246j
    assert testcow == hv246b
  */
    
-rename (hv246a hv246c hv246d hv246e hv246f hv246g hv246h hv246i hv246j)/*
-      */ (cowtrad horse goat sheep chicken pig rabbit cowmilk cowbull) 
+	rename (hv246a hv246c hv246d hv246e hv246f hv246g hv246h hv246i hv246j)/*
+		  */ (cowtrad horse goat sheep chicken pig rabbit cowmilk cowbull) 
 *summarize results to check min / max
-sum cowtrad-cowbull
-	    
-g tlucattle = (cowtrad + cowmilk + cowbull) * cattleVal	  
-g tlusheep 	= (sheep + goat) * sheepVal
-g tluhorses = (horse) * horsesVal
-g tlupig 	= (pig) * pigVal
-g tluchx 	= (rabbit + chicken) * chxVal
+	sum cowtrad-cowbull
+			
+	g tlucattle = (cowtrad + cowmilk + cowbull) * cattleVal	  
+	g tlusheep 	= (sheep + goat) * sheepVal
+	g tluhorses = (horse) * horsesVal
+	g tlupig 	= (pig) * pigVal
+	g tluchx 	= (rabbit + chicken) * chxVal
 
 * Generate overall tlus
-egen tlutotal = rsum(tlucattle tlusheep tluhorses tlupig tluchx)
-la var tlutotal "Total tropical livestock units"
+	egen tlutotal = rsum(tlucattle tlusheep tluhorses tlupig tluchx)
+	la var tlutotal "Total tropical livestock units"
 
-sum tlutotal
+	sum tlutotal
 *histogram tlutotal if livestock ==1 & tlutotal < 10
 
 * Wealth
-clonevar wealthGroup = hv270
-clonevar wealth = hv271
-replace wealth = (wealth / 100000)
+	clonevar wealthGroup = hv270
+	clonevar wealth = hv271
+	replace wealth = (wealth / 100000)
 
 * Bank account?
-clonevar bankAcount = hv247
+	clonevar bankAcount = hv247
 
 * Smoker in house?
-recode hv252 (0 = 0 "no smoker") (1 2 3 4 = 1 "smoker in house"), gen(smoker)
+	recode hv252 (0 = 0 "no smoker") (1 2 3 4 = 1 "smoker in house"), gen(smoker)
 
 * Drop extra variables no longer needed
-drop *Val
+	drop *Val
 
 * drop extra data
 aorder
@@ -315,22 +314,22 @@ _strip_labels agehead
 
 * Summary stats to check if you can match DHS report
 * Matching stats on pp. 24 of report httpssmok://www.dhsprogram.com/pubs/pdf/FR316/FR316.pdf
-svyset psu [pw = hhweight], strata(strata)
+	svyset psu [pw = hhweight], strata(strata)
 
-svy: mean radio, over(rural)
-svy: mean livestock, over(rural)
+	svy: mean radio, over(rural)
+	svy: mean livestock, over(rural)
 
 * Sort and create coef plot of district values
-svy: mean landless, over(district)
-matrix plot = r(table)'
-matsort plot 1 "down"
-matrix plot = plot'
-coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,]))
+	svy: mean landless, over(district)
+	matrix plot = r(table)'
+	matsort plot 1 "down"
+	matrix plot = plot'
+	coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,]))
 
 * Captilize value label list so that it seemlessly merges into ArcGIS shapefile
-local varname district
-local sLabelName: value label `varname'
-di "`sLabelName'"
+	local varname district
+	local sLabelName: value label `varname'
+	di "`sLabelName'"
 
 levelsof `varname', local(xValues)
 foreach x of local xValues {

@@ -15,9 +15,9 @@ use "$pathout/DHS_2015_analysis.dta", clear
 
 * Label the cmc codes (di 12*(2014 - 1900)+1)
 recode intdate (1371 1369 = 1378)
-la def cmc 1378 "Oct. 2014" 1379 "Nov. 2014" 1380 "Dec. 2014" 1381 "Jan. 2015" /*
-*/ 1382 "Feb. 2015" 1383 "Mar. 2015" 1384 "Apr. 2015"
-la val intdate cmc
+	la def cmc 1378 "Oct. 2014" 1379 "Nov. 2014" 1380 "Dec. 2014" 1381 "Jan. 2015" /*
+	*/ 1382 "Feb. 2015" 1383 "Mar. 2015" 1384 "Apr. 2015"
+	la val intdate cmc
 
 * What does the within cluster distribution of stunting scores look like?
 egen clust_stunt = mean(stunting2), by(strata)
@@ -29,40 +29,40 @@ twoway(scatter stunting2 strata)
 
 * Summary of z-scores by altitudes
 twoway (scatter alt_stunt altitude, sort mcolor("192 192 192") msize(medsmall) /*
-*/ msymbol(circle) mlcolor("128 128 128") mlwidth(thin)) (lpolyci alt_stunt /*
-*/ altitude [aweight = cweight] if inrange(altitude, 1198, 2508), clcolor("99 99 99") clwidth(medthin)), /*
-*/ ytitle(Stunting Z-score) ytitle(, size(small) color("128 128 128")) /*
-*/ xtitle(, size(small) color("128 128 128")) title(Stunting outcomes appear /*
-*/ to worsen with increases in elevation., size(small) color("99 99 99") /*
-*/ span justification(left))
+	*/ msymbol(circle) mlcolor("128 128 128") mlwidth(thin)) (lpolyci alt_stunt /*
+	*/ altitude [aweight = cweight] if inrange(altitude, 1198, 2508), clcolor("99 99 99") clwidth(medthin)), /*
+	*/ ytitle(Stunting Z-score) ytitle(, size(small) color("128 128 128")) /*
+	*/ xtitle(, size(small) color("128 128 128")) title(Stunting outcomes appear /*
+	*/ to worsen with increases in elevation., size(small) color("99 99 99") /*
+	*/ span justification(left))
 
 * Summary of stunting by wealth
 twoway (scatter stunting2 wealth, sort mcolor("192 192 192") msize(medsmall)/* 
-*/msymbol(circle) mlcolor("128 128 128") mlwidth(thin)) (lpolyci stunting2 /*
-*/wealth [aweight = cweight], clcolor("99 99 99") clwidth(medthin)), /*
-*/ytitle(Stunting Z-score) ytitle(, size(small) color("128 128 128")) /* 
-*/yline(-2, lwidth(medium) lcolor("99 99 99")) xtitle(, size(small) /*
-*/color("128 128 128")) xline(0, lwidth(medium) lcolor("99 99 99")) /*
-*/title(Stunting outcomes appear to positively correlate with /*
-*/elevation., size(small) color("99 99 99") span justification(left)) /*
-*/ysca(alt) xsca(alt) xlabel(, grid gmax) legend(off) saving(main, replace)
+	*/msymbol(circle) mlcolor("128 128 128") mlwidth(thin)) (lpolyci stunting2 /*
+	*/wealth [aweight = cweight], clcolor("99 99 99") clwidth(medthin)), /*
+	*/ytitle(Stunting Z-score) ytitle(, size(small) color("128 128 128")) /* 
+	*/yline(-2, lwidth(medium) lcolor("99 99 99")) xtitle(, size(small) /*
+	*/color("128 128 128")) xline(0, lwidth(medium) lcolor("99 99 99")) /*
+	*/title(Stunting outcomes appear to positively correlate with /*
+	*/elevation., size(small) color("99 99 99") span justification(left)) /*
+	*/ysca(alt) xsca(alt) xlabel(, grid gmax) legend(off) saving(main, replace)
 
-twoway histogram stunting2, fraction xsca(alt reverse) ylabel(, grid gmax) horiz fxsize(25)  saving(hy, replace)
-twoway histogram wealth, fraction ysca(alt reverse) ylabel(, nogrid)/*
-*/ fysize(25) xlabel(, grid gmax) saving(hx, replace)
+	twoway histogram stunting2, fraction xsca(alt reverse) ylabel(, grid gmax) horiz fxsize(25)  saving(hy, replace)
+	twoway histogram wealth, fraction ysca(alt reverse) ylabel(, nogrid)/*
+	*/ fysize(25) xlabel(, grid gmax) saving(hx, replace)
 * Combine graphs together to put histograms on x/y axis
-graph combine hy.gph main.gph hx.gph, hole(3) imargin(0 0 0 0) 
+	graph combine hy.gph main.gph hx.gph, hole(3) imargin(0 0 0 0) 
 
 * Survey set the data to account for complex sampling design
-svyset psu [pw = cweight], strata(strata)
+	svyset psu [pw = cweight], strata(strata)
 
-twoway (kdensity stunting2), xline(-2, lwidth(thin) /*
-*/ lpattern(dash) lcolor("199 199 199")) by(lvdzone)
+	twoway (kdensity stunting2), xline(-2, lwidth(thin) /*
+	*/ lpattern(dash) lcolor("199 199 199")) by(lvdzone)
 
 * Show the distribituion of education on z-scores
-twoway (kdensity stunting2 if motherEd ==0)(kdensity stunting2 if motherEd ==1) /*
-*/ (kdensity stunting2 if motherEd ==2)(kdensity stunting2 if motherEd ==3) /*
-*/ , xline(-2, lwidth(thin) lpattern(dash) lcolor("199 199 199"))
+	twoway (kdensity stunting2 if motherEd ==0)(kdensity stunting2 if motherEd ==1) /*
+	*/ (kdensity stunting2 if motherEd ==2)(kdensity stunting2 if motherEd ==3) /*
+	*/ , xline(-2, lwidth(thin) lpattern(dash) lcolor("199 199 199"))
 
 * Check stunting over standard covariates
 svy:mean stunting2, over(district)
@@ -83,48 +83,48 @@ coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,])) xline(`stuntmean' `lb' `ub'
 
 * Create a table for export
 matrix district = e(_N)'
-matrix stunt = smean'
-matrix gis = district, stunt
-mat2txt, matrix(gis) saving("$pathxls/district_stunting.csv") replace
-matrix drop _all
+	matrix stunt = smean'
+	matrix gis = district, stunt
+	mat2txt, matrix(gis) saving("$pathxls/district_stunting.csv") replace
+	matrix drop _all
 
 * Check stunting over livelihood zones
 svy:mean stunting2, over(lvdzone)
-svy:mean stunted2, over(lvdzone)
-matrix smean = r(table)
-matrix lvdzone = smean'
+	svy:mean stunted2, over(lvdzone)
+	matrix smean = r(table)
+	matrix lvdzone = smean'
 mat2txt, matrix(lvdzone) saving("$pathxls/stunting_lvd") replace
 
 * running a few other statistics
-svy:mean stunted2, over(female)
-svy:mean stunted2, over(wealthGroup)
-svy:mean stunted2, over(motherBMI female)
-svy:mean stunted2, over(religion)
-svy:mean stunted2, over(diarrhea)
+	svy:mean stunted2, over(female)
+	svy:mean stunted2, over(wealthGroup)
+	svy:mean stunted2, over(motherBMI female)
+	svy:mean stunted2, over(religion)
+	svy:mean stunted2, over(diarrhea)
 
 
 preserve
-collapse (mean) stunted2 (count) n = stunted2, by(lvdzone)
-ren lvdzone LZNAMEE
-export delimited "$pathxls/Stunting_livelihoodzones.csv", replace
+	collapse (mean) stunted2 (count) n = stunted2, by(lvdzone)
+	ren lvdzone LZNAMEE
+	export delimited "$pathxls/Stunting_livelihoodzones.csv", replace
 restore
 
 preserve
-keep if eligChild == 1
-keep v001 v002 stunted2 stunting2 latnum longnum urban_rura lznum lznamef lvdzone alt_gps dhsclust ageChild religion
-export delimited "$pathxls\RWA_2014_DHS_stunting.csv", replace
+	keep if eligChild == 1
+	keep v001 v002 stunted2 stunting2 latnum longnum urban_rura lznum lznamef lvdzone alt_gps dhsclust ageChild religion
+	export delimited "$pathxls\RWA_2014_DHS_stunting.csv", replace
 restore
 
 * Consider stunting over the livelihood zones.
 mean stunted2, over(lvdzone)
-cap matrix drop plot smean
-matrix smean = r(table)
-local stuntmean = smean[1,1]
-local lb = smean[5, 1]
-local ub = smean[6, 1]
-matrix plot = r(table)'
-matsort plot 1 "down"
-matrix plot = plot'
+	cap matrix drop plot smean
+	matrix smean = r(table)
+	local stuntmean = smean[1,1]
+	local lb = smean[5, 1]
+	local ub = smean[6, 1]
+	matrix plot = r(table)'
+	matsort plot 1 "down"
+	matrix plot = plot'
 coefplot (matrix(plot[1,])), ci((plot[5,] plot[6,])) xline(`stuntmean' `lb' `ub')
 
 set matsize 1000
@@ -133,16 +133,16 @@ pwmean stunted2, over(district) pveffects mcompare(tukey)
 
 * calculate moving average
 preserve
-collapse (sum) stunted2 (count) stuntN = stunted2, by(ageChild female)
-drop if ageChild == . | ageChild<6
-sort female ageChild
-xtset  female ageChild
+	collapse (sum) stunted2 (count) stuntN = stunted2, by(ageChild female)
+	drop if ageChild == . | ageChild<6
+	sort female ageChild
+	xtset  female ageChild
 
-bys female: g smoothStunt = (l2.stunted2 + l1.stunted2 + stunted2 + f1.stunted2 + f2.stunted2)/ /*
-*/		(l2.stuntN + l1.stuntN + stuntN + f1.stuntN + f2.stuntN) 
+	bys female: g smoothStunt = (l2.stunted2 + l1.stunted2 + stunted2 + f1.stunted2 + f2.stunted2)/ /*
+	*/		(l2.stuntN + l1.stuntN + stuntN + f1.stuntN + f2.stuntN) 
 
-tssmooth ma stuntedMA = (stunted2/stuntN), window(2 1 2)
-xtline(stuntedMA smoothStunt)
+	tssmooth ma stuntedMA = (stunted2/stuntN), window(2 1 2)
+	xtline(stuntedMA smoothStunt)
 restore
 
 
@@ -150,26 +150,26 @@ export delimited "$pathout/stuntingAnalysis.csv", replace
 saveold "$pathout/stuntingAnalysis.dta", replace
 
 * Stunting regression analysis using various models; 
-g agechildsq = ageChild^2
-la var rural "rural household" 
-g altitude2 = altitude/1000
-la var altitude2 "altitude divided by 1000"
-egen hhgroup = group(v001 v002) if eligChild == 1
+	g agechildsq = ageChild^2
+	la var rural "rural household" 
+	g altitude2 = altitude/1000
+	la var altitude2 "altitude divided by 1000"
+	egen hhgroup = group(v001 v002) if eligChild == 1
 save "$pathout/DHS_2015_stunting.dta", replace
 
 * Create groups for covariates as they map into conceptual framework for stunting
-global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
-global hhchar "wealth improvedSanit improvedWater bnetITNuse landless"
-global hhchar2 "mobile bankAcount improvedSanit improvedWater bnetITNuse"
-global hhag "tlutotal"
-global hhag2 "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
-global demog "hhsize agehead hhchildUnd5"
-global chldchar "ageChild agechildsq birthOrder birthWgt"
-global chealth "intParasites vitaminA diarrhea anemia"
-global geog "altitude2 rural"
-global geog2 "altitude2 ib(1).lvdzone "
-global cluster "cluster(dhsclust)"
-global cluster2 "cluster(hhgroup)"
+	global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
+	global hhchar "wealth improvedSanit improvedWater bnetITNuse landless"
+	global hhchar2 "mobile bankAcount improvedSanit improvedWater bnetITNuse"
+	global hhag "tlutotal"
+	global hhag2 "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
+	global demog "hhsize agehead hhchildUnd5"
+	global chldchar "ageChild agechildsq birthOrder birthWgt"
+	global chealth "intParasites vitaminA diarrhea anemia"
+	global geog "altitude2 rural"
+	global geog2 "altitude2 ib(1).lvdzone "
+	global cluster "cluster(dhsclust)"
+	global cluster2 "cluster(hhgroup)"
 
 * STOP: Check all globals for missing values!
 sum $matchar $hhchar $hhag $demog female $chldchar $chealth
