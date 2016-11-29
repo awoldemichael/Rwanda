@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------------------
-# Name:		05_ModConAnalysis
+# Name:		05_ModernContraceptionProcessing
 # Purpose:	Create model of modern contraceptive use
 # Author:	Tim Essam, Ph.D.
 # Created:	2016/08/01
@@ -10,7 +10,7 @@
 */
 
 capture log close
-log using "$pathlog/05_ModConAnalysis", replace
+log using "$pathlog/05_ModConProcessing", replace
 clear
 
 * Women are unit of analysis so we will be using the IR file.
@@ -29,6 +29,7 @@ clear
 * Clone original DHS variables and simply rename
 	clonevar ageGroup 	= v013
 	clonevar occupGroup = v717
+	clonevar occupGroupHus = v705
 	clonevar pregnant 	= v213
 	clonevar educ		= v106
 	clonevar educDetail = v107
@@ -44,6 +45,8 @@ clear
 	la var curUnion "Current in union/living w/ man"
 	la var nevUnion "never in union"
 	clonevar maritialStatus = v501
+	g byte married = maritialStatus == 1
+	la var married "married"
 	
 * Family planning knowledge or outreach
 	clonevar visHCtoldFP = v395
@@ -144,13 +147,12 @@ clear
 	la var decisionHealth "women invovled in health care decisions"
 	la var decisionPurchase "women invovled in purchase decisions"
 	la var decisionVisits "women involved in family visit decisions"
+	la var decisionMoney "women involved in how her earned money is spent"
 	la var empowerment "female empowerment scale (0 = not empowered)"
-	
-	
+		
 * Filter data down to keep on the variables necessary for merging and analysis
 	keep wweight - empowerment v000 v001 v002 v003 v005 v008 
-	
-		
+			
 	/* Community contextual variables per (Stephenson, R. et al. 2007
 	"Contextual Influences on Modern Contraceptive Use in Sub-Saharan Africa")*/
 	tab religion, gen(religDum)
@@ -170,9 +172,19 @@ clear
 	la var dist_distanceHC "difficult to get to health facility - community average"
 	la var dist_totChild "average number of children born in community"
 	la var dist_educYears "average years of female education in community"
-	la var catholic_dominant "catholic faith dominant religion"
-	
+	la var catholic_dominant "catholic faith dominant religion in community"
+	la var protestant_dominant "protestant faith dominant religion in community"
+	la var adventist_dominant "adventist faith dominant religion in community"
+	la var muslim_dominant "muslim faith dominant religion in community"
 	
 * Combine FEWS Net Livelihood zones
+	merge m:1 v001 v002 using "$pathout/RWA_DHS_Livelihoods.dta", gen(_fertility)
+	drop if _fertility == 2
+	
+	g byte flagContra = (curUnion == 1)
+	la var flagContra "flag for filtering only women in a union"
 
+saveold "$pathout/contraceptionAnalysis.dta", replace
+log close
+	
 	
