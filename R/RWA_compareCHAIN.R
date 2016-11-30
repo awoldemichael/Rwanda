@@ -93,6 +93,11 @@ stunting_interv_IP = stunting_interv %>%
   summarise(n = n()) %>% 
   arrange(desc(n))
 
+total_interv_IP = sectors %>% 
+  group_by(partner, province, district, sector) %>% 
+  summarise(n = n()) %>% 
+  arrange(desc(n))
+
 
 # merge with geodata ------------------------------------------------------
 admin3_plot = left_join(RWA_admin3$df, stunting_interv_tot, by = c('Prov_ID' = "province", "Dist_ID" = "district", "Sect_ID" = "sector"))
@@ -103,9 +108,18 @@ save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported
 
 admin3_plot = left_join(RWA_admin3$df, stunting_interv_IP, by = c('Prov_ID' = "province", "Dist_ID" = "district", "Sect_ID" = "sector"))
 
-p = plot_map(admin3_plot, fill_var = 'partner') + scale_fill_brewer(palette = 'Pastel1', na.value = grey15K) + theme(legend.position = c(0.1, 0.8)) + 
+p = plot_map(admin3_plot, fill_var = 'partner') + scale_fill_brewer(palette = 'Pastel1', na.value = 'white') + theme(legend.position = c(0.1, 0.8)) + 
   geom_path(aes(x = long, y = lat, order = order, group = group, fill = '1'), 
             data = RWA_admin2$df, colour = grey70K, size= 0.2) +
   facet_wrap(~partner)
 
 save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/CHAINproj_IP.pdf')
+
+
+admin3_plot = left_join( total_interv_IP, RWA_admin3$df, by = c("province" = 'Prov_ID',"district" =  "Dist_ID", "sector" = "Sect_ID"))
+p = plot_map(admin3_plot, fill_var = 'partner') + scale_fill_brewer(palette = 'Pastel1', na.value = 'white') + theme(legend.position = c(0.1, 0.8)) + 
+  geom_path(aes(x = long, y = lat, order = order, group = group, fill = '1'), 
+            data = RWA_admin2$df, colour = grey70K, size= 0.2) +
+  facet_wrap(~partner) + theme_blank() + theme(strip.text = element_text(family = 'Lato', colour = grey90K, size = 15))
+
+save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/total_CHAINproj_IP', saveBoth = T)
