@@ -174,3 +174,13 @@ compare_models(list('all' = stunting_fits2012$all,
                     'alt' = stunting_fits2012$alt
 ), 
 filter_insignificant = T)
+
+
+# Compare w/ 2015 ---------------------------------------------------------
+source('~/GitHub/Rwanda/R/RWA_WFP_A02_stuntingModels.R')
+
+compare_models(list('2012' = stunting_fits2012$all,
+                    '2015' = stunting_fits$nogeo,
+                    ' alt' = stunting_fits2012$alt
+), 
+filter_insignificant = T)
