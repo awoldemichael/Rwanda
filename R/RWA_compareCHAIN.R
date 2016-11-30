@@ -19,9 +19,10 @@
 
 
 # DEPENDS: previous functions to run: ----------------------------------------------
-# setwd('~/GitHub/Rwanda/R/')
-# source('RWA_WFP_00_setup.R')
-# source('RWA_WFP_03_importHH.R')
+setwd('~/GitHub/Rwanda/R/')
+source('RWA_WFP_00_setup.R')
+source('RWA_WFP_03_importHH.R')
+source('RWA_WFP_05_importGeo.R')
 library(jsonlite)
 
 
@@ -47,12 +48,16 @@ admin3_codebk = hh %>%
 # import sector-level data ------------------------------------------------
 
 # Instructions on importing from json file directly:
+# http://devgeocenter.org/rwanda-programs/content/?action=query&target=acts-locs
 # remove '\' from file
-# replace '{"' with '{'
-# replace '"}' with '}'
+# replace '"{' with '{'
+# replace '}"' with '}'
+# sed -n  's/\\//gpw output.json' test.json
+# sed -n  's/}"/}/gpw output2.json' output.js
+
 
 # Import data from Baboyma's dataset
-sectors = jsonlite::fromJSON('~/GitHub/RwandaCHAIN/www/data/intervention-location_2016-11-08.json', flatten = T, simplifyMatrix = T, simplifyDataFrame = T)
+sectors = jsonlite::fromJSON('~/GitHub/RwandaCHAIN/www/data/output2.json', flatten = T, simplifyMatrix = T, simplifyDataFrame = T)
 sectors = sectors$data
 
 interventions = jsonlite::fromJSON('~/GitHub/RwandaCHAIN/www/data/intervention-list.json', flatten = T, simplifyMatrix = T, simplifyDataFrame = T)
@@ -98,7 +103,9 @@ save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported
 
 admin3_plot = left_join(RWA_admin3$df, stunting_interv_IP, by = c('Prov_ID' = "province", "Dist_ID" = "district", "Sect_ID" = "sector"))
 
-p = plot_map(admin3_plot, fill_var = 'partner') + scale_fill_brewer(palette = 'Pastel1', na.value = grey15K) + theme(legend.position = c(0.1, 0.8)) + geom_path(aes(x = long, y = lat, order = order, group = group, fill = '1'), 
-                                                                                                                                                                data = RWA_admin2$df, colour = grey70K, size= 0.2)
+p = plot_map(admin3_plot, fill_var = 'partner') + scale_fill_brewer(palette = 'Pastel1', na.value = grey15K) + theme(legend.position = c(0.1, 0.8)) + 
+  geom_path(aes(x = long, y = lat, order = order, group = group, fill = '1'), 
+            data = RWA_admin2$df, colour = grey70K, size= 0.2) +
+  facet_wrap(~partner)
 
 save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/CHAINproj_IP.pdf')
