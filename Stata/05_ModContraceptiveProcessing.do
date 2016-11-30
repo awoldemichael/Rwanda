@@ -40,13 +40,18 @@ clear
 * Need to determine categories for this
 	clonevar moreChild = v605
 	clonevar moreChildHus = v621
+	
 	g byte curUnion = (v502 == 1)
 	g byte nevUnion = (v502 == 0)
 	la var curUnion "Current in union/living w/ man"
 	la var nevUnion "never in union"
+	
 	clonevar maritialStatus = v501
 	g byte married = maritialStatus == 1
 	la var married "married"
+
+	g byte femhead = (v150 == 1)
+	la var femhead "female head of household"
 	
 * Family planning knowledge or outreach
 	clonevar visHCtoldFP = v395
