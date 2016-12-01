@@ -8,8 +8,8 @@
 
 
 # load data ----------------------------------------------------------------
-# source('~/GitHub/Rwanda/R/RWA_DHS_08_fertility.R')
-
+source('~/GitHub/Rwanda/R/RWA_DHS_08_fertility.R')
+library(mfx)
 
 # model notes --------------------------------------------------------------
 # • Only running women currently in unions
@@ -17,55 +17,70 @@
 
 
 # scale factors -----------------------------------------------------------
-w14_scaled = w14 %>% stdize4regr()
+w14_scaled = w14 %>% 
+  filter(totLiving > 0) %>%  # include only women who already have a child
+  stdize4regr()
 
 # model on who wants more babies ------------------------------------------
-
-want_children <- glm(moreChild_binary ~
-                       # -- demographics --
-                       age*rural +
-                       age_gap +
-                       religion +
-                       age_firstSex +
-                       
-                       # numChildUnd5 +
-                       totLiving*hasSon +
-                      
-                       # hasSon + 
-                       # hasDaughter +
-                       
-                       # -- education --
-                       educ +
-                       educPartner +
-                       # occupGroup +
-                       
-                       # -- wealth --
-                       wealth + 
-                       
-                       # -- geo / connectivity --
-                       lvdzone + 
-                       altitude +
-                       # rural +
-                       
-                       # -- health -- 
-                       bedNetUse + 
-                       went_doctor + 
-                       # FPatHealth +
-                       health_dist +
-                       health_money +
-                       goHealth_alone +
-                       fp_radio +
-                       fp_tv +
-                       fp_news +
-                       
-                       # -- empowerment --
-                       own_land +
-                       own_house +
-                       beating_idx +
+baby_models = formulas(~moreChild_binary,
+                       basic = 
+                         # -- demographics --
+                         ~age*rural +
+                         ageGap +
+                         religion +
+                         age_firstSex +
+                         
+                         # numChildUnd5 +
+                         totLiving*hasSon +
+                         
+                         # hasSon + 
+                         # hasDaughter +
+                         
+                         # -- education --
+                         educ +
+                         # educPartner +
+                         # occup_cat +
+                         # occupHusGroup +
+                         
+                         # -- wealth --
+                         wealth + 
+                         
+                         # -- geo / connectivity --
+                         lvdzone + 
+                         altitude +
+                         # rural +
+                         
+                         # -- health -- 
+                         bedNetUse + 
+                         went_doctor + 
+                         # FPatHealth + # too many unobs? ~ 1/2 didn't go to doc.
+                         health_dist +
+                         health_money +
+                         # goHealth_alone + # too many unobs.
+                         fp_radio +
+                         fp_tv +
+                         fp_news +
+                         
+                         # -- empowerment --
+                         own_land +
+                         own_house +
+                         beating_idx,
                        
                        # -- male fertility desires --
-                       moreChildHus,
-                     data = w14_scaled, family = binomial(link = 'logit')) 
+                       male_ed = add_predictors(basic, ~educPartner),
+                       male_agree = add_predictors(basic, ~occup_cat, ~moreChild_agree),
+                       occup = add_predictors(basic, ~occup_cat))
 
-summary(want_children)
+want_children = w14_scaled %>% fit_with(glm, baby_models, family = binomial(link = 'logit'))
+
+summary(want_children$basic)
+
+
+# odds ratio --------------------------------------------------------------
+children_or = w14_scaled %>% fit_with(logitor, baby_models)
+
+
+# marginal effects --------------------------------------------------------
+children_me = w14_scaled %>% fit_with(logitmfx, baby_models)
+
 

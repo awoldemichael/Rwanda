@@ -74,7 +74,7 @@ w14 = w14 %>%
     educ = v106,
     educDetail  =v107,
     educYears = v133,
-    educPartner = v701, # educPartner
+     v701, # educPartner
     
     
     # -- family planning --
@@ -96,7 +96,7 @@ w14 = w14 %>%
     v313, # v313== 3 modern contraception
     intentionContra = v364,
     sexActivity = v536,
-    age_firstSex = v531, # imputed from if responded "when married"
+    v531, # age_firstSex = imputed from if responded "when married"
     v624, # unmet need
     contains('v3a08'), # reason not using
     fp_radio = v384a,
@@ -189,9 +189,17 @@ w14 = w14 %>%
          beatIf_argues = na_if(v744c, 8),
          beatIf_noSex = na_if(v744d, 8),
          beatIf_burnsFood = na_if(v744e, 8),
+         educPartner = na_if(v701, 8),
+         age_firstSex = na_if(v531, 97),
+         age_firstSex = na_if(v531, 98),
+         
          # -- gaps --
          ideal_pctM = idealBoys/idealNum, # Note: lots of seemingly missing values; 0 B, 0 G reported, but ideal family size > 0. Do not recommend using.
-         ageGap = age - age_partner
+         ageGap = age - age_partner,
+         
+         moreChild_agree = ifelse(is.na(v621) | v621 == 8, NA,
+                                     ifelse(v621 == 1, 1, 0))
+         
   ) %>% 
   rowwise() %>% 
   # -- empowerment indices --
@@ -212,11 +220,17 @@ w14 = w14 %>%
   
   arrange()
 
+
+# refactor ----------------------------------------------------------------
+
 # lump together infrequent religions
 w14$religion = fct_lump(w14$religion, n = 4)
 w14$religion = fct_relevel(w14$religion, 'catholic')
 # g educGap = (educ - educPartner) if !missing(educPartner)
 # g educGapDetail = v133 - v715 if !missing(v715) & v715!= 98
+
+w14$occup_cat = fct_collapse(w14$occupGroup, 
+                             prof = c('professional/technical/managerial', 'household and domestic', 'services', 'clerical'))
 
 
 # merge in livelihood zone names ------------------------------------------
