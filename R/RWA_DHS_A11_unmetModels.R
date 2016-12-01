@@ -9,6 +9,7 @@
 
 # load data ----------------------------------------------------------------
 source('~/GitHub/Rwanda/R/RWA_DHS_08_fertility.R')
+source('~/GitHub/Rwanda/R/RWA_DHS_09_fertility2010.R')
 library(mfx)
 
 # model notes --------------------------------------------------------------
@@ -18,6 +19,10 @@ library(mfx)
 
 # scale factors -----------------------------------------------------------
 w14_scaled = w14 %>% 
+  filter(totLiving > 0) %>%  # include only women who already have a child
+  stdize4regr()
+
+w10_scaled = w10 %>% 
   filter(totLiving > 0) %>%  # include only women who already have a child
   stdize4regr()
 
@@ -71,16 +76,39 @@ baby_models = formulas(~moreChild_binary,
                        male_agree = add_predictors(basic, ~occup_cat, ~moreChild_agree),
                        occup = add_predictors(basic, ~occup_cat))
 
-want_children = w14_scaled %>% fit_with(glm, baby_models, family = binomial(link = 'logit'))
+children_14 = w14_scaled %>% fit_with(glm, baby_models, family = binomial(link = 'logit'))
 
-summary(want_children$basic)
+summary(children_14$basic)
 
 
 # odds ratio --------------------------------------------------------------
-children_or = w14_scaled %>% fit_with(logitor, baby_models)
+children_or14 = w14_scaled %>% fit_with(logitor, baby_models)
 
-
+children_or14$basic$oddsratio
 # marginal effects --------------------------------------------------------
-children_me = w14_scaled %>% fit_with(logitmfx, baby_models)
+children_me14 = w14_scaled %>% fit_with(logitmfx, baby_models)
 
 
+# 2010  -------------------------------------------------------------------
+
+children_10 = w10_scaled %>% fit_with(glm, baby_models, family = binomial(link = 'logit'))
+
+summary(children_10$basic)
+
+children_or10 = w10_scaled %>% fit_with(logitor, baby_models)
+
+
+# compare 2010/2014 -------------------------------------------------------
+
+or10 = children_or10$basic$oddsratio
+or10 = data.frame(or10) %>% 
+  mutate(var =  row.names(or10)) %>% 
+  dplyr::select(or10 = OddsRatio, p10 = P..z., var)
+
+or14 = children_or14$basic$oddsratio
+or14 = data.frame(or14) %>% 
+  mutate(var =  row.names(or14)) %>% 
+  dplyr::select(or14 = OddsRatio, p14 = P..z., var)
+
+or = full_join(or10, or14)
+write.csv(or, 'odds.csv')

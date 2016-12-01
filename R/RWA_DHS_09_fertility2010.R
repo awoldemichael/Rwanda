@@ -1,6 +1,6 @@
 # Rwanda stunting analysis -----------------------------------------
 #
-# RWA_DHS_08_fertility.R: calculate stunting averages for DHS 2010 and 2014/2015 data
+# RWA_DHS_09_fertility2010.R: calculate stunting averages for DHS 2010
 #
 # Script to pull fertility data for Rwanda from the DHS dataset
 # 
@@ -19,23 +19,16 @@ source('RWA_WFP_00_setup.R')
 
 # Import women’s modules --------------------------------------------------
 
-women14_raw = read_dta(paste0(baseDir, 'RW_2014-15_DHS/rwir70dt/RWIR70FL.DTA'))
+women10_raw = read_dta(paste0(baseDir, 'RW_2010_DHS/rwir61dt/RWIR61FL.DTA'))
 
 # livelihood zone data from Dr. Essam-- spatial join b/w DHS clusters and FEWS NET 
-lz_raw = read_dta('~/Documents/USAID/Rwanda/processeddata/RWA_DHS_Livelihoods.dta')
-
-# Men's modules / couples modules investigated, but discarded, since too little overlap w/ women's modules
-# men14_raw = read_dta(paste0(baseDir, 'RW_2014-15_DHS/rwmr70dt/RWMR70FL.DTA'))
-# men10_raw = read_dta(paste0(baseDir, 'RW_2010_DHS/rwmr70dt/RWMR70FL.DTA'))
-# 
-# couples14 = read_dta('~/Documents/USAID/Rwanda/rawdata/RW_2014-15_DHS/rwcr70dt/RWCR70FL.DTA')
-
+lz_raw = read_dta('~/Documents/USAID/Rwanda/processeddata/RWA_DHS2010_Livelihoods.dta')
 
 
 # pull the useful vars ----------------------------------------------------
-w14 = removeAttributes(women14_raw)
+w10 = removeAttributes(women10_raw)
 
-w14 = w14 %>% 
+w10 = w10 %>% 
   select(
     # -- sampling --
     v005,  #weight
@@ -48,7 +41,7 @@ w14 = w14 %>%
     
     # -- geo --
     v024,
-    sdistrict,
+    sdistr,
     altitude = v040, 
     v025, # urban/rural
     
@@ -73,7 +66,7 @@ w14 = w14 %>%
     educ = v106,
     educDetail  =v107,
     educYears = v133,
-    v701, # educPartner
+     v701, # educPartner
     
     
     # -- family planning --
@@ -128,19 +121,19 @@ w14 = w14 %>%
          age_sq = age^2,
          
          # -- create binaries --
-         polygamous = case_when(w14$v505 > 0 ~ 1,
-                                w14$v505 == 0 ~ 0,
+         polygamous = case_when(w10$v505 > 0 ~ 1,
+                                w10$v505 == 0 ~ 0,
                                 TRUE ~ NA_real_),
          
-         own_house = case_when(w14$v745a == 0 ~ 0,
-                               w14$v745a %in% 1:3 ~ 1,
-                               TRUE ~ NA_real_),
-         own_land = case_when(w14$v745b == 0 ~ 0,
-                              w14$v745b %in% 1:3 ~ 1,
-                              TRUE ~ NA_real_),
+         own_house = case_when(w10$v745a == 0 ~ 0,
+                                w10$v745a %in% 1:3 ~ 1,
+                                TRUE ~ NA_real_),
+         own_land = case_when(w10$v745b == 0 ~ 0,
+                             w10$v745b %in% 1:3 ~ 1,
+                             TRUE ~ NA_real_),
          
-         modernContra = case_when(w14$v313 == 3 ~ 1,
-                                  w14$v313 != 3 ~ 0,
+         modernContra = case_when(w10$v313 == 3 ~ 1,
+                                  w10$v313 != 3 ~ 0,
                                   TRUE ~ NA_real_),
          
          hasSon = ifelse(sons > 0, 1,
@@ -150,36 +143,36 @@ w14 = w14 %>%
          hasDaughter = ifelse(daughters > 0, 1,
                               ifelse(daughters == 0, 0,
                                      NA_real_)),
-         
-         goHealth_alone = case_when(w14$v473a == 1 ~ 1,
-                                    w14$v473a != 1 ~ 0,
-                                    TRUE ~ NA_real_),
-         
-         health_nopermiss = case_when(w14$v467b == 1 ~ 1,
-                                      w14$v467b == 2 ~ 0,
+
+         goHealth_alone = case_when(w10$v473a == 1 ~ 1,
+                                      w10$v473a != 1 ~ 0,
                                       TRUE ~ NA_real_),
-         health_money = case_when(w14$v467c == 1 ~ 1,
-                                  w14$v467c == 2 ~ 0,
+         
+         health_nopermiss = case_when(w10$v467b == 1 ~ 1,
+                                      w10$v467b == 2 ~ 0,
+                                      TRUE ~ NA_real_),
+         health_money = case_when(w10$v467c == 1 ~ 1,
+                                  w10$v467c == 2 ~ 0,
                                   TRUE ~ NA_real_),
-         health_dist = case_when(w14$v467d == 1 ~ 1,
-                                 w14$v467d == 2 ~ 0,
+         health_dist = case_when(w10$v467d == 1 ~ 1,
+                                 w10$v467d == 2 ~ 0,
                                  TRUE ~ NA_real_),
-         health_nowanna = case_when(w14$v467f == 1 ~ 1,
-                                    w14$v467f == 2 ~ 0,
+         health_nowanna = case_when(w10$v467f == 1 ~ 1,
+                                    w10$v467f == 2 ~ 0,
                                     TRUE ~ NA_real_),
          
-         curUnion = case_when(w14$v502 == 1 ~ 1,
-                              w14$v502 != 1 ~ 0,
+         curUnion = case_when(w10$v502 == 1 ~ 1,
+                              w10$v502 != 1 ~ 0,
                               TRUE ~ NA_real_),
          
-         unmet_wantsBabies = case_when(w14$v624 == 7 ~ 1,
-                                       w14$v624 != 7 ~ 0,
+         unmet_wantsBabies = case_when(w10$v624 == 7 ~ 1,
+                                       w10$v624 != 7 ~ 0,
                                        TRUE ~ NA_real_),
-         unmet_wantsContra = case_when(w14$v624 %in% c(1,2) ~ 1,
-                                       !w14$v624 %in% c(1,2) ~ 0,
+         unmet_wantsContra = case_when(w10$v624 %in% c(1,2) ~ 1,
+                                       !w10$v624 %in% c(1,2) ~ 0,
                                        TRUE ~ NA_real_),
-         moreChild_binary = case_when(w14$v602 == 1 ~ 1, # wants another baby
-                                      w14$v602 == 3 ~ 0, # wants no more babies
+         moreChild_binary = case_when(w10$v602 == 1 ~ 1, # wants another baby
+                                      w10$v602 == 3 ~ 0, # wants no more babies
                                       # everything else: undecided, infertile, sterilized, etc. treated as NA
                                       TRUE ~ NA_real_),
          # -- remove NAs --
@@ -195,12 +188,12 @@ w14 = w14 %>%
          beatIf_noSex = na_if(beatIf_noSex, 9),
          beatIf_burnsFood = na_if(beatIf_burnsFood, 9),
          
-         educPartner = na_if(v701, 8),
-         educPartner = na_if(educPartner, 9),
-         
          fp_radio = na_if(fp_radio, 9),
          fp_tv = na_if(fp_tv, 9),
          fp_news = na_if(fp_news, 9),
+         
+         educPartner = na_if(v701, 8),
+         educPartner = na_if(educPartner, 9),
          
          age_partner = na_if(age_partner, 97),
          age_partner = na_if(age_partner, 98),
@@ -208,32 +201,31 @@ w14 = w14 %>%
          age_firstSex = na_if(v531, 97),
          age_firstSex = na_if(age_firstSex, 98),
          age_firstSex = na_if(age_firstSex, 99),
-         
          # -- gaps --
          ideal_pctM = idealBoys/idealNum, # Note: lots of seemingly missing values; 0 B, 0 G reported, but ideal family size > 0. Do not recommend using.
          ageGap = age - age_partner,
          
          moreChild_agree = ifelse(is.na(v621) | v621 == 8, NA,
-                                  ifelse(v621 == 1, 1, 0))
+                                     ifelse(v621 == 1, 1, 0))
          
   ) %>% 
   rowwise() %>% 
   # -- empowerment indices --
   mutate(beating_idx = sum(beatIf_leaveHouse, beatIf_neglChild, 
                            beatIf_argues, beatIf_noSex, beatIf_burnsFood, na.rm = TRUE)) %>% 
+
   ungroup() %>% 
-  
-  factorize(women14_raw, 'v024', 'province') %>% 
-  factorize(women14_raw, 'sdistrict', 'district') %>% 
-  factorize(women14_raw, 'v025', 'rural') %>% 
-  factorize(women14_raw, 'v130', 'religion') %>% 
-  factorize(women14_raw, 'v013', 'ageGroup') %>% 
-  factorize(women14_raw, 'v717', 'occupGroup') %>%  
-  factorize(women14_raw, 'v705', 'occupHusGroup') %>% 
-  factorize(women14_raw, 'v623', 'fecund') %>% 
-  factorize(women14_raw, 'v602', 'moreChild') %>% 
-  factorize(women14_raw, 'v621', 'moreChildHus') %>%  
-  factorize(women14_raw, 'v624', 'unmetNeed') %>%  
+  factorize(women10_raw, 'v024', 'province') %>% 
+  factorize(women10_raw, 'sdistr', 'district') %>% 
+  factorize(women10_raw, 'v025', 'rural') %>% 
+  factorize(women10_raw, 'v130', 'religion') %>% 
+  factorize(women10_raw, 'v013', 'ageGroup') %>% 
+  factorize(women10_raw, 'v717', 'occupGroup') %>%  
+  factorize(women10_raw, 'v705', 'occupHusGroup') %>% 
+  factorize(women10_raw, 'v623', 'fecund') %>% 
+  factorize(women10_raw, 'v602', 'moreChild') %>% 
+  factorize(women10_raw, 'v621', 'moreChildHus') %>%  
+  factorize(women10_raw, 'v624', 'unmetNeed') %>%  
   
   arrange()
 
@@ -241,12 +233,12 @@ w14 = w14 %>%
 # refactor ----------------------------------------------------------------
 
 # lump together infrequent religions
-w14$religion = fct_lump(w14$religion, n = 4)
-w14$religion = fct_relevel(w14$religion, 'catholic')
+w10$religion = fct_lump(w10$religion, n = 4)
+w10$religion = fct_relevel(w10$religion, 'catholic')
 # g educGap = (educ - educPartner) if !missing(educPartner)
 # g educGapDetail = v133 - v715 if !missing(v715) & v715!= 98
 
-w14$occup_cat = fct_collapse(w14$occupGroup, 
+w10$occup_cat = fct_collapse(w10$occupGroup, 
                              prof = c('professional/technical/managerial', 'household and domestic', 'services', 'clerical'))
 
 
@@ -257,87 +249,62 @@ lz = removeAttributes(lz_raw) %>% select(-district, -province, -rural)
 lz = factorize(lz, lz_raw, 'lvdzone', 'lvdzone')
 
 # merge by DHS cluster and hh id.
-w14 = left_join(w14, lz, by = c('v001', 'v002', 'strata', 'altitude', 'psu', 'numChildUnd5', 'wealthGroup', 'wealth'))
-sum(is.na(w14$lvdzone)) 
+w10 = left_join(w10, lz, by = c('v001', 'v002', 'strata', 'altitude', 'psu', 'numChildUnd5', 'wealthGroup', 'wealth'))
+sum(is.na(w10$lvdzone)) 
 
-# men’s mod ---------------------------------------------------------------
-# m14 = removeAttributes(men14_raw)
-# 
-# m14 = m14 %>% 
-#   select(
-#     # -- sampling --
-#     mv005,  # weight
-#     strata = mv022, 
-#     dhsclust = mv001,
-#     mcaseid,
-#     # partner_id = mv034,
-#     hhid = mv002,
-#     m_linenum = mv003,
-#     psu = mv021,
-#     
-#     # -- contraception --
-#     # contraception knowledge (mv301) high
-#     mv313, # current method using
-#     mv384a, # radio abt FP
-#     mv384b, # tv
-#     mv384c, # newspaper
-#     mv395, # talked about FP w/ health worker
-#     mv3b25a, # male attitudes about whose responsibility contra is are roughly egalitarian.
-#     mv3b25b, # similar for promiscuity / contr use -- men (mostly) okay w/ them
-#     
-#     # -- family planning ---
-#     idealNum_hus = mv613, 
-# idealNum_husGrp = mv614
-# )
 
 # Filter women ------------------------------------------------------------
 # currently in union.
-w14 = w14 %>% 
+w10 = w10 %>% 
   filter(curUnion == 1)
 
 
 # check I got all the NA values -------------------------------------------
 # DHS uses 9, 96, 97, 98, 99, 999, etc. to encode NAs. Checking I didn't miss any:
-# na_check = data.frame(tot = t(w14 %>% summarise_all(funs(sum(. > 50, na.rm = TRUE))))) 
-# na_check %>% mutate(var = row.names(na_check)) %>% filter(tot>0)
+na_check = data.frame(tot = t(w10 %>%
+                                select(
+                                  # -- demographics --
+                                  age, rural ,
+                                  ageGap ,
+                                  religion ,
+                                  age_firstSex ,
+                                  
+                                  # numChildUnd5 ,
+                                  totLiving, hasSon ,
+                                  
+                                  # hasSon , 
+                                  # hasDaughter ,
+                                  
+                                  # -- education --
+                                  educ ,
+                                  educPartner ,
+                                  # occup_cat ,
+                                  # occupHusGroup ,
+                                  
+                                  # -- wealth --
+                                  wealth , 
+                                  
+                                  # -- geo / connectivity --
+                                  altitude ,
+                                  # rural ,
+                                  
+                                  # -- health -- 
+                                  bedNetUse , 
+                                  went_doctor , 
+                                  # FPatHealth , # too many unobs? ~ 1/2 didn't go to doc.
+                                  health_dist ,
+                                  health_money ,
+                                  # goHealth_alone , # too many unobs.
+                                  fp_radio ,
+                                  fp_tv ,
+                                  fp_news ,
+                                  
+                                  # -- empowerment --
+                                  own_land ,
+                                  own_house ,
+                                  beating_idx) %>% 
+                                summarise_all(funs(sum(. > 50 | . %in% c(8,9), na.rm = TRUE))))) 
+na_check %>% mutate(var = row.names(na_check)) %>% filter(tot>0)
 
-# na_check = data.frame(tot = t(w14 %>% summarise_all(funs(sum(. %in% c(8, 9), na.rm = TRUE))))) 
-# na_check %>% mutate(var = row.names(na_check)) %>% filter(tot>0)
-
-# merge men/women ---------------------------------------------------------
-# Intending to pull the men's module data to merge with women's, to see if there's any relationship b/w
-# the limited data the dhs collects about men's perceptions of contraception and family planning.
-# HOWEVER-- it looks as though only a small number of women (~2904) had their partners interviewed as well.
-# Verified by the couples' module. Since that throws out ~ 1/2 of the sample, ignoring.
-# comb = left_join(w14, m14, by = c('dhsclust', 'hhid', 'partner_id' = 'm_linenum', 'strata', 'psu'))
-# 
-# # canary checks
-# sum(is.na(m14$mv313)) # 0 missing.
-# sum(is.na(comb$mv313))
-# 
-# comb = comb %>% 
-#   mutate(diff_idealNum = idealNum - idealNum_hus)
-# 
-# ggplot(removeAttributes(comb), aes(x = diff_idealNum, fill = factor(diff_idealNum > 0))) +
-#   geom_histogram(binwidth = 1) +
-#   xlim(c(-10, 10)) +
-#   theme_ygrid()
-#   
-# ggplot(removeAttributes(comb), aes(x = idealNum_hus, y = idealNum)) +
-#   geom_abline(slope = 1, intercept = 0, color = 'red', size = 0.5) +
-#   geom_point(size = 5, alpha = 0.03) +
-#   coord_cartesian(xlim = c(0, 10), ylim = c(0, 10)) +
-#   theme_xygrid()
-
-
-# For those w/ unmet need— why not using condoms? -------------------------
-why_unmet = data.frame(tot = t( w14 %>% 
-                                  filter(unmet_wantsContra == 1) %>% 
-                                  select(contains('v3a08')) %>% 
-                                  summarise_each(funs(sum(., na.rm = TRUE))))) 
-
-why_unmet%>% 
-  mutate(var = row.names(why_unmet)) %>% 
-  arrange(desc(tot))
 
 
