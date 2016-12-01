@@ -54,10 +54,10 @@ admin3_codebk = hh %>%
 # replace '}"' with '}'
 # sed -n  's/\\//gpw output.json' test.json
 # sed -n  's/}"/}/gpw output2.json' output.js
-
+# sed -n  's/"{/{/gpw intervention-location_2016-12-01.json' output2.js
 
 # Import data from Baboyma's dataset
-sectors = jsonlite::fromJSON('~/GitHub/RwandaCHAIN/www/data/output2.json', flatten = T, simplifyMatrix = T, simplifyDataFrame = T)
+sectors = jsonlite::fromJSON('~/GitHub/RwandaCHAIN/www/data/intervention-location_2016-12-01.json', flatten = T, simplifyMatrix = T, simplifyDataFrame = T)
 sectors = sectors$data
 
 interventions = jsonlite::fromJSON('~/GitHub/RwandaCHAIN/www/data/intervention-list.json', flatten = T, simplifyMatrix = T, simplifyDataFrame = T)
