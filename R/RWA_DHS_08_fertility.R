@@ -64,6 +64,7 @@ w14 = w14 %>%
     numChildUnd5 = v137,
     v502,# g byte curUnion = (v502 ==1)
     v501, # clonevar maritialStatus = 
+    v505,
     
     # -- assets --
     wealthGroup = v190,
@@ -82,24 +83,45 @@ w14 = w14 %>%
     v621, # clonevar moreChildHus = 
     v621, # husband pref
     idealNum = v613, 
+    idealBoys = v627,
+    idealGirls = v628,
     v614, # categorical ideal # kids
     # /* Parity parity is defined as the number of times that she has given 
     # birth to a fetus with a gestational age of 24 weeks or more, 
     # regardless of whether the child was born alive or was stillborn. */
     totChild = v201,
+    totLiving = v219,
     sons = v202,
     daughters = v203,
     v313, # v313== 3 modern contraception
     intentionContra = v364,
     sexActivity = v536,
+    age_firstSex = v531, # imputed from if responded "when married"
     v624, # unmet need
     contains('v3a08'), # reason not using
+    fp_radio = v384a,
+    fp_tv = v384b,
+    fp_news = v384c,
     
     # -- health --
     bedNetUse = v461,
     pregnant = v213,
     v623, #fecund = 
-    v467d # access to heatlh clinic difficult
+    
+    went_doctor = v394, # went to health facility last 12 mo.
+    FPatHealth = v395, # received family planning advice at health facility
+    m14_1, # # antenatal visits during pregnancy
+    checkup_postPregn = m50_1,
+    
+    v467b, # permission to go to health clinic difficult
+    v467c, # $$ to get to health clinic difficult
+    v467d, # access to heatlh clinic difficult
+    v467f, # don't go to clinic b/c don't want to
+    
+    # women's empowerment
+    contains('v743'), # is allowed to go places?
+    contains('v744'), # when is okay to beat
+    contains('v745') # own land/house
   ) %>% 
   mutate(weight = v005 / 1e6,
          wealth = v191 / 1e5,
@@ -107,17 +129,45 @@ w14 = w14 %>%
          age_sq = age^2,
          
          # -- create binaries --
+         polygamous = case_when(w14$v505 > 0 ~ 1,
+                                w14$v505 == 0 ~ 0,
+                                TRUE ~ NA_real_),
+         
+         own_house = case_when(w14$v745a == 0 ~ 0,
+                                w14$v745a %in% 1:3 ~ 1,
+                                TRUE ~ NA_real_),
+         own_land = case_when(w14$v745b == 0 ~ 0,
+                             w14$v745b %in% 1:3 ~ 1,
+                             TRUE ~ NA_real_),
+         
          modernContra = case_when(w14$v313 == 3 ~ 1,
                                   w14$v313 != 3 ~ 0,
                                   TRUE ~ NA_real_),
          
-         hasSon = case_when(w14$sons > 0 ~ 1,
-                              w14$sons == 0 ~ 0,
-                              TRUE ~ NA_real_),
+         hasSon = ifelse(sons > 0, 1,
+                         ifelse(sons == 0, 0,
+                                NA_real_)),
          
-         hasDaughter = case_when(w14$daughters > 0 ~ 1,
-                              w14$daughters == 0 ~ 0,
-                              TRUE ~ NA_real_),
+         hasDaughter = ifelse(daughters > 0, 1,
+                              ifelse(daughters == 0, 0,
+                                     NA_real_)),
+
+         goHealth_alone = case_when(w14$v473a == 1 ~ 1,
+                                      w14$v473a != 1 ~ 0,
+                                      TRUE ~ NA_real_),
+         
+         health_nopermiss = case_when(w14$v467b == 1 ~ 1,
+                                      w14$v467b == 2 ~ 0,
+                                      TRUE ~ NA_real_),
+         health_money = case_when(w14$v467c == 1 ~ 1,
+                                  w14$v467c == 2 ~ 0,
+                                  TRUE ~ NA_real_),
+         health_dist = case_when(w14$v467d == 1 ~ 1,
+                                 w14$v467d == 2 ~ 0,
+                                 TRUE ~ NA_real_),
+         health_nowanna = case_when(w14$v467f == 1 ~ 1,
+                                    w14$v467f == 2 ~ 0,
+                                    TRUE ~ NA_real_),
          
          curUnion = case_when(w14$v502 == 1 ~ 1,
                               w14$v502 != 1 ~ 0,
@@ -132,8 +182,22 @@ w14 = w14 %>%
          moreChild_binary = case_when(w14$v602 == 1 ~ 1, # wants another baby
                                       w14$v602 == 3 ~ 0, # wants no more babies
                                       # everything else: undecided, infertile, sterilized, etc. treated as NA
-                                       TRUE ~ NA_real_)
+                                      TRUE ~ NA_real_),
+         # -- remove NAs --
+         beatIf_leaveHouse = na_if(v744a, 8),
+         beatIf_neglChild = na_if(v744b, 8),
+         beatIf_argues = na_if(v744c, 8),
+         beatIf_noSex = na_if(v744d, 8),
+         beatIf_burnsFood = na_if(v744e, 8),
+         # -- gaps --
+         ideal_pctM = idealBoys/idealNum, # Note: lots of seemingly missing values; 0 B, 0 G reported, but ideal family size > 0. Do not recommend using.
+         ageGap = age - age_partner
   ) %>% 
+  rowwise() %>% 
+  # -- empowerment indices --
+  mutate(beating_idx = sum(beatIf_leaveHouse, beatIf_neglChild, 
+                           beatIf_argues, beatIf_noSex, beatIf_burnsFood, na.rm = TRUE)) %>% 
+
   factorize(women14_raw, 'v024', 'province') %>% 
   factorize(women14_raw, 'sdistrict', 'district') %>% 
   factorize(women14_raw, 'v025', 'rural') %>% 
@@ -147,10 +211,12 @@ w14 = w14 %>%
   factorize(women14_raw, 'v624', 'unmetNeed') %>%  
   
   arrange()
-# g byte educSame = (educPartner == educ) if !missing(educPartner)
+
+# lump together infrequent religions
+w14$religion = fct_lump(w14$religion, n = 4)
+w14$religion = fct_relevel(w14$religion, 'catholic')
 # g educGap = (educ - educPartner) if !missing(educPartner)
 # g educGapDetail = v133 - v715 if !missing(v715) & v715!= 98
-# g ageGap = v012 - v730
 
 
 # merge in livelihood zone names ------------------------------------------
@@ -190,8 +256,8 @@ sum(is.na(w14$lvdzone))
 #     
 #     # -- family planning ---
 #     idealNum_hus = mv613, 
-    # idealNum_husGrp = mv614
-    # )
+# idealNum_husGrp = mv614
+# )
 
 # Filter women ------------------------------------------------------------
 # currently in union.
@@ -204,7 +270,7 @@ w14 = w14 %>%
 na_check = data.frame(tot = t(w14 %>% summarise_all(funs(sum(. > 50, na.rm = TRUE))))) 
 na_check %>% mutate(var = row.names(na_check)) %>% filter(tot>0)
 
-na_check = data.frame(tot = t(w14 %>% summarise_all(funs(sum(. == 9, na.rm = TRUE))))) 
+na_check = data.frame(tot = t(w14 %>% summarise_all(funs(sum(. %in% c(8, 9), na.rm = TRUE))))) 
 na_check %>% mutate(var = row.names(na_check)) %>% filter(tot>0)
 
 # merge men/women ---------------------------------------------------------
@@ -235,9 +301,9 @@ na_check %>% mutate(var = row.names(na_check)) %>% filter(tot>0)
 
 # For those w/ unmet need— why not using condoms? -------------------------
 why_unmet = data.frame(tot = t( w14 %>% 
-  filter(unmet_wantsContra == 1) %>% 
-  select(contains('v3a08')) %>% 
-  summarise_each(funs(sum(., na.rm = TRUE))))) 
+                                  filter(unmet_wantsContra == 1) %>% 
+                                  select(contains('v3a08')) %>% 
+                                  summarise_each(funs(sum(., na.rm = TRUE))))) 
 
 why_unmet%>% 
   mutate(var = row.names(why_unmet)) %>% 
