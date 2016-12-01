@@ -22,10 +22,14 @@ source('RWA_WFP_00_setup.R')
 women14_raw = read_dta(paste0(baseDir, 'RW_2014-15_DHS/rwir70dt/RWIR70FL.DTA'))
 women10_raw = read_dta(paste0(baseDir, 'RW_2010_DHS/rwir61dt/RWIR61FL.DTA'))
 
-men14_raw = read_dta(paste0(baseDir, 'RW_2014-15_DHS/rwmr70dt/RWMR70FL.DTA'))
-men10_raw = read_dta(paste0(baseDir, 'RW_2010_DHS/rwmr70dt/RWMR70FL.DTA'))
+# livelihood zone data from Dr. Essam-- spatial join b/w DHS clusters and FEWS NET 
+lz = read_dta('~/Documents/USAID/Rwanda/processeddata/RWA_DHS_Livelihoods.dta')
 
-couples14 = read_dta('~/Documents/USAID/Rwanda/rawdata/RW_2014-15_DHS/rwcr70dt/RWCR70FL.DTA')
+# Men's modules / couples modules investigated, but discarded, since too little overlap w/ women's modules
+# men14_raw = read_dta(paste0(baseDir, 'RW_2014-15_DHS/rwmr70dt/RWMR70FL.DTA'))
+# men10_raw = read_dta(paste0(baseDir, 'RW_2010_DHS/rwmr70dt/RWMR70FL.DTA'))
+# 
+# couples14 = read_dta('~/Documents/USAID/Rwanda/rawdata/RW_2014-15_DHS/rwcr70dt/RWCR70FL.DTA')
 
 
 
@@ -106,9 +110,6 @@ w14 = w14 %>%
          curUnion = case_when(w14$v502 == 1 ~ 1,
                               w14$v502 != 1 ~ 0,
                               TRUE ~ NA_real_),
-         curUnion = case_when(w14$v502 == 1 ~ 1,
-                              w14$v502 != 1 ~ 0,
-                              TRUE ~ NA_real_),
          
          unmet_wantsBabies = case_when(w14$v624 == 7 ~ 1,
                                        w14$v624 != 7 ~ 0,
@@ -171,26 +172,39 @@ w14 = w14 %>%
   filter(curUnion == 1)
 
 
+# check I got all the NA values -------------------------------------------
+# DHS uses 9, 96, 97, 98, 99, 999, etc. to encode NAs. Checking I didn't miss any:
+na_check = data.frame(tot = t(w14 %>% summarise_all(funs(sum(. > 50, na.rm = TRUE))))) 
+na_check %>% mutate(var = row.names(na_check)) %>% filter(tot>0)
+
+na_check = data.frame(tot = t(w14 %>% summarise_all(funs(sum(. == 9, na.rm = TRUE))))) 
+na_check %>% mutate(var = row.names(na_check)) %>% filter(tot>0)
+
 # merge men/women ---------------------------------------------------------
-comb = left_join(w14, m14, by = c('dhsclust', 'hhid', 'partner_id' = 'm_linenum', 'strata', 'psu'))
+# Intending to pull the men's module data to merge with women's, to see if there's any relationship b/w
+# the limited data the dhs collects about men's perceptions of contraception and family planning.
+# HOWEVER-- it looks as though only a small number of women (~2904) had their partners interviewed as well.
+# Verified by the couples' module. Since that throws out ~ 1/2 of the sample, ignoring.
+# comb = left_join(w14, m14, by = c('dhsclust', 'hhid', 'partner_id' = 'm_linenum', 'strata', 'psu'))
+# 
+# # canary checks
+# sum(is.na(m14$mv313)) # 0 missing.
+# sum(is.na(comb$mv313))
+# 
+# comb = comb %>% 
+#   mutate(diff_idealNum = idealNum - idealNum_hus)
+# 
+# ggplot(removeAttributes(comb), aes(x = diff_idealNum, fill = factor(diff_idealNum > 0))) +
+#   geom_histogram(binwidth = 1) +
+#   xlim(c(-10, 10)) +
+#   theme_ygrid()
+#   
+# ggplot(removeAttributes(comb), aes(x = idealNum_hus, y = idealNum)) +
+#   geom_abline(slope = 1, intercept = 0, color = 'red', size = 0.5) +
+#   geom_point(size = 5, alpha = 0.03) +
+#   coord_cartesian(xlim = c(0, 10), ylim = c(0, 10)) +
+#   theme_xygrid()
 
-# canary checks
-sum(is.na(m14$mv313)) # 0 missing.
-sum(is.na(comb$mv313))
-
-comb = comb %>% 
-  mutate(diff_idealNum = idealNum - idealNum_hus)
-
-ggplot(removeAttributes(comb), aes(x = diff_idealNum, fill = factor(diff_idealNum > 0))) +
-  geom_histogram(binwidth = 1) +
-  xlim(c(-10, 10)) +
-  theme_ygrid()
-  
-ggplot(removeAttributes(comb), aes(x = idealNum_hus, y = idealNum)) +
-  geom_abline(slope = 1, intercept = 0, color = 'red', size = 0.5) +
-  geom_point(size = 5, alpha = 0.03) +
-  coord_cartesian(xlim = c(0, 10), ylim = c(0, 10)) +
-  theme_xygrid()
 
 # For those w/ unmet need— why not using condoms? -------------------------
 why_unmet = data.frame(tot = t( w14 %>% 
