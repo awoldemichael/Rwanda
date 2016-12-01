@@ -23,7 +23,7 @@ women14_raw = read_dta(paste0(baseDir, 'RW_2014-15_DHS/rwir70dt/RWIR70FL.DTA'))
 women10_raw = read_dta(paste0(baseDir, 'RW_2010_DHS/rwir61dt/RWIR61FL.DTA'))
 
 # livelihood zone data from Dr. Essam-- spatial join b/w DHS clusters and FEWS NET 
-lz = read_dta('~/Documents/USAID/Rwanda/processeddata/RWA_DHS_Livelihoods.dta')
+lz_raw = read_dta('~/Documents/USAID/Rwanda/processeddata/RWA_DHS_Livelihoods.dta')
 
 # Men's modules / couples modules investigated, but discarded, since too little overlap w/ women's modules
 # men14_raw = read_dta(paste0(baseDir, 'RW_2014-15_DHS/rwmr70dt/RWMR70FL.DTA'))
@@ -41,10 +41,10 @@ w14 = w14 %>%
     # -- sampling --
     v005,  #weight
     strata = v022, 
-    dhsclust = v001,
+    v001,# dhs cluster
+    v002, # hhid
     caseid,
     partner_id = v034,
-    hhid = v002,
     psu = v021,
     
     # -- geo --
@@ -73,7 +73,7 @@ w14 = w14 %>%
     educ = v106,
     educDetail  =v107,
     educYears = v133,
-    v701, # educPartner
+    educPartner = v701, # educPartner
     
     
     # -- family planning --
@@ -87,6 +87,8 @@ w14 = w14 %>%
     # birth to a fetus with a gestational age of 24 weeks or more, 
     # regardless of whether the child was born alive or was stillborn. */
     totChild = v201,
+    sons = v202,
+    daughters = v203,
     v313, # v313== 3 modern contraception
     intentionContra = v364,
     sexActivity = v536,
@@ -96,16 +98,26 @@ w14 = w14 %>%
     # -- health --
     bedNetUse = v461,
     pregnant = v213,
-    fecund = v623,
+    v623, #fecund = 
     v467d # access to heatlh clinic difficult
   ) %>% 
   mutate(weight = v005 / 1e6,
          wealth = v191 / 1e5,
          
+         age_sq = age^2,
+         
          # -- create binaries --
          modernContra = case_when(w14$v313 == 3 ~ 1,
                                   w14$v313 != 3 ~ 0,
                                   TRUE ~ NA_real_),
+         
+         hasSon = case_when(w14$sons > 0 ~ 1,
+                              w14$sons == 0 ~ 0,
+                              TRUE ~ NA_real_),
+         
+         hasDaughter = case_when(w14$daughters > 0 ~ 1,
+                              w14$daughters == 0 ~ 0,
+                              TRUE ~ NA_real_),
          
          curUnion = case_when(w14$v502 == 1 ~ 1,
                               w14$v502 != 1 ~ 0,
@@ -116,6 +128,10 @@ w14 = w14 %>%
                                        TRUE ~ NA_real_),
          unmet_wantsContra = case_when(w14$v624 %in% c(1,2) ~ 1,
                                        !w14$v624 %in% c(1,2) ~ 0,
+                                       TRUE ~ NA_real_),
+         moreChild_binary = case_when(w14$v602 == 1 ~ 1, # wants another baby
+                                      w14$v602 == 3 ~ 0, # wants no more babies
+                                      # everything else: undecided, infertile, sterilized, etc. treated as NA
                                        TRUE ~ NA_real_)
   ) %>% 
   factorize(women14_raw, 'v024', 'province') %>% 
@@ -125,6 +141,7 @@ w14 = w14 %>%
   factorize(women14_raw, 'v013', 'ageGroup') %>% 
   factorize(women14_raw, 'v717', 'occupGroup') %>%  
   factorize(women14_raw, 'v705', 'occupHusGroup') %>% 
+  factorize(women14_raw, 'v623', 'fecund') %>% 
   factorize(women14_raw, 'v602', 'moreChild') %>% 
   factorize(women14_raw, 'v621', 'moreChildHus') %>%  
   factorize(women14_raw, 'v624', 'unmetNeed') %>%  
@@ -136,35 +153,45 @@ w14 = w14 %>%
 # g ageGap = v012 - v730
 
 
-# men’s mod ---------------------------------------------------------------
-m14 = removeAttributes(men14_raw)
+# merge in livelihood zone names ------------------------------------------
+sum(is.na(lz_raw$lvdzone)) # no lvdzone missing.
 
-m14 = m14 %>% 
-  select(
-    # -- sampling --
-    mv005,  # weight
-    strata = mv022, 
-    dhsclust = mv001,
-    mcaseid,
-    # partner_id = mv034,
-    hhid = mv002,
-    m_linenum = mv003,
-    psu = mv021,
-    
-    # -- contraception --
-    # contraception knowledge (mv301) high
-    mv313, # current method using
-    mv384a, # radio abt FP
-    mv384b, # tv
-    mv384c, # newspaper
-    mv395, # talked about FP w/ health worker
-    mv3b25a, # male attitudes about whose responsibility contra is are roughly egalitarian.
-    mv3b25b, # similar for promiscuity / contr use -- men (mostly) okay w/ them
-    
-    # -- family planning ---
-    idealNum_hus = mv613, 
-    idealNum_husGrp = mv614
-    )
+lz = removeAttributes(lz_raw) %>% select(-district, -province, -rural)
+lz = factorize(lz, lz_raw, 'lvdzone', 'lvdzone')
+
+# merge by DHS cluster and hh id.
+w14 = left_join(w14, lz, by = c('v001', 'v002', 'strata', 'altitude', 'psu', 'numChildUnd5', 'wealthGroup', 'wealth'))
+sum(is.na(w14$lvdzone)) 
+
+# men’s mod ---------------------------------------------------------------
+# m14 = removeAttributes(men14_raw)
+# 
+# m14 = m14 %>% 
+#   select(
+#     # -- sampling --
+#     mv005,  # weight
+#     strata = mv022, 
+#     dhsclust = mv001,
+#     mcaseid,
+#     # partner_id = mv034,
+#     hhid = mv002,
+#     m_linenum = mv003,
+#     psu = mv021,
+#     
+#     # -- contraception --
+#     # contraception knowledge (mv301) high
+#     mv313, # current method using
+#     mv384a, # radio abt FP
+#     mv384b, # tv
+#     mv384c, # newspaper
+#     mv395, # talked about FP w/ health worker
+#     mv3b25a, # male attitudes about whose responsibility contra is are roughly egalitarian.
+#     mv3b25b, # similar for promiscuity / contr use -- men (mostly) okay w/ them
+#     
+#     # -- family planning ---
+#     idealNum_hus = mv613, 
+    # idealNum_husGrp = mv614
+    # )
 
 # Filter women ------------------------------------------------------------
 # currently in union.
