@@ -25,6 +25,9 @@ clear
 	clonevar dhsclust 	= v001
 	clonevar psu 		= v021
 	clonevar province 	= v024
+	g altitude2 = altitude/1000
+	la var altitude2 "altitude divided by 1000"
+	
 	
 * Clone original DHS variables and simply rename
 	clonevar ageGroup 	= v013
@@ -55,7 +58,9 @@ clear
 	
 * Family planning knowledge or outreach
 	clonevar visHCtoldFP = v395
+	replace visHCtoldFP = . if visHCtoldFP == 9
 	clonevar famPlanWorkVisit = v393
+	replace famPlanWorkVisit = . if famPlanWorkVisit == 9 
 
 * Family planning via media
 	g byte famPlanRadio = inlist(1, v384a)
@@ -70,7 +75,7 @@ clear
 * Recodes to standardize variables and groups *
 ** Religion
 	recode v130 (1 = 1 "Catholic")(2 = 2 "Protestant")(3 = 3 "Adventist")(4 = 4 "Mulsim") /*
-	*/  (5 6 7 96 = 5 "Other"), gen(religion)
+	*/  (5 6 96 99 = 5 "Other"), gen(religion)
 
 ** Fecund
 	recode v623 (0 = 1 "fecund")(1 3 = 0 "not-fecund")(2 = 2 "Breastfeeding"), gen(fecund) 
@@ -78,6 +83,7 @@ clear
 ** Urban
 	recode v025 (1 = 1 "Urban")(2 = 0 "Rural"), gen(urban)
 	recode v467d (1 = 1 "access to health clinic difficult")(2 = 0 "not a problem"), gen(distanceHC)
+	replace distanceHC = . if distanceHC == 9
 
 ** Residence status
 	g byte residStatus = v504 == 1
@@ -94,7 +100,8 @@ clear
 	regardless of whether the child was born alive or was stillborn. */
 	clonevar totChild = v201
 	recode totChild (0 = 0 "no children")(1 2 = 1 "1-2 children")(3 4 = 2 "3-4 children") /*
-	*/	(5 / 14 = 3 "5+ children"), gen(parity)
+	*/	(5 / 15 = 3 "5+ children"), gen(parity)
+	clonevar totChildWanted = v613
 
 * Household assets
 	clonevar wealthGroup = v190
@@ -105,6 +112,10 @@ clear
 * Contraception Use
 	g byte modernContra = v313 == 3
 	la var modernContra "Use modern method of contraception (binary)"
+	g byte unmodernContra = inlist(v313, 1, 2)
+	la var unmodernContra "Use non-modern methods of contraception"
+	g byte noContra = v313 == 0
+	la var noContra "Do not use any form of contraception"
 	clonevar intentionContra = v364
 	recode v361 (1 2 3 = 0 "using or used")(4 = 1 "never used"), gen(contraPattern)
 
@@ -114,13 +125,13 @@ clear
 	la var sexuallyActive "recent activity in last 4 weeks"
 	
 * Human Capital
-	recode v701 (0 8 = 0 "no education")(1 = 1 "primary")(2 = 2 "secondary")/*
+	recode v701 (0 8 9 = 0 "no education")(1 = 1 "primary")(2 = 2 "secondary")/*
 	*/(3 = 3 "higher"), gen(educPartner)
 	
 	g byte educSame = (educPartner == educ) if !missing(educPartner)
 	g educGap = (educ - educPartner) if !missing(educPartner)
-	g educGapDetail = v133 - v715 if !missing(v715) & v715!= 98
-	g ageGap = v012 - v730
+	g educGapDetail = v133 - v715 if !missing(v715) & inlist(v715, 98, 99)!=1
+	g ageGap = v012 - v730 if (v730 != 99) 
 	
 	* add some labels to make things readable
 	la var educSame "individuals in union have same education levels"
@@ -129,7 +140,7 @@ clear
 	la var ageGap "age gap between individuals in union"
 		
 * Occupation types
-	g byte occupSame = v705 == v717 if !missing(v705)
+	g byte occupSame = v705 == v717 if !missing(v705) & inlist(v705, 98, 99)!=1
 	g byte agLaborers = inlist(5, v717, v705) & !missing(v705)
 	la var occupSame "same occupations"
 	la var agLaborers "both are ag laborers"
@@ -183,13 +194,20 @@ clear
 	la var muslim_dominant "muslim faith dominant religion in community"
 	
 * Combine FEWS Net Livelihood zones
-	merge m:1 v001 v002 using "$pathout/RWA_DHS_Livelihoods.dta", gen(_fertility)
+	merge m:1 v001 v002 using "$pathout/RWA_DHS2010_Livelihoods.dta", gen(_fertility)
 	drop if _fertility == 2
 	
 	g byte flagContra = (curUnion == 1)
 	la var flagContra "flag for filtering only women in a union"
 
-saveold "$pathout/contraceptionAnalysis.dta", replace
+* Change missing values from 99 to missing
+foreach x of varlist occupGroup occupation occupationF occupationM occupGroupHus {
+		replace `x' = . if inlist(`x', 98, 99)
+		sum `x'
+	}
+*end
+
+saveold "$pathout/contraceptionAnalysis2010.dta", replace
 log close
 	
 	

@@ -25,6 +25,8 @@ clear
 	clonevar dhsclust 	= v001
 	clonevar psu 		= v021
 	clonevar province 	= v024
+	g altitude2 = altitude/1000
+	la var altitude2 "altitude divided by 1000"
 	
 * Clone original DHS variables and simply rename
 	clonevar ageGroup 	= v013
@@ -95,6 +97,7 @@ clear
 	clonevar totChild = v201
 	recode totChild (0 = 0 "no children")(1 2 = 1 "1-2 children")(3 4 = 2 "3-4 children") /*
 	*/	(5 / 14 = 3 "5+ children"), gen(parity)
+	clonevar totChildWanted = v613
 
 * Household assets
 	clonevar wealthGroup = v190

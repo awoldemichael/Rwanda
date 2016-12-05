@@ -81,6 +81,10 @@ clonevar anemia = v457
 recode m14 (3 = 2 "2-3 visits") (4/11 = 3 "4+ ANC visit")(. = 5 "missing"), gen(anc)
 clonevar anc_Visits = m14
 
+* Contraception use practices
+	g byte modernContra = v313 == 3
+	la var modernContra "Use modern method of contraception (binary)"
+
 * Birth size
 recode m18 (1 = 5 "very above")(2 = 4 "above ave")(3 = 3 "ave")(4 = 2 "below ave")/*
 */(5 = 1 "very below")(8 = .), gen(birthSize)
@@ -188,7 +192,7 @@ ds(stunting stunting2 stunted stunted2 ageChild
 	dietdiv bmitmp motherBMI motherBWeight 
 	motherEd breastfeeding birthAtHome
 	motherEdYears DHSCLUST cweight wantedChild anemia
-	vitaminA intParasites extstunted* orsKnowledge);
+	vitaminA intParasites extstunted* orsKnowledge modernContra);
 #delimit cr
 keep `r(varlist)'
 
