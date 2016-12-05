@@ -104,7 +104,7 @@ local stats ageGroup educ educSame /*
 
 	preserve
 	# delimit;
-		keep ageGroup married numChildUnd5 residStatus
+		keep modernContra ageGroup married numChildUnd5 residStatus
 		parity fecund moreKidsWanted sameNumKids bedNetUse
 		religion famPlanRadio famPlanTV famPlanPrint distanceHC
 		religion famPlanExp empowerment

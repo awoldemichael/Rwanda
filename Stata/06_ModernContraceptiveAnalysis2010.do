@@ -100,21 +100,9 @@ local stats ageGroup educ educSame /*
 	esttab mcu_b* using "$pathreg/MCUwideAll_logit2010.csv", wide mlabels(none) ar2 pr2  eform label replace not
 	esttab mcu_a* using "$pathreg/MCUwideAll_lpm2010.csv", wide mlabels(none) ar2 pr2  label replace not
 
-
-
-
-
-	eststo sted2_9: logit modernContra $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog ib(1333).intdate if year == 2014, $stderr or 
-	eststo sted2_10: logit modernContra $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog2 ib(1333).intdate if year == 2010, $stderr or 
-	eststo sted2_11: logit modernContra $matchar $hhchar $hhag2 $demog female $chldchar $chealth $geog2 ib(1333).intdate if year == 2014, $stderr or 
-	esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
-	* export results to .csv
-	esttab sted* using "$pathout/`x'WideAll.csv", wide mlabels(none) ar2 pr2 beta label replace not
-	est clear
-
-		preserve
+	preserve
 	# delimit;
-		keep ageGroup married numChildUnd5 residStatus
+		keep modernContra ageGroup married numChildUnd5 residStatus
 		parity fecund moreKidsWanted sameNumKids bedNetUse
 		religion famPlanRadio famPlanTV famPlanPrint distanceHC
 		religion famPlanExp empowerment
