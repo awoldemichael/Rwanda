@@ -52,12 +52,12 @@ admin3_codebk = hh %>%
 # remove '\' from file
 # replace '"{' with '{'
 # replace '}"' with '}'
-# sed -n  's/\\//gpw output.json' test.json
-# sed -n  's/}"/}/gpw output2.json' output.js
-# sed -n  's/"{/{/gpw intervention-location_2016-12-01.json' output2.js
+# sed -n  's/\\//gpw output.json' intervention-location_2016-2-05.json
+# sed -n  's/}"/}/gpw output2.json' output.json
+# sed -n  's/"{/{/gpw intervention-location_2016-12-05.json' output2.json
 
 # Import data from Baboyma's dataset
-sectors = jsonlite::fromJSON('~/GitHub/RwandaCHAIN/www/data/intervention-location_2016-12-01.json', flatten = T, simplifyMatrix = T, simplifyDataFrame = T)
+sectors = jsonlite::fromJSON('~/GitHub/RwandaCHAIN/www/data/intervention-location_2016-12-05.json', flatten = T, simplifyMatrix = T, simplifyDataFrame = T)
 sectors = sectors$data
 
 interventions = jsonlite::fromJSON('~/GitHub/RwandaCHAIN/www/data/intervention-list.json', flatten = T, simplifyMatrix = T, simplifyDataFrame = T)
@@ -83,8 +83,8 @@ stunting_interv_type = stunting_interv %>%
 # total # partners in each region
 stunting_interv_tot = stunting_interv %>% 
   group_by(province, district, sector) %>% 
-  select(-intervention) %>% 
-  distinct() %>% 
+  select(-intervention) %>%
+  # distinct() %>% 
   summarise(n = n()) %>% 
   arrange(desc(n))
 
@@ -123,3 +123,4 @@ p = plot_map(admin3_plot, fill_var = 'partner') + scale_fill_brewer(palette = 'P
   facet_wrap(~partner) + theme_blank() + theme(strip.text = element_text(family = 'Lato', colour = grey90K, size = 15))
 
 save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/total_CHAINproj_IP', saveBoth = T)
+
