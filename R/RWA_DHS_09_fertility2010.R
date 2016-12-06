@@ -24,6 +24,8 @@ women10_raw = read_dta(paste0(baseDir, 'RW_2010_DHS/rwir61dt/RWIR61FL.DTA'))
 # livelihood zone data from Dr. Essam-- spatial join b/w DHS clusters and FEWS NET 
 lz_raw = read_dta('~/Documents/USAID/Rwanda/processeddata/RWA_DHS2010_Livelihoods.dta')
 
+#  hh data, to pull whether own land.
+hh10_raw = read_dta(paste0(baseDir, 'RW_2010_DHS/rwhr61dt/RWHR61FL.DTA'))
 
 # pull the useful vars ----------------------------------------------------
 w10 = removeAttributes(women10_raw)
@@ -77,6 +79,8 @@ w10 = w10 %>%
     idealNum = v613, 
     idealBoys = v627,
     idealGirls = v628,
+    v225, # whether current child was wanted
+    v367, # whether last child was wanted
     v614, # categorical ideal # kids
     # /* Parity parity is defined as the number of times that she has given 
     # birth to a fetus with a gestational age of 24 weeks or more, 
@@ -124,6 +128,8 @@ w10 = w10 %>%
          polygamous = case_when(w10$v505 > 0 ~ 1,
                                 w10$v505 == 0 ~ 0,
                                 TRUE ~ NA_real_),
+         
+         childDied = (totChild > totLiving),
          
          own_house = case_when(w10$v745a == 0 ~ 0,
                                 w10$v745a %in% 1:3 ~ 1,
@@ -223,6 +229,7 @@ w10 = w10 %>%
   factorize(women10_raw, 'v717', 'occupGroup') %>%  
   factorize(women10_raw, 'v705', 'occupHusGroup') %>% 
   factorize(women10_raw, 'v623', 'fecund') %>% 
+  factorize(women14_raw, 'v367', 'wantedChild') %>% 
   factorize(women10_raw, 'v602', 'moreChild') %>% 
   factorize(women10_raw, 'v621', 'moreChildHus') %>%  
   factorize(women10_raw, 'v624', 'unmetNeed') %>%  
@@ -230,7 +237,14 @@ w10 = w10 %>%
   arrange()
 
 
+# -- manual interaction --
+w10 = w10 %>% mutate(age_rural = paste(rural, ageGroup, sep = '_'))
+
+w10$age_rural = factor(w10$age_rural, levels = c('rural_35-39', unique(w10$age_rural)))
+
 # refactor ----------------------------------------------------------------
+# age cats
+w10$ageGroup = fct_relevel(w10$ageGroup, "35-39")
 
 # lump together infrequent religions
 w10$religion = fct_lump(w10$religion, n = 4)
@@ -241,6 +255,17 @@ w10$religion = fct_relevel(w10$religion, 'catholic')
 w10$occup_cat = fct_collapse(w10$occupGroup, 
                              prof = c('professional/technical/managerial', 'household and domestic', 'services', 'clerical'))
 
+
+# clean/merge hh data -----------------------------------------------------
+hh10 = hh10_raw %>% 
+  dplyr::select(v001 = hv001,
+         v002 = hv002, 
+         hh_ownland = hv244)
+
+w10 = left_join(w10, hh10)
+
+sum(is.na(hh10_raw$hv244))
+sum(is.na(w10$hh_ownland))
 
 # merge in livelihood zone names ------------------------------------------
 sum(is.na(lz_raw$lvdzone)) # no lvdzone missing.

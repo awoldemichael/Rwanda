@@ -11,6 +11,7 @@
 source('~/GitHub/Rwanda/R/RWA_DHS_08_fertility.R')
 source('~/GitHub/Rwanda/R/RWA_DHS_09_fertility2010.R')
 library(mfx)
+library(car)
 
 # model notes --------------------------------------------------------------
 # • Only running women currently in unions
@@ -112,3 +113,95 @@ or14 = data.frame(or14) %>%
 
 or = full_join(or10, or14)
 write.csv(or, 'odds.csv')
+
+
+
+# Regressing total children -----------------------------------------------
+# scale factors -----------------------------------------------------------
+# Only including women in unions.
+w14_scaled = w14 %>% 
+  stdize4regr()
+
+w10_scaled = w10 %>% 
+  stdize4regr()
+
+# model on who wants more babies ------------------------------------------
+numChild_models = formulas(~totLiving,
+                       basic = 
+                         # -- demographics --
+                         # ~ageGroup:rural +
+                         ~age_rural +
+                         hh_ownland +
+                         ageGap +
+                         religion +
+                         age_firstSex +
+                         
+                         # -- child demographics --
+                         childDied + 
+                         
+                         
+                         # -- education --
+                         educ +
+                         # educPartner +
+                         # occup_cat +
+                         # occupHusGroup +
+                         
+                         # -- wealth --
+                         wealth + 
+                         
+                         # -- geo / connectivity --
+                         lvdzone + 
+                         altitude +
+                         
+                         # -- health -- 
+                         bedNetUse + 
+                         went_doctor + 
+                         # FPatHealth + # too many unobs? ~ 1/2 didn't go to doc.
+                         health_dist +
+                         health_money +
+                         # goHealth_alone + # too many unobs.
+                         fp_radio +
+                         fp_tv +
+                         fp_news +
+                         
+                         # -- empowerment --
+                         # own_land +
+                         # own_house +
+                         beating_idx,
+                       
+                       # -- male fertility desires --
+                       male_ed = add_predictors(basic, ~educPartner),
+                       prev_kids = add_predictors(basic, ~hasSon, ~hasDaughter),
+                       occup = add_predictors(basic, ~occup_cat))
+
+numChild_14 = w14_scaled %>% fit_with(lm, numChild_models)
+numChild_10 = w10_scaled %>% fit_with(lm, numChild_models)
+
+# -- 2014 models --
+summary(numChild_14$male_ed)
+llamar::plot_coef(numChild_14$basic, negative_good = TRUE, negative_ontop = FALSE)
+llamar::plot_coef(numChild_14$prev_kids, negative_good = TRUE, negative_ontop = FALSE)
+llamar::plot_coef(numChild_14$male_ed, negative_good = TRUE, negative_ontop = FALSE) + annotate(label = 'Number of living kids, 2014/2015', geom = 'text', x = 0.3, y = 37, colour = grey70K, size = 6, family = 'Lato Light')
+llamar::plot_coef(numChild_14$occup, negative_good = TRUE, negative_ontop = FALSE)
+
+# -- 2010 models --
+llamar::plot_coef(numChild_10$basic, negative_good = TRUE, negative_ontop = FALSE)
+llamar::plot_coef(numChild_10$male_ed, negative_good = TRUE, negative_ontop = FALSE) + annotate(label = 'Number of living kids, 2010', geom = 'text', x = 0.3, y = 37, colour = grey70K, size = 6, family = 'Lato Light')
+
+
+# Including whether already has a son/daughter definitely increases fit, but worried it's just overfitting / bias towards lg. familoies
+llamar::compare_models(list('basic' = numChild_14$basic,
+                            'prev' = numChild_14$prev_kids), negative_good = TRUE, negative_ontop = FALSE)
+
+
+# Male ed doesn't seem to matter.  Occupation matters a bit, but the classification of "Ag employee" may have changed b/w 2010 and 2015.
+llamar::compare_models(list('basic' = numChild_14$basic,
+                            'male_ed' = numChild_14$male_ed,
+                            'occup' = numChild_14$occup), negative_good = TRUE, negative_ontop = FALSE)
+
+car::vif(numChild_14$male_ed)
+sqrt(car::vif(numChild_14$basic)) > 2
+
+
+llamar::compare_models(list('2014' = numChild_14$male_ed,
+                            '2010' = numChild_10$male_ed), sort_by_est = TRUE, negative_good = TRUE, negative_ontop = FALSE)
