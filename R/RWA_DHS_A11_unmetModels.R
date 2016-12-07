@@ -205,3 +205,15 @@ sqrt(car::vif(numChild_14$basic)) > 2
 
 llamar::compare_models(list('2014' = numChild_14$male_ed,
                             '2010' = numChild_10$male_ed), sort_by_est = TRUE, negative_good = TRUE, negative_ontop = FALSE)
+
+
+
+# quick #kids map ------------------------------------------------------
+library(leaflet)
+contPal = colorQuantile(palette = 'YlGnBu', domain = 0:12)
+leaflet(data = w14) %>%
+  addProviderTiles("Esri.WorldGrayCanvas",
+                   options = tileOptions(minZoom = 6, maxZoom  = 11, opacity = 0.8)) %>%
+  addCircleMarkers(lat = ~ latnum, lng = ~longnum,stroke = FALSE,
+                   radius = 5,
+             color = ~contPal(totLiving))
