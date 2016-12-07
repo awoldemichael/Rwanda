@@ -22,7 +22,7 @@ use "$pathout/contraceptionAnalysis.dta"
 	graph dot (mean) modernContra if flagContra == 1, over(lvdzone, sort(1))
 	graph dot (mean) modernContra [pw = wweight] if flagContra == 1, over(district, sort(1))
 	graph dot (mean) modernContra [pw = wweight] if flagContra == 1, over(province, sort(1))
-	graph dot (mean) modernContra [pw = wweight] if flagContra == 1, over(ageGroup)
+	graph dot (mean) modernContra [pw = wweight] if flagContra == 1, over(ageGroup) by(educ)
 	graph dot (mean) modernContra [pw = wweight] if flagContra == 1, over(educYears)
 	graph dot (mean) modernContra [pw = wweight] if flagContra == 1, over(religion, sort(1))
 

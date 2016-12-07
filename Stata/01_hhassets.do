@@ -53,9 +53,10 @@ clear
 *********************************************
 use "$pathwomen/RWIR70FL.DTA", clear
 	bys v001 v002: g occupationF = v717 if v150 == 1
-
+	recode v467d (1 = 1 "big problem")(2 = 0 "not a big problem"), gen(distHC)
+	
 	include "$pathdo/Programs/copylabels.do"
-	collapse (max) occupationF, by(v001 v002)
+	collapse (max) occupationF distHC, by(v001 v002)
 	include "$pathdo/Programs/attachlabels.do"
 
 	lab val occupationF V717

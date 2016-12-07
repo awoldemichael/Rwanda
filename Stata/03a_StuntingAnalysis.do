@@ -22,6 +22,8 @@ recode intdate (1371 1369 = 1378)
 * What does the within cluster distribution of stunting scores look like?
 egen clust_stunt = mean(stunting2), by(strata)
 egen alt_stunt = mean(stunting2), by(altitude)
+g dist_HealthFac = (dist_nearest_HealthFac / 1000)
+la var dist_HealthFac "Geodesic distance between cluster offset and nearest facility"
 
 * Basic plots
 twoway(scatter clust_stunt strata)
@@ -166,8 +168,8 @@ save "$pathout/DHS_2015_stunting.dta", replace
 	global demog "hhsize agehead hhchildUnd5"
 	global chldchar "ageChild agechildsq birthOrder birthWgt"
 	global chealth "intParasites vitaminA diarrhea anemia"
-	global geog "altitude2 rural"
-	global geog2 "altitude2 ib(1).lvdzone "
+	global geog "altitude2 rural dist_HealthFac"
+	global geog2 "altitude2 ib(1).lvdzone dist_HealthFac"
 	global cluster "cluster(dhsclust)"
 	global cluster2 "cluster(hhgroup)"
 
