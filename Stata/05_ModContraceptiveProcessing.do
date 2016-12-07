@@ -189,6 +189,9 @@ clear
 	merge m:1 v001 v002 using "$pathout/RWA_DHS_Livelihoods.dta", gen(_fertility)
 	drop if _fertility == 2
 	
+	g dist_HealthFac = (dist_nearest_HealthFac / 1000)
+	la var dist_HealthFac "Geodesic distance between cluster offset and nearest facility"
+	
 	g byte flagContra = (curUnion == 1)
 	la var flagContra "flag for filtering only women in a union"
 

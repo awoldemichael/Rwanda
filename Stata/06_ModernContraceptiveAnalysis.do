@@ -79,7 +79,7 @@ local stats ageGroup educ educSame /*
 	global social2 "ib(1).religion famPlanExp empowerment"
 	global humcap "ib(0).educ ib(0).educPartner ageGap wealth"
 	global comm "dist_distanceHC dist_totChild dist_educYears catholic_dominant protestant_dominant adventist_dominant muslim_dominant"
-	global geog2 "altitude2 ib(5).lvdzone"
+	global geog2 "altitude2 ib(5).lvdzone dist_HealthFac"
 	global stderr "cluster(dhsclust)"
 
 	* Double check to make sure you don't have 98 or 99 values influencing regression results
