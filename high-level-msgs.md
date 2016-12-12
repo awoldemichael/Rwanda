@@ -36,6 +36,11 @@
   * **Family planning / kids**: crowding, children under 5 --> link to FP
   * **diet**: little bit important, esp. vitamin A-rich fruits/veggies.
 
+  ## Sidebars
+  * What is stunting?
+  * Q. for Mission: what is it about the NW geography that makes it different?
+
+
 ---
 
 # Connection to programming
@@ -65,8 +70,3 @@ Trends:
 2) Wealth unimportant
 3) Protestants have more babies than Catholics and are ~ 22.5% less likely to use MCU.
 4) Urban/rural gap narrows in 2014/2015.
-
-
-## Sidebars
-* What is stunting?
-* Q. for Mission: what is it about the NW geography that makes it different?
