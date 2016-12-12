@@ -57,7 +57,13 @@
 
 ---
 # Fertility
+Two sides to fertility: 1) desires to have more children (purely social) and 2) access to contraception (social + access + education).
 
+Trends:
+
+1) Education good for MCU and limiting pregnancy.
+2) Wealth unimportant
+3) Protestants have more babies than Catholics and are ~ 22.5% less likely to use MCU.
 
 
 ## Sidebars
