@@ -64,6 +64,7 @@ Trends:
 1) Education good for MCU and limiting pregnancy.
 2) Wealth unimportant
 3) Protestants have more babies than Catholics and are ~ 22.5% less likely to use MCU.
+4) Urban/rural gap narrows in 2014/2015.
 
 
 ## Sidebars
