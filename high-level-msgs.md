@@ -14,7 +14,6 @@
 
 ## Background + motivation
 * Though Rwanda has had dramatic economic growth in the past 25 years, chronic child malnutrition remains high across the country, affecting <mark>nearly 40% of children under 5</mark>. Why aren't economic improvements being translated as quickly to improvements in stunting?
-
 * The total fertility rate &mdash; how many children a woman will have in her lifetime &mdash; has decreased from a peak of XX to <mark>4.2 children/woman</mark> on average. However, the fertility rate is leveling off rather than continuing to decrease, which will introduce strain on systems, especially since Rwanda is already the densest nation in Africa. What's responsible for the slow down?
 ---
 # Stunting
