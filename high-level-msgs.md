@@ -20,6 +20,7 @@
   * Education and age are strongly associated with MCU
   * Religion matters -- Protestant households are much less likely to use MCU relative to similar Catholic Households.
   * Wealth does not appear to influence the MCU decision
+  * Households in Lake Kivu are less likely to use MCU relative to similar households in Central Plateau Cassava and Farming
 
 ## Background + motivation
 * Though Rwanda has had dramatic economic growth in the past 25 years, chronic child malnutrition remains high across the country, affecting <mark>nearly 40% of children under 5</mark>. Why aren't economic improvements being translated as quickly to improvements in stunting?
@@ -66,7 +67,7 @@
 # Food consumption
 ## Main stories
 * HH (especially the poor) were more food instable in 2015.
-*
+* Is there a geographic story to food consumption?
 
 ---
 # Fertility
