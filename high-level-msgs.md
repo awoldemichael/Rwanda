@@ -14,7 +14,7 @@
   * Elevation was also found to be a substantial contributing factor to malnutrition outcomes. 
   ![NW map]({{site.baseurl}}/img/nw-rwnada.png)
 2. Basic needs to prevent stunting are being met, but more work is needed.
-  * Improved sanitation and water access increased markedly in the past five years.
+  * Improved sanitation and water access increased markedly in the past five year (Table 3 of EICV2-4).
   * What can explain the differences in malnutrition outcomes in the Northwest Volcanic zone compared to the Lake Kivu Coffee Zone?
 3. Fertility and Modern Contraceptive Use (geographic conclusion).
   * Education and age are strongly associated with MCU
