@@ -1,18 +1,24 @@
 # Intro
 ## 2 sentence intro: why do we care?  What's the overall point/context?
+#### Why does our analysis matter to the Rwanda Mission?  
+#### How can the results from our analysis influence future investment decisions or current assessements of the portfolio?
+#### Outcomes are geographically hetergenous -- geography matters and should be explicity accounted for when making investment decisions.
 
 ---
 
 ## High-level findings
 1. Geography matters.
-  * Patterns in malnutrition and fertility cross across administrative borders and livelihood zones.
-  * Improvements in malnutrition between 2010 and 2014/2015 are not equal across the country.
-  * The northwest corner of Rwanda has significantly higher malnutrition, [lower contraception use].
+  * Patterns in malnutrition and fertility vary across administrative borders and livelihood zones.
+  * Improvements in malnutrition between 2010 and 2014/2015 were not equal across the country.
+  * The northwest corner of Rwanda has significantly higher malnutrition, [lower contraception use] even after accounting for commanalities across space.
   ![NW map]({{site.baseurl}}/img/nw-rwnada.png)
 2. Basic needs to prevent stunting are being met, but more work is needed.
   * Improved sanitation and water access increased markedly in the past five years.
-3. Fertility and Modern Contraceptive Use are virtually unaffected by wealth.
-
+  * What can explain the differences in malnutrition outcomes in the Northwest Volcanic zone compared to the Lake Kivu Coffee Zone?
+3. Fertility and Modern Contraceptive Use (geographic conclusion).
+  * Education is strongly associated with MCU
+  * Religion matters -- Protestant households are much less likely to use MCU relative to similar Catholic Households.
+  * Wealth does not appear to influence the MCU decision
 
 ## Background + motivation
 * Though Rwanda has had dramatic economic growth in the past 25 years, chronic child malnutrition remains high across the country, affecting <mark>nearly 40% of children under 5</mark>. Why aren't economic improvements being translated as quickly to improvements in stunting?
@@ -21,15 +27,16 @@
 ---
 
 # Stunting
-* Stunting decreased a lot between 2010 and 2014. [sparklines]
-* However, the changes were not equal everywhere.
+* Stunting decreased markedly between 2010 and 2014. [sparklines]
+* However, the changes varied substantially by geography. (example of stunting rates in the east compared to the west).
 
 [dot plot change over time]
 
 [2014 interpolated surface]
 
-* The NW corner seems higher than the rest of the country. Is this because the people have different livelihoods, or is the geography leading to significant differences?
-* We ran regressions to test
+* The NW corner seems higher than the rest of the country. Is this due to simply livelihood differences, or are there inherent geographic characteristics that can exlpain this disparity? 
+
+* We built regression models to test these ideas.
   * **geography**: NW, altitude (connectivity/accessibility?)
   * **wealth and human capital**: wealth, education, intergenerational poverty / health of mother
   * **WASH**: diarrhea bad, basic WASH needs met in 2014 for more people (?)
@@ -46,7 +53,7 @@
 # Connection to programming
 
 ## Analysis of health indicators
-* Which of the things USAID is measuring significantly impacts stunting?
+* What is USAID measuring that may influence stunting?
 
 ## Comparison to CHAIN locations
 * Where do we work on nutrition/sanitation programming?
