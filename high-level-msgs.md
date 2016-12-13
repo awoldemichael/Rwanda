@@ -39,6 +39,7 @@
 [2014 interpolated surface]
 
 * The NW corner seems higher than the rest of the country. Is this due to simply livelihood differences, or are there inherent geographic characteristics that can exlpain this disparity? 
+* Make sure to pull in relevant lit. review.
 
 * We build statistical models to test these ideas.
   * **geography**: NW, altitude (connectivity/accessibility?)
@@ -46,6 +47,7 @@
   * **WASH**: diarrhea bad, basic WASH needs met in 2014 for more people (?)
   * **Family planning / kids**: crowding, children under 5 --> link to FP
   * **diet**: little bit important, esp. vitamin A-rich fruits/veggies.
+
 
   ## Sidebars
   * What is stunting?
