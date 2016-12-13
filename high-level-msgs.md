@@ -3,7 +3,8 @@
 #### Why does our analysis matter to the Rwanda Mission?  
 #### How can the results from our analysis influence future investment decisions or current assessements of the portfolio?
 #### Outcomes are geographically hetergenous -- geography matters and should be explicity accounted for when making investment decisions.
-Crosssectoral nature of stunting-- affects all areas of Rwanda's portfolio.
+* Crosssectoral nature of stunting-- affects all areas of Rwanda's portfolio.
+* Flip-- start w/ fertility as basis of issue.
 
 ---
 
