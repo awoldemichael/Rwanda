@@ -7,16 +7,17 @@
 ---
 
 ## High-level findings
-1. Geography matters.
-  * Patterns in malnutrition and fertility vary across administrative borders and livelihood zones.
-  * Improvements in malnutrition between 2010 and 2014/2015 were not equal across the country.
+1. Geography matters to malnutrition outcomes.
+  * Patterns in malnutrition and fertility vary across administrative borders, livelihood zones, and elevation.  
+  * Improvements in malnutrition between 2010 and 2014/2015 were not equal across the country.[East v. West]
   * The northwest corner of Rwanda has significantly higher malnutrition, [lower contraception use] even after accounting for commanalities across space.
+  * Elevation was also found to be a substantial contributing factor to malnutrition outcomes. 
   ![NW map]({{site.baseurl}}/img/nw-rwnada.png)
 2. Basic needs to prevent stunting are being met, but more work is needed.
   * Improved sanitation and water access increased markedly in the past five years.
   * What can explain the differences in malnutrition outcomes in the Northwest Volcanic zone compared to the Lake Kivu Coffee Zone?
 3. Fertility and Modern Contraceptive Use (geographic conclusion).
-  * Education is strongly associated with MCU
+  * Education and age are strongly associated with MCU
   * Religion matters -- Protestant households are much less likely to use MCU relative to similar Catholic Households.
   * Wealth does not appear to influence the MCU decision
 
@@ -36,7 +37,7 @@
 
 * The NW corner seems higher than the rest of the country. Is this due to simply livelihood differences, or are there inherent geographic characteristics that can exlpain this disparity? 
 
-* We built regression models to test these ideas.
+* We build statistical models to test these ideas.
   * **geography**: NW, altitude (connectivity/accessibility?)
   * **wealth and human capital**: wealth, education, intergenerational poverty / health of mother
   * **WASH**: diarrhea bad, basic WASH needs met in 2014 for more people (?)
