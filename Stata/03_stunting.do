@@ -119,9 +119,9 @@ la def bmi 0 "undernourished" 1 "normal" 2 "overweight"
 la val motherBMI bmi
 
 clonevar motherBWeight = v440 
-
-replace motherBWeight = (motherBWeight / 100)
 replace motherBWeight = . if inlist(motherBWeight, 9998, 9999)
+replace motherBWeight = (motherBWeight / 100)
+
 clonevar wantedChild = v367
 recode h43 (0 8 = 0 "No")(1 = 1 "Yes"), gen(intParasites)
 
