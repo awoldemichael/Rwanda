@@ -194,7 +194,7 @@ The categories are: 1. Starchy staples (WDDS_starch)
 		
 * Flag children who meet criteria for dietary diversity questions
 * Last child in the last 2 years living with mother
-	*preserve
+	preserve
 			
 			* age in months
 				gen age = v008-b3
