@@ -178,13 +178,13 @@ sum $matchar $hhchar $hhag $demog female $chldchar $chealth
 
 * Be continuous versus binary
 est clear
-eststo sted1_0: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate, $cluster 
-eststo sted1_1: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate, $cluster 
-eststo sted2_3: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate, $cluster or 
-eststo sted2_4: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate, $cluster or
-eststo sted2_5: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate, $cluster or 
-eststo sted2_6: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate, $cluster or 
-esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
+	eststo sted1_0: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate, $cluster 
+	eststo sted1_1: reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate, $cluster 
+	eststo sted2_3: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate, $cluster or 
+	eststo sted2_4: logit stunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate, $cluster or
+	eststo sted2_5: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate, $cluster or 
+	eststo sted2_6: logit extstunted2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate, $cluster or 
+	esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
 * export results to .csv
 esttab sted* using "$pathout/`x'Wide2010.csv", wide mlabels(none) ar2 pr2 beta label replace not
 
@@ -196,18 +196,18 @@ esttab sted*
 
 * Regional variations
 est clear
-local i = 0
-levelsof adm1name, local(levels)
-foreach x of local levels {
-	local name =  strtoname("`x'")
-	eststo stunt_`name', title("Stunted `x'"): reg stunting2 $matchar $hhchar /*
-	*/ $hhag $demog female $chldchar $chealth $geog if adm1name == "`x'", $cluster 
-	local i = `++i'
-	}
-*
-esttab stunt_*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 beta
-coefplot stunt_East || stunt_North || stunt_South || stunt_West, drop(_cons ) /*
-*/ xline(0) /*mlabel format(%9.2f) mlabposition(11) mlabgap(*2)*/ byopts(row(1)) 
+	local i = 0
+	levelsof adm1name, local(levels)
+	foreach x of local levels {
+		local name =  strtoname("`x'")
+		eststo stunt_`name', title("Stunted `x'"): reg stunting2 $matchar $hhchar /*
+		*/ $hhag $demog female $chldchar $chealth $geog if adm1name == "`x'", $cluster 
+		local i = `++i'
+		}
+	*
+	esttab stunt_*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 beta
+	coefplot stunt_East || stunt_North || stunt_South || stunt_West, drop(_cons ) /*
+	*/ xline(0) /*mlabel format(%9.2f) mlabposition(11) mlabgap(*2)*/ byopts(row(1)) 
 
 
 /*
@@ -231,13 +231,13 @@ estat hettest $matchar $hhchar $hhag $demog female $chldchar $chealth, iid
 */
 
 
-eststo sted2_1, title("Stunted 1"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
-eststo sted2_2, title("Stunted 2"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog2 ib(1381).intdate, $cluster 
-eststo sted2_3, title("Stunted 3"): reg stunting2 $matchar $hhchar $hhag2 $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
-eststo sted2_4, title("Stunted 4"): reg stunting2 $matchar $hhchar2 $hhag $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
-eststo sted2_5, title("Stunted 5"): reg stunting2 $matchar $hhchar2 $hhag2 $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
-eststo sted2_6, title("Stunted 6"): reg stunting2 $matchar $hhchar2 $hhag2 $demog $chldchar $chealth $geog2 ib(1381).intdate, $cluster 
-esttab sted2_*, se star(* 0.10 ** 0.05 *** 0.01) label wide ar2
+	eststo sted2_1, title("Stunted 1"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
+	eststo sted2_2, title("Stunted 2"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog2 ib(1381).intdate, $cluster 
+	eststo sted2_3, title("Stunted 3"): reg stunting2 $matchar $hhchar $hhag2 $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
+	eststo sted2_4, title("Stunted 4"): reg stunting2 $matchar $hhchar2 $hhag $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
+	eststo sted2_5, title("Stunted 5"): reg stunting2 $matchar $hhchar2 $hhag2 $demog $chldchar $chealth $geog ib(1381).intdate, $cluster 
+	eststo sted2_6, title("Stunted 6"): reg stunting2 $matchar $hhchar2 $hhag2 $demog $chldchar $chealth $geog2 ib(1381).intdate, $cluster 
+	esttab sted2_*, se star(* 0.10 ** 0.05 *** 0.01) label wide ar2
 
 * Sort the coefficients before plotting
 matrix smean = r(table)
@@ -248,4 +248,49 @@ matrix plot = plot'
 coefplot (matrix(plot[1,])) , ci((plot[5,] plot[6,]))  xline(0, lwidth(thin) lcolor(gray)) mlabs(small) ylabel(, labsize(tiny)) xlabel(, labsize(small))
  log close
 
+*** --- 2010 subset analysis of children under 24mo w/ diet div recall
+clear
+use "$pathout/RWA_DHS_2010_under24mo_analysis.dta", replace
 
+	/* Livelihood zones are small -- don't place too much 
+	emphasis on spatial results b/c of sample size */
+	tab lvdzone, mi
+
+* Stunting regression analysis using various models; 
+	g agechildsq = ageChild^2
+	la var rural "rural household" 
+	g altitude2 = altitude/1000
+	la var altitude2 "altitude divided by 1000"
+
+*Fix anemia
+	replace anemia = . if anemia == 9
+
+
+* Create groups for covariates as they map into conceptual framework for stunting
+	global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
+	global hhchar "wealth improvedSanit improvedWater bnetITNuse landless"
+	global hhchar2 "mobile bankAcount improvedSanit improvedWater bnetITNuse"
+	global hhag "tlutotal"
+	global hhag2 "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
+	global demog "hhsize agehead hhchildUnd5"
+	global chldchar "ageChild agechildsq birthOrder birthWgt"
+	global chealth "intParasites vitaminA diarrhea anemia"
+	global geog "altitude2 rural"
+	global geog2 "altitude2 ib(1).lvdzone "
+	global cluster "cluster(dhsclust)"
+	global cluster2 "cluster(hhgroup)"
+
+
+sum stunting2 stunted2 extstunted2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth
+
+* Be continuous versus binary
+est clear
+	eststo sted1_0: reg stunting2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate, $cluster 
+	eststo sted1_1: reg stunting2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate, $cluster 
+	eststo sted2_3: logit stunted2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate, $cluster or 
+	eststo sted2_4: logit stunted2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate, $cluster or
+	eststo sted2_5: logit extstunted2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1333).intdate, $cluster or 
+	eststo sted2_6: logit extstunted2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1333).intdate, $cluster or 
+	esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
+	* export results to .csv
+esttab sted* using "$pathout/`x'Wide2010_under24.csv", wide mlabels(none) ar2 pr2 beta label replace not
