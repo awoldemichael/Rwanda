@@ -188,7 +188,6 @@ esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 
 * export results to .csv
 esttab sted* using "$pathout/`x'Wide.csv", wide mlabels(none) ar2 beta label replace not
 
-
 * by gender
 est clear
 eststo sted2_1, title("Stunted 1"): reg stunting2 $matchar $hhchar $hhag $demog $chldchar $chealth $geog2 ib(1381).intdate if female == 1, $cluster 
@@ -211,24 +210,46 @@ coefplot stunt_East || stunt_North || stunt_South || stunt_West, drop(_cons ) /*
 
 
 
+*** --- 2014 Subset analysis for those with dietary diversity recall variables ***
 
-/*
-* Quantile regression 
-sqreg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog, quantile(0.2 0.4 0.6 0.8) reps(100)
-*qplot stunting2, recast(line)
-grqreg, ci ols olsci
+clear
+	use "$pathout/RWA_DHS_2014_under24mo_analysis.dta", replace
+	tab lvdzone, mi
+	
+	* Stunting regression analysis using various models; 
+	g agechildsq = ageChild^2
+	la var rural "rural household" 
+	g altitude2 = altitude/1000
+	la var altitude2 "altitude divided by 1000"
 
-* compare manually
-local x = 1
-forvalues i = 0.2(0.2)0.8 {
-	eststo bsqreq`x': bsqreg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2, quantile(`i')
-	local x = `++x'
-	}
-*end
-esttab bsqreq*, se star(* 0.10 ** 0.05 *** 0.01) label
+* Create groups for covariates as they map into conceptual framework for stunting
+	global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
+	global hhchar "wealth improvedSanit improvedWater bnetITNuse landless"
+	global hhchar2 "mobile bankAcount improvedSanit improvedWater bnetITNuse"
+	global hhag "tlutotal"
+	global hhag2 "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
+	global demog "hhsize agehead hhchildUnd5"
+	global chldchar "ageChild agechildsq birthOrder birthWgt"
+	global chealth "intParasites vitaminA diarrhea anemia"
+	global geog "altitude2 rural"
+	global geog2 "altitude2 ib(1).lvdzone "
+	global cluster "cluster(dhsclust)"
+	global cluster2 "cluster(hhgroup)"
 
-* Test for heteroskedasticity
-qui reg stunting2 $matchar $hhchar $hhag $demog female $chldchar $chealth
-estat hettest $matchar $hhchar $hhag $demog female $chldchar $chealth, iid
-*/
+
+sum stunting2 stunted2 extstunted2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth
+
+* Be continuous versus binary
+est clear
+	eststo sted1_0: reg stunting2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1381).intdate, $cluster 
+	eststo sted1_1: reg stunting2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1381).intdate, $cluster 
+	eststo sted2_3: logit stunted2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1381).intdate, $cluster or 
+	eststo sted2_4: logit stunted2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1381).intdate, $cluster or
+	eststo sted2_5: logit extstunted2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth $geog ib(1381).intdate, $cluster or 
+	eststo sted2_6: logit extstunted2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth $geog2 ib(1381).intdate, $cluster or 
+	esttab sted*, se star(* 0.10 ** 0.05 *** 0.01) label ar2 pr2 beta not /*eform(0 0 1 1 1)*/ compress
+	* export results to .csv
+esttab sted* using "$pathout/`x'Wide2014_under24.csv", wide mlabels(none) ar2 pr2 beta label replace not
+
+
 

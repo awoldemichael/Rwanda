@@ -265,7 +265,6 @@ use "$pathout/RWA_DHS_2010_under24mo_analysis.dta", replace
 *Fix anemia
 	replace anemia = . if anemia == 9
 
-
 * Create groups for covariates as they map into conceptual framework for stunting
 	global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
 	global hhchar "wealth improvedSanit improvedWater bnetITNuse landless"
@@ -280,8 +279,8 @@ use "$pathout/RWA_DHS_2010_under24mo_analysis.dta", replace
 	global cluster "cluster(dhsclust)"
 	global cluster2 "cluster(hhgroup)"
 
-
-sum stunting2 stunted2 extstunted2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth
+* Run summary stats to verify that ranges are reasonable.
+	sum stunting2 stunted2 extstunted2 dietdiv $matchar $hhchar $hhag $demog female $chldchar $chealth
 
 * Be continuous versus binary
 est clear
