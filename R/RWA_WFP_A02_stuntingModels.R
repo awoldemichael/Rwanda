@@ -530,6 +530,7 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                         # mother = add_predictors(basic, mom1, food1, geo),               
                         mother = add_predictors(basic, mom1, mom2, food1, wealth1, geo),                        
                         all = add_predictors(basic, mom1, mom2, food1, shk, wealth1, geo),
+                        all2 = add_predictors(basic, mom1, mom2, food2, shk, wealth1, geo),
                         all_PC = add_predictors(basic, mom1, mom2, food1, shk, wealth2, geo),
                         all_WI = add_predictors(basic, mom1, mom2, food1, shk, wealth3, geo),
                         nogeo = add_predictors(basic, mom1, mom2, food1, shk, wealth1)
@@ -609,7 +610,9 @@ plot_relationships(stunting_fits$basic, all_hh)
 # Plot model comparison
 compare_models(stunting_fits, cluster_col = all$village) 
 
-
+compare_models(list('fcs' = stunting_fits$all,
+                    'broken' = stunting_fits$all2),
+                    cluster_col = all$village, sort_by_est = FALSE) 
 # run M and F models ------------------------------------------------------
 male_fit = lm(stuntingZ ~ splines::bs(age_months, degree = 3, 
                                       knots = 24) + rural_cat + kids_under5 + crowding + 
