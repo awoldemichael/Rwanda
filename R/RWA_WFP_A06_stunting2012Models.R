@@ -120,9 +120,13 @@ ch_hh_models = formulas(~stuntingZ, # lhs
                           
                           
                           # -- food --
-                          FCS +
+                          food1 = ~ FCS +
                           CSI_cat + # CARI contains FCS.
                           months_food_access,
+                        food2 = ~ CSI_cat +
+                          months_food_access +
+                          # ironRich_binary + proteinRich_binary + vitA_binary, # converting to binaries eliminates the isolated 
+                          protein_days + ironrich_days + vitAfruitveg_days,
                         
                         # -- wealth --
                         wealth1 = ~ wealth_idx_num,
@@ -184,3 +188,58 @@ compare_models(list('2012' = stunting_fits2012$all,
                     ' alt' = stunting_fits2012$alt
 ), 
 filter_insignificant = T)
+
+
+# Export ------------------------------------------------------------------
+# -- 2015 data --
+all = broom::tidy(stunting_fits$all) %>% 
+  select(stuntingZ_all_2015 = estimate,
+         stuntingZ_all_2015p = p.value, term)
+
+nogeo = broom::tidy(stunting_fits$nogeo) %>% 
+  select(stuntingZ_nogeo_2015 = estimate,
+         stuntingZ_nogeo_2015p = p.value, term)
+
+# No data on mother added in.
+fcs = broom::tidy(stunting_fits$fcs) %>% 
+  select(stuntingZ_noMomData_2015 = estimate,
+         stuntingZ_noMomData_2015p = p.value, term) 
+
+protRich = broom::tidy(stunting_fits$protRich) %>% 
+  select(stuntingZ_FCSgrps_2015 = estimate,
+         stuntingZ_FCSgrps_2015p = p.value, term)
+
+# -- 2012 data --
+all2012 = broom::tidy(stunting_fits2012$all) %>% 
+  select(stuntingZ_all_2012 = estimate,
+         stuntingZ_all_2012p = p.value, term)
+
+nogeo2012 = broom::tidy(stunting_fits2012$nogeo) %>% 
+  select(stuntingZ_nogeo_2012 = estimate,
+         stuntingZ_nogeo_2012p = p.value, term)
+
+# No data on mother added in.
+fcs2012 = broom::tidy(stunting_fits2012$basic) %>% 
+  select(stuntingZ_noMomData_2012 = estimate,
+         stuntingZ_noMomData_2012p = p.value, term) 
+
+alt2012 = broom::tidy(stunting_fits2012$alt) %>% 
+  select(stuntingZ_plusAltitude_2012 = estimate,
+         stuntingZ_plusAltitude_2012p = p.value, term) 
+# no protein data
+
+# -- joins galore --
+
+all_regr = full_join(all, all2012)
+
+all_regr = full_join(all_regr, nogeo)
+all_regr = full_join(all_regr, nogeo2012)
+
+all_regr = full_join(all_regr, fcs)
+all_regr = full_join(all_regr, fcs2012)
+all_regr = full_join(all_regr, protRich)
+
+all_regr = full_join(all_regr, alt2012)
+
+write.csv(all_regr, '~/GitHub/Rwanda/exported_data/RWA_cfsva_regressions.csv')
+

@@ -545,7 +545,7 @@ plot_coef(stunting_fits$fcs, cluster_col = all_hh$village)
 plot_coef(stunting_fits$protRich, cluster_col = all_hh$village)
 plot_coef(stunting_fits$foods, cluster_col = all_hh$village)
 plot_coef(stunting_fits$mother, cluster_col = all_hh$village)
-plot_coef(stunting_fits$momBMI, cluster_col = all_hh$village)
+# plot_coef(stunting_fits$momBMI, cluster_col = all_hh$village)
 plot_coef(stunting_fits$all, cluster_col = all_hh$village)
 plot_coef(stunting_fits$all_WI, cluster_col = all_hh$village)
 plot_coef(stunting_fits$all_WI, cluster_col = all_hh$village)
@@ -591,9 +591,8 @@ compare_models(list('all' = stunting_fits$all,
                     'no-geo' = stunting_fits$nogeo,
                     'fcs' = stunting_fits$fcs,
                     # 'protRich' = stunting_fits$protRich,
-                    # 'mother' = stunting_fits$mother,
-                    'momBMI' = stunting_fits$momBMI
-), 
+                    'mother' = stunting_fits$mother),
+                    # 'momBMI' = stunting_fits$momBMI), 
 filter_insignificant = T)
 # intermediate analysis ---------------------------------------------------
 # Initially: running age as linear, not splines, since 
@@ -767,3 +766,6 @@ compare_models(list('north' = stunting_fits_north$all,
                     'kigali' = stunting_fits_kigali$all
 ), 
 filter_insignificant = T)
+
+
+
