@@ -1,0 +1,4 @@
+Notes on raster symbology:
+
+1) EdLitMen and EdLitWomen are symbologized based on a viridis color scale, same applies to credible interval surfaces. Color is straight bl/wh.
+2) The remaining health indicators are symbologized based on a truncated bu/br scale. 
