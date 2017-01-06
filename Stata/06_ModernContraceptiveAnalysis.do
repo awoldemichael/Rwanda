@@ -37,6 +37,7 @@ local stats ageGroup educ educSame /*
 *end
 
 
+
 ** Modern Contraceptive use across wealth distribution
 	twoway (lpoly modernContra wealth if flagContra == 1 [aweight = wweight]),  /*
 	*/ylabel(0.40(0.05)0.55) ysca(alt) xsca(alt) xlabel(, grid gmax) /*
@@ -83,7 +84,7 @@ local stats ageGroup educ educSame /*
 	global stderr "cluster(dhsclust)"
 
 	* Double check to make sure you don't have 98 or 99 values influencing regression results
-	sum $demog $health $social $social2 $humcap $comm $geog2 
+	sum $demog $health $social $social2 $humcap $comm $geog2 if flagContra == 1
 
 	est clear
 	eststo mcu_b1: logit modernContra $demog $health ib(1381).intdate if flagContra == 1, $stderr or
