@@ -3,7 +3,10 @@
 Definition of MCU: Based on DHS variable v312 v313  
 *  
 
-
+Sub-population: MCU analysis is filtered on:  
+* Women aged 15 - 49
+* Women in a union at time of the survey
+* Total sample size of women analyzed is XX  
 
 Categorical bases are as follows:   
 * ib(4).ageGroup 	--> 30-34 cohort  
