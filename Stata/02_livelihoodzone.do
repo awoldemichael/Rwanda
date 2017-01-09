@@ -98,6 +98,11 @@ capture log close
 	merge 1:m dhsclust using "$pathout/DHS_hhvar.dta", gen(_lvd)
 	merge m:1 dhsclust using "$pathout/healthFacDist.dta", gen(_hcDist)
 	saveold "$pathout/RWA_DHS_Livelihoods.dta", replace
+	
+	preserve
+	keep wealth latnum longnum dhsclust
+	export delimited "$pathexport/kriging2014.csv", replace
+	restore
 
 * Import 2010 data and perform similar jooin
 	import delimited using "$pathgit/RWA_DHS2010_Livelihoods.csv", clear
@@ -159,4 +164,10 @@ capture log close
 * Add in the remaining 2010 DHS data
 	merge 1:m dhsclust using "$pathout/DHS_hhvar2010.dta", gen(_lvd2010)
 saveold "$pathout/RWA_DHS2010_Livelihoods.dta", replace
+
+	preserve
+	keep wealth latnum longnum dhsclust
+	export delimited "$pathexport/kriging2010.csv", replace
+	restore
+
 
