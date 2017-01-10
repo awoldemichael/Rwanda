@@ -5,7 +5,7 @@
 library(foreign)
 library(tidyverse)
 library(RCurl)
-library(data.table)
+library(data.table) # if using %like% for matching livelihood zone names
 
 # load the fews net livelihoods zones
   setwd("~/Rwanda/GIS/Shapefiles")
