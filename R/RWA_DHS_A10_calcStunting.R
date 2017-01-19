@@ -1,19 +1,26 @@
+library(haven)
+library(dplyr)
+library(llamar)
+
 # Point estimates for DHS
 # Data processed by Tim
 df = read_dta('~/Documents/USAID/Rwanda/processeddata/DHS_2010_2015_analysis.dta')
 
-df2 = removeAttributes(df) %>% filter(year==2014)
+df2014 = removeAttributes(df) %>% filter(year==2014)
+df2010 = removeAttributes(df) %>% filter(year==2010)
 
-
-df2 = factorize(df2, df, 'lvdzone', 'lvdzone2')
+df2010 = factorize(df2010, df, 'lvdzone', 'lvdzone2')
+df2014 = factorize(df2014, df, 'lvdzone', 'lvdzone2')
 
 # sans weights
-st_dhs = calcPtEst(df2, 'stunted', by_var = 'lvdzone2', use_weights = FALSE)
-write.csv(st_dhs, '~/Github/Rwanda/exported_data/DHS_stunted_unweighted.csv')
+st_dhs = calcPtEst(df2014, 'stunted', by_var = 'lvdzone2', use_weights = FALSE)
+write.csv(st_dhs, '~/Github/Rwanda/exported_data/DHS_stunted_unweighted2014.csv')
 
+st_dhs = calcPtEst(df2010, 'stunted', by_var = 'lvdzone2', use_weights = FALSE)
+write.csv(st_dhs, '~/Github/Rwanda/exported_data/DHS_stunted_unweighted2010.csv')
 
 # mit weights
-st_dhs = calcPtEst(df2, 'stunted', by_var = 'lvdzone2', use_weights = TRUE,
+st_dhs = calcPtEst(df2014, 'stunted', by_var = 'lvdzone2', use_weights = TRUE,
                    psu_var = 'psu', strata_var = 'strata', weight_var = 'cweight')
 write.csv(st_dhs, '~/Github/Rwanda/exported_data/DHS_stunted_weighted.csv')
 
