@@ -28,6 +28,7 @@ rw_width = 7.1397 # output width
 setwd('~/GitHub/Rwanda/R')
 
 source('RWA_WFP_run2015.R')
+source('RWA_DHS_A10_calcStunting.R')
 
 # Plot Maps --------------------------------------------------------------------
 plot_choro = function(df, 
@@ -184,13 +185,13 @@ plot_choro(rw_polygons,
 
 
 # DHS, by lz --------------------------------------------------------
-rw_polygons_lz = left_join(RWA_LZ$df, stunting_lz, by = c('livelihood_zone' = 'livelihood_zone'))
+rw_polygons_lz = left_join(RWA_LZ$df, st_dhs2014, by = c('livelihood_zone' = 'livelihood_zone'))
 
 plot_choro(rw_polygons_lz,          
            admin0 = RWA_admin0,         
            clipping_mask = RWA_admin0, 
            centroids = RWA_LZ$centroids,
-           fill_var = 'stunting_dhs',
+           fill_var = 'avg',
            centroids_var = 'livelihood_zone',
            fill_scale = stunting_pal,
            fill_limits = stunting_range, 
@@ -198,7 +199,23 @@ plot_choro(rw_polygons_lz,
            exportPlot = TRUE, 
            plotWidth = rw_width,
            plotHeight = rw_width,
-           fileName = '~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/RWA_stunted_LZ_dhs.pdf')
+           fileName = '~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/RWA_stunted_LZ_dhs2014.pdf')
+
+rw_polygons_lz = left_join(RWA_LZ$df, st_dhs2010, by = c('livelihood_zone' = 'livelihood_zone'))
+
+plot_choro(rw_polygons_lz,          
+           admin0 = RWA_admin0,         
+           clipping_mask = RWA_admin0, 
+           centroids = RWA_LZ$centroids,
+           fill_var = 'avg',
+           centroids_var = 'livelihood_zone',
+           fill_scale = stunting_pal,
+           fill_limits = stunting_range, 
+           plot_base = FALSE,
+           exportPlot = TRUE, 
+           plotWidth = rw_width,
+           plotHeight = rw_width,
+           fileName = '~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/RWA_stunted_LZ_dhs2010.pdf')
 
 
 # CFSVA, by lz ------------------------------------------------------------

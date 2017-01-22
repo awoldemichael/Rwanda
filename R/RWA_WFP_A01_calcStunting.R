@@ -76,7 +76,7 @@ stunting_admin2_dhs = stunting_admin2_dhs %>%
 # -- merge DHS and CFSVA results --
 stunting_admin2 = full_join(stunting_admin2_dhs, stunting_admin2_cfsva, by = 'admin2') %>% 
   rename(stunting_dhs = b,
-         stunting_cfsva = isStunted,
+         stunting_cfsva = unweighted_avg,
          lb_dhs = ll,
          ub_dhs = ul,
          lb_cfsva = lb,
