@@ -146,8 +146,8 @@ keep latnum longnum $matchar $hhchar /*
 	*/ $hhag $demog female $chldchar /*
 	*/ $chealth $geog stunting2 stunted2 /*
 	*/ extstunted2 eligChild dhscc dhsyear dhsclust year  
-export delimited "$pathexport/RWA_2010_stunting.csv" if year == 2010 & eligChild == 1
-export delimited "$pathexport/RWA_2014_stunting.csv" if year == 2014 & eligChild == 1
+export delimited "$pathexport/RWA_2010_stunting.csv" if year == 2010 & eligChild == 1, replace
+export delimited "$pathexport/RWA_2014_stunting.csv" if year == 2014 & eligChild == 1, replace
 restore
 bob
 

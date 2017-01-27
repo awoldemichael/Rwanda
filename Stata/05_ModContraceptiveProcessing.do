@@ -194,6 +194,8 @@ clear
 	
 	g byte flagContra = (curUnion == 1)
 	la var flagContra "flag for filtering only women in a union"
+	
+	g year = 2014
 
 saveold "$pathout/contraceptionAnalysis.dta", replace
 log close

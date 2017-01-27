@@ -207,6 +207,8 @@ foreach x of varlist occupGroup occupation occupationF occupationM occupGroupHus
 	}
 *end
 
+	g year = 2010
+
 saveold "$pathout/contraceptionAnalysis2010.dta", replace
 log close
 	
