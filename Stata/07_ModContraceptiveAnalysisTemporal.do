@@ -15,10 +15,10 @@ capture log close
 log using "$pathlog/04_StuntingAnalysisTemporal.txt", replace
 
 use "$pathout/MCU_DHS2014.dta", clear
-g year = 2014
+*g year = 2014
 ren district district2015
 append using "$pathout\MCU_DHS2010.dta"
-replace year = 2010 if year == .
+*replace year = 2010 if year == .
 
 
 * Fix up districts
@@ -121,22 +121,5 @@ forvalues y = 2010(4)2014 {
 	mat colnames mcu = "mean" "se" "t" "pvalue" "lower" "upper" "df" "crit" "eform" "N" "year"
 	mat2txt, matrix(mcu) saving("$pathreg/mcu_estimates") replace
 	
-	preserve
-	xsvmat double mcu, norestore rownames(param) rowlabels(varlab) names(matcol)
-
-		
-	#delimit ;
-	matrownames mcu_14 = "Urban Areas" 
-	"Kivu" 
-	"Western Congo-Nile Crest Tea" 
-			"Northwestern Volcanic Irish Potato" 
-			"Eastern Congo-Nile Highland Subsistence Farming"
-			"Central Plateau Cassava and Coffee"
-			"Northern Highland Beans and Wheat"
-			"Central-Northern Highland Irish Potato, Beans and Vegetables"
-			"Bugesera Cassava"
-			"Eastern Plateau Mixed Agricultural"
-			"Southeastern Plateau Banana"
-			"Eastern Agropastoral"
-			"Eastern Semi-Arid Agropastoral"
-	#delimit cr
+	*NOTES: Have to manually fix the row names and create a group cateogry. 
+	*TODO: figure out how to do in Stata
