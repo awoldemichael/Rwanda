@@ -1,6 +1,6 @@
 /*-------------------------------------------------------------------------------
 # Name:		07_ModContraceptiveAnalysisTemporal.do
-# Purpose:	Compare stunting results over time
+# Purpose:	Modern contraception use over time + export
 # Author:	Tim Essam, Ph.D.
 # Created:	2016/08/01
 # Owner:	USAID GeoCenter | OakStream Systems, LLC
