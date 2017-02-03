@@ -15,10 +15,10 @@ capture log close
 log using "$pathlog/04_StuntingAnalysisTemporal.txt", replace
 
 use "$pathout/MCU_DHS2014.dta", clear
-*g year = 2014
+g year = 2014
 ren district district2015
 append using "$pathout\MCU_DHS2010.dta"
-*replace year = 2010 if year == .
+replace year = 2010 if year == .
 
 
 * Fix up districts
