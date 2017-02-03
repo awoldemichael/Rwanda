@@ -41,4 +41,5 @@ ggplot(valDF, aes(x = x, y= y, color = z)) +
   scale_color_gradientn(colours = colorScheme, limits = c(0, maxVal)) +
   theme_bw() +
   theme(plot.background = element_rect(fill = '#f0f0f0'),
-        panel.background = element_blank())
+        panel.background = element_blank(),
+        legend.direction = 'horizontal')

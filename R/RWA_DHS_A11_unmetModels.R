@@ -31,7 +31,7 @@ w10_scaled = w10 %>%
 baby_models = formulas(~moreChild_binary,
                        basic = 
                          # -- demographics --
-                         ~age*rural +
+                         ~age_rural +
                          ageGap +
                          religion +
                          age_firstSex +
@@ -80,6 +80,8 @@ baby_models = formulas(~moreChild_binary,
 children_14 = w14_scaled %>% fit_with(glm, baby_models, family = binomial(link = 'logit'))
 
 summary(children_14$basic)
+
+plot_coef(children_14$basic)
 
 
 # odds ratio --------------------------------------------------------------
