@@ -69,6 +69,19 @@ label list SHDISTRI
 
 global filter1 "flagContra == 1 [iw = wweight]"
 
+preserve
+	keep if year == 2010 & flagContra == 1
+	keep modernContra dhsclust dhsid latnum longnum
+	export delimited "$pathexport/mcu_geo_2010.csv", replace
+restore
+
+preserve
+	keep if year == 2014 & flagContra == 1
+	keep modernContra dhsclust dhsid latnum longnum
+	export delimited "$pathexport/mcu_geo_2014.csv", replace
+restore
+
+
 foreach x of varlist religion lvdzone educ {
 	mean modernContra if year == 2010 & $filter1, over(`x')
 	mean modernContra if year == 2014 & $filter1, over(`x')
