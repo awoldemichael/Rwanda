@@ -31,6 +31,8 @@ llamar::plot_bump(df, value_var = 'extrapolated_number', region_var = 'religion'
 # slope chart (pct)
 llamar::plot_bump(df%>% filter(religion != "national"), value_var = 'pct', region_var = 'religion')
 
+ggplot(df%>% filter(religion != "national"), aes(x = year, y = pct, size = extrapolated_number, colour = religion)) + geom_point() + theme_ygrid() + scale_size(range = c(1,12))
+
 
 # stacked area: just protestants / catholics
 ggplot(df %>% filter(religion %in% c("catholic", "protestant")), aes(x = religion, y = `extrapolated_number`, fill = year)) +
