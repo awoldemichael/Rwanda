@@ -259,7 +259,9 @@ sectors = bind_rows(sector02, sector12) %>%
 
 pal = RColorBrewer::brewer.pal(9, 'PuBuGn')
 limits = c(0, max(sectors$pct))
-popLimits = c(min(sectors$totalPop), max(sectors$totalPop))
+popLimits = log10(c(min(sectors$totalPop), max(sectors$totalPop)))
+
+popPal = rev(brewer.pal(11, "PuOr")[1:6])
 
 religions = unique(sectors$religion)
 
@@ -297,7 +299,7 @@ for(selReligion in religions) {
               width = 6, height = 6)
   
     p = ggplot(relig_map) +
-      geom_polygon(aes(x = long, y = lat, group = as.numeric(group), order = order, fill = totalPop)) +
+      geom_polygon(aes(x = long, y = lat, group = as.numeric(group), order = order, fill = log10(totalPop))) +
       geom_path(aes_string(x = 'long', y = 'lat',
                            group = 'as.numeric(group)', order = 'order'),
                 size = 0.05,
@@ -305,7 +307,7 @@ for(selReligion in religions) {
       coord_equal() +
       theme_void() +
       theme(legend.position = 'bottom') +
-      scale_fill_gradientn(colours = brewer.pal(9, "YlGn"), limits = popLimits) +
+      scale_fill_gradientn(colours = popPal, limits = popLimits) +
       scale_colour_identity() +
       ggtitle('population')
     
