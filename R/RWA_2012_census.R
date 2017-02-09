@@ -259,6 +259,7 @@ sectors = bind_rows(sector02, sector12) %>%
 
 pal = RColorBrewer::brewer.pal(9, 'PuBuGn')
 limits = c(0, max(sectors$pct))
+popLimits = c(min(sectors$totalPop), max(sectors$totalPop))
 
 religions = unique(sectors$religion)
 
@@ -304,7 +305,7 @@ for(selReligion in religions) {
       coord_equal() +
       theme_void() +
       theme(legend.position = 'bottom') +
-      scale_fill_gradientn(colours = brewer.pal(9, "YlGn")) +
+      scale_fill_gradientn(colours = brewer.pal(9, "YlGn"), limits = popLimits) +
       scale_colour_identity() +
       ggtitle('population')
     
