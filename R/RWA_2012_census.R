@@ -5,10 +5,11 @@ library(dplyr)
 library(tidyr)
 library(stringr)
 library(llamar)
-library(geocen12ter)
+library(geocenter)
 library(ggplot2)
 library(viridis)
 library(data.table)
+library(RColorBrewer)
 
 
 
@@ -73,7 +74,7 @@ factorize(census2012, 'L01', 'prov') %>%
   factorize(census2012, 'P11', 'religion') %>% 
   factorize(census2012, 'P02', 'relationship') %>% 
   factorize(census2012, 'SUI', 'sector_name') %>% 
-  mutate(age_grp = cut(age, seq(-1, 100, by = 5)),
+  mutate(age_grp = cut(age, c(seq(-1, 80, by = 5), Inf)),
          age_grp2 = age_grp)
 
 
@@ -82,7 +83,9 @@ cen12 = separate(cen12, age_grp2, into = c("age_lb", "age_ub"), sep=",")
 cen12 = cen12 %>% 
   mutate(age_lb = str_replace_all(age_lb, "\\(", ""),
          age_ub = str_replace_all(age_ub, "\\]", ""),
-         age_label = paste0(as.numeric(age_lb) + 1, " - ", age_ub))
+         age_ub = str_replace_all(age_ub, "Inf", "+"),
+         age_label = ifelse(age_lb == "79", paste0(as.numeric(age_lb) + 1, " ", age_ub),
+                            paste0(as.numeric(age_lb) + 1, " - ", age_ub)))
 
 
 
@@ -128,7 +131,7 @@ cen02  = census2002 %>%
          DUI = as.numeric(str_replace_all(District_Code, '0', '')),
          SUI = as.numeric(str_replace(Sector_Code, '0', '')),
          age = P06,
-         age_grp = cut(age, seq(-1, 100, by = 5)),
+         age_grp = cut(age, c(seq(-1, 80, by = 5), Inf)),
          age_grp2 = age_grp)
 
 # Tidy up age labels
@@ -137,7 +140,9 @@ cen02 = separate(cen02, age_grp2, into = c("age_lb", "age_ub"), sep=",")
 cen02 = cen02 %>% 
   mutate(age_lb = str_replace_all(age_lb, "\\(", ""),
          age_ub = str_replace_all(age_ub, "\\]", ""),
-         age_label = paste0(as.numeric(age_lb) + 1, " - ", age_ub))
+         age_ub = str_replace_all(age_ub, "Inf", "+"),
+         age_label = ifelse(age_lb == "79", paste0(as.numeric(age_lb) + 1, " ", age_ub),
+                            paste0(as.numeric(age_lb) + 1, " - ", age_ub)))
 
 
 
