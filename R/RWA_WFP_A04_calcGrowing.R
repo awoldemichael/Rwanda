@@ -29,13 +29,22 @@ growing_admin2 = hh %>%
            group_by(admin2) %>% 
            summarise_each(funs(mean(., na.rm = TRUE)))
 
+limits = c(0,1)
+pal = 'YlGnBu'
+
+
+
 growing_map = left_join(RWA_admin2$df, growing_admin2, by = c('District' = 'admin2'))
 
-growing_labels = left_join(RWA_admin2$centroids, growing_admin2, by = c('label' = 'admin2'))
+
 
 vars = colnames(growing_admin2 %>% select(-admin2))
 
 for(fill_var in vars){
+  
+  growing_new = map_colour_text(growing_admin2, fill_var,  brewer.pal(9, pal), limits)
+  
+  growing_labels = left_join(RWA_admin2$centroids, growing_new, by = c('label' = 'admin2'))
 
 ggplot(growing_map) +
   geom_polygon(aes_string(x = 'long', y = 'lat',
@@ -50,11 +59,11 @@ ggplot(growing_map) +
   theme(legend.position = 'none') +
   scale_fill_gradientn(colours = brewer.pal(9, 'YlGnBu'), limits = c(0, 1)) +
   geom_text(aes_string(x = 'long', y = 'lat', label = paste0('percent(', fill_var, ', 0)'), 
-                       group = 'label', colour = fill_var),
+                       group = 'label', colour = 'text_colour'),
             family = 'Lato', 
             size = 3, 
             data = growing_labels) +
-   scale_colour_text(growing_labels[[fill_var]]) +
+   scale_colour_identity() +
   ggtitle(fill_var)
   
   save_plot(filename = paste0('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/', fill_var, '.pdf'),
@@ -76,6 +85,9 @@ growing_labels = left_join(RWA_LZ$centroids, growing_lz, by = c('label' = 'livel
 vars = colnames(growing_lz %>% select(-livelihood_zone))
 
 for(fill_var in vars){
+  growing_lz = map_colour_text(growing_lz, fill_var,  brewer.pal(9, pal), limits)
+  
+  growing_labels = left_join(RWA_LZ$centroids, growing_lz, by = c('label' = 'livelihood_zone'))
   
   ggplot(growing_map) +
     geom_polygon(aes_string(x = 'long', y = 'lat',
@@ -90,11 +102,11 @@ for(fill_var in vars){
     theme(legend.position = 'none') +
     scale_fill_gradientn(colours = brewer.pal(9, 'YlGnBu'), limits = c(0, 1)) +
     geom_text(aes_string(x = 'long', y = 'lat', label = paste0('percent(', fill_var, ', 0)'), 
-                         group = 'label', colour = fill_var),
+                         group = 'label', colour = 'text_colour'),
               family = 'Lato', 
               size = 3, 
               data = growing_labels) +
-    scale_colour_text(growing_labels[[fill_var]]) +
+    scale_colour_identity() +
     ggtitle(fill_var)
   
   save_plot(filename = paste0('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/', fill_var, '_lz.pdf'),

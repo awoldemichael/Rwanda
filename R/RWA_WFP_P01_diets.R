@@ -220,7 +220,7 @@ save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported
 
 
 # Food Access choropleth ----------------------------------------------------------
-food_access_map = full_join(RWA_LZ$df, food_access_byLZ, by = "livelihood_zone")
+food_access_map = full_join(RWA_LZ$df, food_access_byLZ %>% filter(food_access_year_cat != "Any food access issue"), by = "livelihood_zone")
 food_access_label = full_join(RWA_LZ$centroids, food_access_byLZ, by = c("label" = "livelihood_zone"))
 
 food_access_map$food_access_year_cat = 
@@ -237,6 +237,29 @@ food_access_label$food_access_year_cat = fct_relevel(food_access_label$food_acce
 food_access_label = food_access_label %>% filter(!is.na(food_access_year_cat))
 food_access_map = food_access_map %>% filter(!is.na(food_access_year_cat))
 
+
+lz_order = fcs_byLZ %>% arrange((fcs))
+food_access_byLZ$livelihood_zone = factor(food_access_byLZ$livelihood_zone,
+                                          levels = lz_order$livelihood_zone)
+
+ggplot(food_access_byLZ %>% filter(food_access_year_cat != "Any food access issue"), 
+       aes(x = food_access_year_cat, y = livelihood_zone, size = pct, fill = pct)) +
+  scale_fill_gradientn(colours = brewer.pal(9, 'OrRd'),
+                       limits = c(0, max(food_access_map$pct))) +
+  geom_point(shape = 21, stroke = 0.1, colour = grey90K) +
+  geom_text(aes(label = percent(pct, 0),
+                colour = pct),
+            size = 3,
+            family = 'Lato') +
+  scale_size_continuous(range = c(1, 15)) +
+  scale_colour_text(food_access_byLZ$pct) +
+  theme_xylab()
+
+
+save_plot('~/Creative Cloud Files/MAV/Projects/RWA_LAM-stunting_2016-09/exported_fromR/FoodAccessCat_LZdot_CFSVA.pdf',
+          height = 6, width = 9)
+
+
 ggplot(food_access_map, aes(x = long, y = lat)) +
   geom_polygon(aes(fill = pct, group = group, order = order)) +
   geom_path(aes(group = group, order = order),
@@ -247,7 +270,7 @@ ggplot(food_access_map, aes(x = long, y = lat)) +
             family = 'Lato', 
             data = food_access_label) +
   scale_fill_gradientn(colours = brewer.pal(9, 'OrRd'),
-                       limits = c(0, 0.7)) +
+                       limits = c(0, max(food_access_map$pct))) +
   scale_colour_text(food_access_label$pct) +
   coord_equal() +
   facet_wrap(~food_access_year_cat) +

@@ -128,7 +128,7 @@ stunting_lz_dhs = stunting_lz_dhs %>%
 # -- Merge DHS and CFSVA results -- 
 stunting_lz = full_join(stunting_lz_dhs, stunting_lz_cfsva, by = 'livelihood_zone') %>% 
   rename(stunting_dhs = b,
-         stunting_cfsva = isStunted,
+         stunting_cfsva = unweighted_avg,
          lb_dhs = ll,
          ub_dhs = ul,
          lb_cfsva = lb,
