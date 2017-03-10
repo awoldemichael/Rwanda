@@ -81,6 +81,7 @@ local stats ageGroup educ educSame /*
 	global humcap "ib(0).educ ib(0).educPartner ageGap wealth"
 	global comm "dist_distanceHC dist_totChild dist_educYears catholic_dominant protestant_dominant adventist_dominant muslim_dominant"
 	global geog2 "altitude2 ib(5).lvdzone dist_HealthFac"
+	global geog3 "altitude ib(54).district dist_HealthFac"
 	global stderr "cluster(dhsclust)"
 
 	* Double check to make sure you don't have 98 or 99 values influencing regression results
@@ -102,7 +103,20 @@ local stats ageGroup educ educSame /*
 	esttab mcu_a* using "$pathreg/MCUwideAll_lpm.csv", wide mlabels(none) ar2 pr2  label replace not
 
 	est clear
-
+	
+	* Create a .txt file for Rwanda Mission with key results
+	
+	qui eststo mcu_b0: logit modernContra $social if flagContra == 1, $stderr or
+	qui eststo mcu_b1: logit modernContra $demog $social ib(1381).intdate if flagContra == 1, $stderr or
+	qui eststo mcu_b2: logit modernContra $demog $health $social ib(1381).intdate if flagContra == 1, $stderr or
+	qui eststo mcu_b3: logit modernContra $demog $health $social $humcap ib(1381).intdate if flagContra == 1, $stderr or
+	qui eststo mcu_b4: logit modernContra $demog $health $social $humcap $comm ib(1381).intdate if flagContra == 1, $stderr or
+	qui eststo mcu_b5: logit modernContra $demog $health $social $humcap $comm $geog2 ib(1381).intdate if flagContra == 1, $stderr or
+	esttab mcu*, p  label ar2 pr2 not eform compress refcat()
+	esttab mcu* using "$pathreg/MCU_2014.csv", p  label ar2 pr2 not eform compress refcat()
+	est clear
+	
+	
 	preserve
 	# delimit;
 		keep modernContra ageGroup married numChildUnd5 residStatus

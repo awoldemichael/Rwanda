@@ -100,6 +100,25 @@ local stats ageGroup educ educSame /*
 	esttab mcu_b* using "$pathreg/MCUwideAll_logit2010.csv", wide mlabels(none) ar2 pr2  eform label replace not
 	esttab mcu_a* using "$pathreg/MCUwideAll_lpm2010.csv", wide mlabels(none) ar2 pr2  label replace not
 
+	
+	* Create a .txt file for Rwanda Mission with key results for 2010
+	est clear
+	qui eststo mcu_b0: logit modernContra $social if flagContra == 1, $stderr or
+	qui eststo mcu_b1: logit modernContra $demog $social ib(1333).intdate if flagContra == 1, $stderr or
+	qui eststo mcu_b2: logit modernContra $demog $health $social ib(1333).intdate if flagContra == 1, $stderr or
+	qui eststo mcu_b3: logit modernContra $demog $health $social $humcap ib(1333).intdate if flagContra == 1, $stderr or
+	qui eststo mcu_b4: logit modernContra $demog $health $social $humcap $comm ib(1333).intdate if flagContra == 1, $stderr or
+	qui eststo mcu_b5: logit modernContra $demog $health $social $humcap $comm $geog2 ib(1333).intdate if flagContra == 1, $stderr or
+	esttab mcu*, p  label ar2 pr2 not eform compress refcat()
+	esttab mcu* using "$pathreg/MCU_2010.csv", p  label ar2 pr2 not eform compress refcat() replace
+	coefplot mcu_b5
+	est clear
+	
+	
+	
+	
+	
+	
 	preserve
 	# delimit;
 		keep modernContra ageGroup married numChildUnd5 residStatus
