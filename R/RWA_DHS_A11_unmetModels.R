@@ -219,3 +219,58 @@ leaflet(data = w14) %>%
   addCircleMarkers(lat = ~ latnum, lng = ~longnum,stroke = FALSE,
                    radius = 5,
              color = ~contPal(totLiving))
+
+
+# merge all regression results together -----------------------------------
+library(broom)
+
+# nc10_1 = broom::tidy(numChild_10$basic)
+nc10_2 = broom::tidy(numChild_10$male_ed)
+nc10_3 = broom::tidy(numChild_10$prev_kids)
+nc10_4 = broom::tidy(numChild_10$occup)
+
+# number of children in 2010
+nc10 = full_join(nc10_2, nc10_3, by='term')
+nc10 = full_join(nc10, nc10_4, by='term')
+
+write.csv(nc10, '~/Creative Cloud Files/MAV/Projects/RWA_2017_01_06_LAM/regression results/numberChildren2010.csv')
+
+# nc14_1 = broom::tidy(numChild_10$basic)
+nc14_2 = broom::tidy(numChild_14$male_ed)
+nc14_3 = broom::tidy(numChild_14$prev_kids)
+nc14_4 = broom::tidy(numChild_14$occup)
+
+# number of children in 2010
+nc14 = full_join(nc14_2, nc14_3, by='term')
+nc14 = full_join(nc14, nc14_4, by='term')
+
+write.csv(nc14, '~/Creative Cloud Files/MAV/Projects/RWA_2017_01_06_LAM/regression results/numberChildren2014.csv')
+
+
+# desires for having more children
+# want10_1 = broom::tidy(children_10$basic)
+want10_2 = broom::tidy(children_10$male_ed)
+want10_3 = broom::tidy(children_10$male_agree)
+want10_4 = broom::tidy(children_10$occup)
+
+
+# number of children in 2010
+# want10 = full_join(want10_1, want10_2, by='term')
+want10 = full_join(want10_2, want10_3, by='term')
+want10 = full_join(want10, want10_4, by='term')
+
+write.csv(want10, '~/Creative Cloud Files/MAV/Projects/RWA_2017_01_06_LAM/regression results/wantChildren2010.csv')
+
+
+# want14_1 = broom::tidy(children_14$basic)
+want14_2 = broom::tidy(children_14$male_ed)
+want14_3 = broom::tidy(children_14$male_agree)
+want14_4 = broom::tidy(children_14$occup)
+
+
+# number of children in 2010
+# want14 = full_join(want14_1, want14_2, by='term')
+want14 = full_join(want14_2, want14_3, by='term')
+want14 = full_join(want14, want14_4, by='term')
+
+write.csv(want14, '~/Creative Cloud Files/MAV/Projects/RWA_2017_01_06_LAM/regression results/wantChildren2014.csv')
