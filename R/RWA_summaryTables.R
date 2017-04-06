@@ -43,7 +43,7 @@ source('RWA_WFP_run2015.R')
 
 # using median per capita exp, since distribution seems to be skewed.
 ggplot(hh, aes(x = monthly_pc_expend)) + geom_histogram(binwidth = 1000)
-ggplot(hh, aes(x = log(monthly_pc_expend)))+ geom_histogram(binwidth = 0.25)
+ggplot(hh, aes(x = log(monthly_pc_expend))) + geom_histogram(binwidth = 0.25)
 
 
 
@@ -51,6 +51,32 @@ ggplot(hh, aes(x = log(monthly_pc_expend)))+ geom_histogram(binwidth = 0.25)
 
 # calculate CFSVA @ district & LZ level ----------------------------------------
 # -- hh-level --
+
+
+
+calcAvgs = function(df, variable, combined, by_var = 'livelihood_zone') {
+  avg = calcPtEst(hh, variable, by_var = by_var, use_weights = FALSE)
+  colnames(avg) = c(colnames(avg)[1], lapply(colnames(avg)[-1], function (x) paste0(variable, '_', x)))
+  
+  combined = full_join(combined, avg, by = by_var)
+  return(combined)
+}
+
+cf_lz = data.frame(livelihood_zone = unique(hh$livelihood_zone))
+cf_dist = data.frame(admin2 = unique(hh$admin2))
+
+# Vars to loop over
+vars = c(colnames(hh %>% select(contains('growing'))), 'FCS',
+         'own_livestock', 'own_cattle', 'manage_livestock')
+
+for (var in vars) {
+  cf_lz = calcAvgs(hh, var, by_var = 'livelihood_zone', cf_lz)
+  
+  cf_dist = calcAvgs(hh, var, by_var = 'admin2', cf_dist)
+}
+
+
+
 pcExp_dist = hh %>% 
   group_by(admin2) %>% 
   summarise(median_pc_expend = median(monthly_pc_expend), median_pc_expend_N = n())
@@ -59,28 +85,14 @@ pcExp_lz = hh %>%
   group_by(livelihood_zone) %>% 
   summarise(median_pc_expend = median(monthly_pc_expend), median_pc_expend_N = n())
 
-
-fcs_dist = calcPtEst(hh, 'FCS', by_var = 'admin2', use_weights = FALSE)
-colnames(fcs_dist) = c(colnames(fcs_dist)[1], lapply(colnames(fcs_dist)[-1], function (x) paste0('fcs_', x)))
-
-fcs_lz = calcPtEst(hh, 'FCS', by_var = 'livelihood_zone', use_weights = FALSE)
-colnames(fcs_lz) = c(colnames(fcs_lz)[1], lapply(colnames(fcs_lz)[-1], function (x) paste0('fcs_', x)))
-
-
-growing_lz = hh %>% 
-  select(contains('growing'), livelihood_zone, own_livestock, own_cattle, manage_livestock) %>% 
-  group_by(livelihood_zone) %>% 
-  summarise_each(funs(mean(., na.rm = TRUE), N = n(), sd = sd(., na.rm = TRUE)))
-
-
 # using median per capita exp, since distribution seems to be skewed.
 ggplot(hh, aes(x = monthly_pc_expend)) + geom_histogram(binwidth = 1000)
 ggplot(hh, aes(x = log(monthly_pc_expend))) + geom_histogram(binwidth = 0.25)
 
 # merge together all the CFSVA data ---------------------------------------
-cf_dist = full_join(pcExp_dist, fcs_dist, by = "admin2")
+cf_dist = full_join(cf_dist, pcExp_dist, by = "admin2")
 
-cf_lz = full_join(pcExp_lz, fcs_lz, by = "livelihood_zone")
+cf_lz = full_join(cf_lz, pcExp_lz, by = "livelihood_zone")
 
 # save --------------------------------------------------------------------
 write.csv(cf_dist, paste0(exportDir, 'RWA_CFSVA_2015_district.csv'))
