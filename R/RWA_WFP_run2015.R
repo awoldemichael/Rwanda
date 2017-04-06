@@ -18,7 +18,7 @@
 # -------------------------------------------------------------------------
 
 setwd('~/GitHub/Rwanda/R/')
-  
+exportDir = '~/Documents/USAID/Rwanda/processeddata/'  
 
 # SETUP -------------------------------------------------------------------
 
@@ -57,3 +57,8 @@ source('RWA_WFP_A01_calcStunting.R')
 # REMOVE GUNK -------------------------------------------------------------
 rm(x, ch_test, cutoff, has_MHN_KEY, RWA_lakes)
 
+
+# export ------------------------------------------------------------------
+write.csv(hh, paste0(exportDir, 'RWA_CFSVA_2015_hh.csv'))
+
+write.csv(ch_hh, paste0(exportDir, 'RWA_CFSVA_2015_child.csv'))
