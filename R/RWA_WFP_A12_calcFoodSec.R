@@ -50,5 +50,5 @@ lz = full_join(cari_lz, food_access_lz)
 
 # export ------------------------------------------------------------------
 
-write.csv(dist, paste0(exportDir, 'RWA_CFSVA_2015_foodAccess_district.csv'))
-write.csv(lz, paste0(exportDir, 'RWA_CFSVA_2015_foodAccess_lz.csv'))
+write.csv(dist, paste0(exportDir, 'RWA_CFSVA_2015_foodSec_district.csv'))
+write.csv(lz, paste0(exportDir, 'RWA_CFSVA_2015_foodSec_lz.csv'))
