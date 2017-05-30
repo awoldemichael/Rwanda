@@ -76,25 +76,43 @@ foreach x of varlist stunting2 stunted2 extstunted2 improvedSanit {
 mean stunted2 if year == 2010 [aw=cweight] 
 mean stunted2 if year == 2014 [aw=cweight] 
 
-graph dot (mean) stunted2_dist2010 stunted2_dist2015, over(district, sort(2))
-graph dot (mean) stunted2_lvd2010 stunted2_lvd2015, over(lvdzone, sort(2))
-graph dot (mean) improvedSanit_lvd2010 improvedSanit_lvd2015, over(lvdzone, sort(2))
+* Create district averages for each year w/ CIs
+		mean stunted2 if year == 2010 & ageChild <= 24 [aw = cweight], over(district)
+		*mean stunted2 if year == 2010 [aw = cweight], over(district)
+		matrix A = r(table)'
+		matrix N = e(_N)'
+		matrix y1 = J(30, 1, 2010)
+		matrix C = A , y1, N
+		
+		matrix y2 = J(30, 1, 2014)
+		mean stunted2 if year == 2014 & ageChild <= 24 [aw=cweight] , over(district)
+		*mean stunted2 if year == 2014 [aw = cweight], over(district)
+		matrix B = r(table)'
+		matrix N = e(_N)'
+		matrix D = B, y2, N
+		
+		matrix Z = C \ D
+	mat2txt, matrix(Z) saving("$pathreg/stunting_by_district_under2_or_equal.txt") replace
+
+	graph dot (mean) stunted2_dist2010 stunted2_dist2015, over(district, sort(2))
+	graph dot (mean) stunted2_lvd2010 stunted2_lvd2015, over(lvdzone, sort(2))
+	graph dot (mean) improvedSanit_lvd2010 improvedSanit_lvd2015, over(lvdzone, sort(2))
 
 * Run regressions pooled and separately
 * Create groups for covariates as they map into conceptual framework for stunting
-global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
-global hhchar "wealth improvedSanit improvedWater bnetITNuse landless"
-global hhchar2 "mobile bankAcount improvedSanit improvedWater bnetITNuse"
-global hhag "tlutotal"
-global hhag2 "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
-global demog "hhsize agehead hhchildUnd5"
-global chldchar "ageChild agechildsq birthOrder birthWgt"
-global chldchar2 "birthOrder birthWgt"
-global chealth "intParasites vitaminA diarrhea anemia"
-global geog "altitude2 rural"
-global geog2 "altitude2 ib(1).lvdzone "
-global cluster "cluster(dhsclust)"
-global cluster2 "cluster(hhgroup)"
+	global matchar "motherBWeight motherBMI motherEd femhead orsKnowledge"
+	global hhchar "wealth improvedSanit improvedWater bnetITNuse landless"
+	global hhchar2 "mobile bankAcount improvedSanit improvedWater bnetITNuse"
+	global hhag "tlutotal"
+	global hhag2 "cowtrad goat sheep chicken pig rabbit cowmilk cowbull"
+	global demog "hhsize agehead hhchildUnd5"
+	global chldchar "ageChild agechildsq birthOrder birthWgt"
+	global chldchar2 "birthOrder birthWgt"
+	global chealth "intParasites vitaminA diarrhea anemia"
+	global geog "altitude2 rural"
+	global geog2 "altitude2 ib(1).lvdzone "
+	global cluster "cluster(dhsclust)"
+	global cluster2 "cluster(hhgroup)"
 
 * STOP: Check all globals for missing values!
 sum $matchar $hhchar $hhag $demog female $chldchar $chealth
