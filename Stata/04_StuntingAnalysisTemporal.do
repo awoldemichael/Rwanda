@@ -77,22 +77,33 @@ mean stunted2 if year == 2010 [aw=cweight]
 mean stunted2 if year == 2014 [aw=cweight] 
 
 * Create district averages for each year w/ CIs
-		mean stunted2 if year == 2010 & ageChild <= 24 [aw = cweight], over(district)
-		*mean stunted2 if year == 2010 [aw = cweight], over(district)
+		* Set the geography for summary stats
+		global geog "province"
+		
+		mean stunted2 if year == 2010 & ageChild < 24 [aw = cweight], over($geog)
+		*mean stunted2 if year == 2010 [aw = cweight], over($geog)
 		matrix A = r(table)'
 		matrix N = e(_N)'
-		matrix y1 = J(30, 1, 2010)
+		local dimCol = rowsof(A)
+		display `dimCol'
+		matrix y1 = J(`dimCol', 1, 2010)
 		matrix C = A , y1, N
 		
-		matrix y2 = J(30, 1, 2014)
-		mean stunted2 if year == 2014 & ageChild <= 24 [aw=cweight] , over(district)
-		*mean stunted2 if year == 2014 [aw = cweight], over(district)
+		mean stunted2 if year == 2014 & ageChild < 24 [aw=cweight] , over($geog)
+		*mean stunted2 if year == 2014 [aw = cweight], over($geog)
 		matrix B = r(table)'
 		matrix N = e(_N)'
-		matrix D = B, y2, N
+		local dimCol2 = rowsof(B)
+		display "Number of rows in summary matrix is: `dimCol2'"
+		matrix y2 = J(`dimCol2', 1, 2014)
 		
+		matrix D = B, y2, N
 		matrix Z = C \ D
-	mat2txt, matrix(Z) saving("$pathreg/stunting_by_district_under2_or_equal.txt") replace
+		
+		*district_under2_or_equal
+		
+	mat2txt, matrix(Z) saving("$pathreg/stunting_by_province_under2.txt") replace
+	matrix list Z
 
 	graph dot (mean) stunted2_dist2010 stunted2_dist2015, over(district, sort(2))
 	graph dot (mean) stunted2_lvd2010 stunted2_lvd2015, over(lvdzone, sort(2))
