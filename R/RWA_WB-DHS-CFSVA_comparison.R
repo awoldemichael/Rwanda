@@ -27,6 +27,7 @@ library(readxl)
 library(stringr)
 library(forcats)
 library(extrafont)
+library(rgdal)
 
 grey60K = 'grey'
 grey75K = '#878787'
@@ -192,6 +193,14 @@ wb = read_excel('processeddata/wb_stunting_dhs.xlsx')
 dhs_lz = read_csv('processeddata/stunting_by_lz.csv')
 
 
+
+# geodata: for province/district link -------------------------------------
+
+geo = rgdal::readOGR(dsn = "rawdata/Rwanda_Admin2", layer = 'District_Boundary_2006')
+geo = geo@data
+
+geo = geo %>% select(province = Prov_Name, district = District) %>% distinct()
+
 # clean up dhs data -------------------------------------------------------
 
 
@@ -234,6 +243,8 @@ lz = dhs_lz %>%
          decr = diff < 0
   ) %>% 
   arrange(desc(diff))
+
+dhs2 = full_join(dhs2, geo, by = 'district')
 
 dist_order = dhs2 %>% 
   filter(!is.na(diff), age_filter == 'under5') %>% 
@@ -296,8 +307,16 @@ ggplot(dhs2 %>% filter(!is.na(diff))) +
                  fill = decr),
              size = 10) +
   
+  annotate(geom = 'rect', 
+           xmin = -0.6, xmax = 0, ymin = 0, ymax = 31,
+           fill = '#01665e', alpha = 0.03) +
+  
+  annotate(geom = 'rect', xmin = 0.35, xmax = 0, ymin = 0, ymax = 31,
+           fill = '#8c510a', alpha = 0.03) +
+  
   geom_text(aes(x = diff, y = district, label = N), size = 3, colour = 'white') +
-  facet_wrap(~age_filter) +
+ 
+   facet_wrap(~age_filter + province, nrow = 2, scales = 'free_y') +
   
   scale_fill_manual(values = c('FALSE' = '#8c510a', 'TRUE' = '#01665e')) +
   scale_x_continuous(labels = scales::percent) +
@@ -311,11 +330,7 @@ ggplot(dhs2 %>% filter(!is.na(diff))) +
 ggplot(lz %>% filter(!is.na(diff))) +
   
   
-  # geom_rect(aes(xmin = -0.6, xmax = 0, ymin = 0, ymax = 31),
-  #           fill = '#01665e', alpha = 0.15) +
-  # 
-  # geom_rect(aes(xmin = 0.35, xmax = 0, ymin = 0, ymax = 31),
-  #           fill = '#8c510a', alpha = 0.15) +
+
   
   geom_vline(colour = grey90K, size = 1, xintercept = 0) +
   
@@ -326,6 +341,13 @@ ggplot(lz %>% filter(!is.na(diff))) +
                  shape = '1',
                  fill = decr),
              size = 10) +
+  
+  annotate(geom = 'rect', 
+           xmin = -0.6, xmax = 0, ymin = 0, ymax = 14,
+            fill = '#01665e', alpha = 0.03) +
+  
+  annotate(geom = 'rect', xmin = 0.35, xmax = 0, ymin = 0, ymax = 14,
+            fill = '#8c510a', alpha = 0.03) +
   
   geom_text(aes(x = diff, y = livelihood_zone, label = N2014), size = 3, colour = 'white') +
   
