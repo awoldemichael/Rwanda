@@ -308,13 +308,14 @@ ggplot(dhs2 %>% filter(!is.na(diff))) +
              size = 10) +
   
   annotate(geom = 'rect', 
-           xmin = -0.6, xmax = 0, ymin = 0, ymax = 31,
+           xmin = -0.6, xmax = 0, ymin = 0, ymax = 9,
            fill = '#01665e', alpha = 0.03) +
   
-  annotate(geom = 'rect', xmin = 0.35, xmax = 0, ymin = 0, ymax = 31,
+  annotate(geom = 'rect', xmin = 0.35, xmax = 0, ymin = 0, ymax = 9,
            fill = '#8c510a', alpha = 0.03) +
   
-  geom_text(aes(x = diff, y = district, label = N), size = 3, colour = 'white') +
+  geom_text(aes(x = diff, y = district, label = round(diff,2)), 
+                size = 3, colour = 'white') +
  
    facet_wrap(~age_filter + province, nrow = 2, scales = 'free_y') +
   
