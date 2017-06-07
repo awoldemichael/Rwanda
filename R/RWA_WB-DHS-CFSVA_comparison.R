@@ -138,34 +138,35 @@ theme_xgrid <- function(font_normal = 'Lato',
     plot.subtitle = element_text(size = font_subtitle, colour = subtitle_colour, family = font_semi),
     text = element_text(family = font_light, colour = text_colour, hjust = 0.5),
     
-    axis.line = element_blank(), 
-    axis.ticks.x = element_blank(), 
-    axis.line.y = element_blank(), 
-    axis.ticks.y = element_blank(), 
+    axis.line = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.line.y = element_blank(),
+    axis.ticks.y = element_blank(),
     
-    axis.text.x = element_text(size = font_axis_label, colour = text_colour, family = font_light), 
-    axis.title.x = element_text(size = font_axis_title, colour = text_colour, family = font_semi), 
-    axis.text.y = element_text(size = font_axis_label, colour = text_colour, family = font_light), 
-    axis.title.y = element_blank(), 
+    axis.text.x = element_text(size = font_axis_label, colour = text_colour, family = font_light),
+    axis.title.x = element_text(size = font_axis_title, colour = text_colour, family = font_semi),
+    axis.text.y = element_text(size = font_axis_label, colour = text_colour, family = font_light),
+    axis.title.y = element_blank(),
     
     
-    legend.position = legend.position, 
+    legend.position = legend.position,
     legend.title = element_text(size = font_legend_title, colour = text_colour, family = font_semi),
     legend.text = element_text(size = font_legend_label, colour = text_colour, family = font_semi),
     legend.direction = legend.direction,
     
-    panel.background = element_rect(fill = 'white', colour = NA, size = NA), 
-    plot.background = element_rect(fill = background_colour, colour = NA, size = NA, linetype = 1), 
-    panel.spacing = unit(panel_spacing, "lines"), 
-    panel.grid.minor.x = element_blank(), 
-    panel.grid.major.x = element_line(size = grid_stroke, colour = grid_colour), 
-    panel.grid.minor.y = element_blank(), 
-    panel.grid.major.y = element_blank(), 
-    panel.border = element_blank(), 
-    plot.margin = plot_margin, 
+    panel.background = element_rect(fill = 'white', colour = NA, size = NA),
+    plot.background = element_rect(fill = background_colour, colour = NA, size = NA, linetype = 1),
+    panel.spacing = unit(panel_spacing, "lines"),
+    panel.grid.minor.x = element_blank(),
+    panel.grid.major.x = element_line(size = grid_stroke, colour = grid_colour),
+    panel.grid.minor.y = element_blank(),
+    panel.grid.major.y = element_blank(),
+    panel.border = element_blank(),
+    plot.margin = plot_margin,
     
-    strip.text = element_text(size = font_facet, colour = subtitle_colour, hjust = 0.025), 
-    strip.background = element_blank())
+    strip.text = element_text(size = font_facet, colour = subtitle_colour, hjust = 0.025),
+    strip.background = element_blank()
+  )
 }
 
 
@@ -181,6 +182,9 @@ dhs5 = read_tsv('processeddata/stunting_by_district.txt') %>%
 
 dhs = bind_rows(dhs2, dhs5)
 
+dhs_prov = read_tsv('processeddata/stunting_by_province.txt') %>% 
+  mutate(age_filter = 'under5')
+
 # Data pulled from the WB's report.  Note that numbers are similar but slightly different than our DHS under 2 numbers,
 # suggesting the WB used additional filters based on their regression model (?)
 wb = read_excel('processeddata/wb_stunting_dhs.xlsx')
@@ -188,31 +192,97 @@ wb = read_excel('processeddata/wb_stunting_dhs.xlsx')
 
 # clean up dhs data -------------------------------------------------------
 
+
+prov =  dhs_prov %>% 
+  mutate(province = str_replace(X1, 'stunted2:', ''),
+         province = ifelse(province == '_subpop_1', 'Kigali', str_to_title(province))) %>% 
+  rename(year = c1, N = r1, avg = b, lb = ll, ub = ul) %>% 
+  select(province, year, age_filter, avg, lb, ub, N, se) %>% 
+  group_by(province) %>% 
+  mutate(avg2014 = lead(avg),
+         se2014 = lead(se),
+         diff = avg2014 - avg,
+         diff_se = sqrt(se2014^2 + se^2),
+         decr = diff < 0) %>% 
+  fill(decr) %>% 
+arrange(desc(diff))
+
+
 dhs2 =  dhs %>% 
   mutate(district = str_replace(X1, 'stunted2:', '')) %>% 
   rename(year = c1, N = r1, avg = b, lb = ll, ub = ul) %>% 
-  select(district, year, age_filter, avg, lb, ub, N) %>% 
-  group_by(district) %>% 
+  select(district, year, age_filter, avg, lb, ub, N, se) %>% 
+  group_by(district, age_filter) %>% 
   mutate(avg2014 = lead(avg),
-         diff = avg2014 - avg) %>% 
+         se2014 = lead(se),
+         diff = avg2014 - avg,
+         diff_se = sqrt(se2014^2 + se^2),
+         diff_lb = diff - 1.96*diff_se,
+         diff_ub = diff + 1.96*diff_se,
+         decr = diff < 0) %>% 
+  fill(decr) 
+
+dist_order = dhs2 %>% 
+  filter(!is.na(diff), age_filter == 'under5') %>% 
   arrange(desc(diff))
 
-dist_order = dhs2 %>% filter(!is.na(diff))
 
 dhs2$district = factor(dhs2$district, levels = dist_order$district)
 
 
+prov_order = prov %>% filter(!is.na(diff))
+
+prov$province = factor(prov$province, levels = prov_order$province)
+
 # dot plots by province of the averages -----------------------------------
 
-  ggplot(dhs2 %>% filter(age_filter == 'under2'), aes(x = avg, y = district, 
-                 fill = age_filter, 
+ggplot(prov, aes(x = avg, y = province, 
+                 fill = decr, 
                  shape = as.factor(year))) +
   
-  geom_segment(aes(xend = avg2014, yend = district), size = 0.5) +
-  geom_segment(aes(x = lb, xend = ub, yend = district),
-               size = 2, alpha = 0.15) +
+  geom_segment(aes(xend = avg2014, yend = province), 
+               arrow = arrow(length = unit(0.1,"cm")),
+               size = 0.5, alpha = 0.6) +
+  geom_segment(aes(x = lb, xend = ub, yend = province),
+               size = 2, alpha = 0.1) +
   
-  geom_point(size = 4) +
+  geom_point(size = 10) +
   
+  geom_text(aes(label = N), size = 3, colour = 'white') +
+  
+  scale_fill_manual(values = c('FALSE' = '#8c510a', 'TRUE' = '#01665e')) +
   scale_shape_manual(values = c(21,22)) +
-  theme_bw()
+  theme_xgrid()
+
+
+
+# plot of difference ------------------------------------------------------
+
+ggplot(dhs2 %>% filter(!is.na(diff))) +
+  
+  
+  # geom_rect(aes(xmin = -0.6, xmax = 0, ymin = 0, ymax = 31),
+  #           fill = '#01665e', alpha = 0.15) +
+  # 
+  # geom_rect(aes(xmin = 0.35, xmax = 0, ymin = 0, ymax = 31),
+  #           fill = '#8c510a', alpha = 0.15) +
+  
+  geom_vline(colour = grey90K, size = 1, xintercept = 0) +
+  
+  geom_segment(aes(x = diff_lb, xend = diff_ub, y = district, yend = district),
+               size = 2, alpha = 0.2) +
+  
+  geom_point(aes(x = diff, y = district, 
+                 shape = age_filter,
+                 fill = decr),
+             size = 10) +
+  
+  geom_text(aes(x = diff, y = district, label = N), size = 3, colour = 'white') +
+  facet_wrap(~age_filter) +
+  
+  scale_fill_manual(values = c('FALSE' = '#8c510a', 'TRUE' = '#01665e')) +
+  scale_x_continuous(labels = scales::percent) +
+  scale_shape_manual(values = c(21,22)) +
+  
+  xlab('difference in average percentage of stunted children (2014/2015 - 2010)') +
+  theme_xgrid()
