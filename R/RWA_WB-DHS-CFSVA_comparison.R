@@ -189,6 +189,8 @@ dhs_prov = read_tsv('processeddata/stunting_by_province.txt') %>%
 # suggesting the WB used additional filters based on their regression model (?)
 wb = read_excel('processeddata/wb_stunting_dhs.xlsx')
 
+dhs_lz = read_csv('processeddata/stunting_by_lz.csv')
+
 
 # clean up dhs data -------------------------------------------------------
 
@@ -222,6 +224,17 @@ dhs2 =  dhs %>%
          decr = diff < 0) %>% 
   fill(decr) 
 
+lz = dhs_lz %>% 
+  mutate(diff = avg2014 - avg2010,
+         se2010 = (avg2010 - lb2010)/1.96,
+         se2014 = (avg2014 - lb2014)/1.96,
+         diff_se = sqrt(se2014^2 + se2010^2),
+         diff_lb = diff - 1.96*diff_se,
+         diff_ub = diff + 1.96*diff_se,
+         decr = diff < 0
+  ) %>% 
+  arrange(desc(diff))
+
 dist_order = dhs2 %>% 
   filter(!is.na(diff), age_filter == 'under5') %>% 
   arrange(desc(diff))
@@ -233,6 +246,12 @@ dhs2$district = factor(dhs2$district, levels = dist_order$district)
 prov_order = prov %>% filter(!is.na(diff))
 
 prov$province = factor(prov$province, levels = prov_order$province)
+
+
+lz_order = lz %>% filter(!is.na(diff))
+
+lz$livelihood_zone = factor(lz$livelihood_zone, levels = lz_order$livelihood_zone)
+
 
 # dot plots by province of the averages -----------------------------------
 
@@ -279,6 +298,36 @@ ggplot(dhs2 %>% filter(!is.na(diff))) +
   
   geom_text(aes(x = diff, y = district, label = N), size = 3, colour = 'white') +
   facet_wrap(~age_filter) +
+  
+  scale_fill_manual(values = c('FALSE' = '#8c510a', 'TRUE' = '#01665e')) +
+  scale_x_continuous(labels = scales::percent) +
+  scale_shape_manual(values = c(21,22)) +
+  
+  xlab('difference in average percentage of stunted children (2014/2015 - 2010)') +
+  theme_xgrid()
+
+
+
+ggplot(lz %>% filter(!is.na(diff))) +
+  
+  
+  # geom_rect(aes(xmin = -0.6, xmax = 0, ymin = 0, ymax = 31),
+  #           fill = '#01665e', alpha = 0.15) +
+  # 
+  # geom_rect(aes(xmin = 0.35, xmax = 0, ymin = 0, ymax = 31),
+  #           fill = '#8c510a', alpha = 0.15) +
+  
+  geom_vline(colour = grey90K, size = 1, xintercept = 0) +
+  
+  geom_segment(aes(x = diff_lb, xend = diff_ub, y = livelihood_zone, yend = livelihood_zone),
+               size = 2, alpha = 0.2) +
+  
+  geom_point(aes(x = diff, y = livelihood_zone, 
+                 shape = '1',
+                 fill = decr),
+             size = 10) +
+  
+  geom_text(aes(x = diff, y = livelihood_zone, label = N2014), size = 3, colour = 'white') +
   
   scale_fill_manual(values = c('FALSE' = '#8c510a', 'TRUE' = '#01665e')) +
   scale_x_continuous(labels = scales::percent) +
