@@ -29,7 +29,7 @@ library(forcats)
 library(extrafont)
 library(rgdal)
 
-grey60K = 'grey'
+grey60K = '#878787'
 grey75K = '#878787'
 grey90K = '#4d4d4d'
 
@@ -285,8 +285,9 @@ ggplot(prov, aes(x = avg, y = province,
   theme_xgrid()
 
 
-
 # plot of difference ------------------------------------------------------
+dhs2$age_filter = factor(dhs2$age_filter, levels = c('under5', 'under2'))
+
 
 ggplot(dhs2 %>% filter(!is.na(diff))) +
   
@@ -314,9 +315,49 @@ ggplot(dhs2 %>% filter(!is.na(diff))) +
   annotate(geom = 'rect', xmin = 0.35, xmax = 0, ymin = 0, ymax = 9,
            fill = '#8c510a', alpha = 0.03) +
   
-  geom_text(aes(x = diff, y = district, label = round(diff*100,0)), 
+  annotate(geom = 'text', 
+           x = -0.55, y = 8.6,
+           size = 3,
+           hjust = 0,
+           label = 'DECREASE',
+           color = '#01665e') +
+  
+  
+  annotate(geom = 'text', 
+           x = 0.05, y = 8.6,
+           size = 3,
+           hjust = 0,
+           label = 'INCREASE',
+           color = '#8c510a') +
+  
+  
+  # annotate(geom = 'text', 
+  #          x = 0.3, y = 8.6,
+  #          size = 3.5,
+  #          hjust = 0,
+  #          label = 'sample size',
+  #          color = '#000000') +
+  # 
+  # annotate(geom = 'text', 
+  #          x = 0.25, y = 8.35,
+  #          size = 2.5,
+  #          hjust = 0,
+  #          label = '2010 ; 2014',
+  #          color = '#000000') +
+  
+  geom_text(aes(x = diff, y = district, label = paste0(round(diff*100,0),'%')), 
                 size = 3, colour = 'white') +
  
+  
+
+    geom_text(aes(x = 0.25, y = district, label = N), 
+            size = 3, colour = 'black', 
+            hjust = 1,
+            data = dhs2 %>% filter(year == 2010)) +
+  
+  geom_text(aes(x = 0.26, y = district, label = paste0(' ; ', N)), 
+            hjust = 0,
+            size = 3, colour = 'black', data = dhs2 %>% filter(year == 2014)) +
    facet_wrap(~age_filter + province, nrow = 2, scales = 'free_y') +
   
   scale_fill_manual(values = c('FALSE' = '#8c510a', 'TRUE' = '#01665e')) +
@@ -324,9 +365,10 @@ ggplot(dhs2 %>% filter(!is.na(diff))) +
   scale_shape_manual(values = c(21,22)) +
   
   xlab('difference in average percentage of stunted children (2014/2015 - 2010)') +
-  theme_xgrid()
+  theme_xgrid() +
+  theme(panel.spacing = unit(1, "lines"))
 
-
+# ---LZ----
 
 ggplot(lz %>% filter(!is.na(diff))) +
   
@@ -347,10 +389,46 @@ ggplot(lz %>% filter(!is.na(diff))) +
            xmin = -0.6, xmax = 0, ymin = 0, ymax = 14,
             fill = '#01665e', alpha = 0.03) +
   
+  annotate(geom = 'text', 
+           x = -0.55, y = 13.6,
+           size = 5,
+           hjust = 0,
+           label = 'DECREASE',
+           color = '#01665e') +
+  
+  
+  annotate(geom = 'text', 
+           x = 0.05, y = 13.6,
+           size = 5,
+           hjust = 0,
+           label = 'INCREASE',
+           color = '#8c510a') +
+  
+  
+  annotate(geom = 'text', 
+           x = 0.25, y = 13.6,
+           size = 3.5,
+           hjust = 0,
+           label = 'sample size',
+           color = '#000000') +
+  
+  annotate(geom = 'text', 
+           x = 0.25, y = 13.35,
+           size = 2.5,
+           hjust = 0,
+           label = '2010 ; 2014',
+           color = '#000000') +
+  
   annotate(geom = 'rect', xmin = 0.35, xmax = 0, ymin = 0, ymax = 14,
             fill = '#8c510a', alpha = 0.03) +
   
-  geom_text(aes(x = diff, y = livelihood_zone, label = N2014), size = 3, colour = 'white') +
+  geom_text(aes(x = diff, y = livelihood_zone, 
+                label = paste0(round(diff*100,0), '%')), size = 3, colour = 'white') +
+  
+  geom_text(aes(x = 0.25, y = livelihood_zone, 
+                label = paste0(N2010, ' ; ', N2014)), 
+            hjust = 0,
+            size = 4, colour = '#000000') +
   
   scale_fill_manual(values = c('FALSE' = '#8c510a', 'TRUE' = '#01665e')) +
   scale_x_continuous(labels = scales::percent) +
@@ -358,3 +436,9 @@ ggplot(lz %>% filter(!is.na(diff))) +
   
   xlab('difference in average percentage of stunted children (2014/2015 - 2010)') +
   theme_xgrid()
+
+
+
+# export data -------------------------------------------------------------
+write_csv(dhs2, 'dist_forplotting.csv')
+write_csv(lz, 'lz_forplotting.csv')
